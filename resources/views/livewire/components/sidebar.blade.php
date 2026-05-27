@@ -52,6 +52,18 @@
                     <span>Garment Tracking</span>
                 </a>
             </li>
+            <li class="@if(Request::is('admin/delivery-counter*')) active-page @endif">
+                <a href="{{ route('delivery.counter') }}"
+                class="@if(Request::is('admin/delivery-counter*')) active-page @endif">
+
+                    <iconify-icon
+                        icon="mdi:truck-delivery-outline"
+                        class="menu-icon">
+                    </iconify-icon>
+
+                    <span>Delivery Counter</span>
+                </a>
+            </li>
             <li class="sidebar-menu-group-title">{{ $lang->data['application'] ?? 'Application' }}</li>
             @can('customer_list')
             <li class="@if(Request::is('admin/customers*')) active-page @endif">

@@ -44,6 +44,14 @@
                 </a>
             </li>
             @endcan
+            <li class="@if(Request::is('admin/garment-tracking*')) active-page @endif">
+                <a href="{{ route('garment.tracking') }}"
+                class="@if(Request::is('admin/garment-tracking*')) active-page @endif">
+                    <iconify-icon icon="mdi:hanger"
+                        class="menu-icon"></iconify-icon>
+                    <span>Garment Tracking</span>
+                </a>
+            </li>
             <li class="sidebar-menu-group-title">{{ $lang->data['application'] ?? 'Application' }}</li>
             @can('customer_list')
             <li class="@if(Request::is('admin/customers*')) active-page @endif">
@@ -51,7 +59,7 @@
                     <iconify-icon icon="uil:user" class="menu-icon"></iconify-icon>
                     <span>{{ $lang->data['customers'] ?? 'Customers' }}</span>
                 </a>
-            </li>   
+            </li>
             @endcan
             @canany(['service_list','service_type_list','addon_list'])
             <li class="dropdown">

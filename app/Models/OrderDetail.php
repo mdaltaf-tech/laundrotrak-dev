@@ -15,6 +15,24 @@ class OrderDetail extends Model
         'service_price',
         'service_quantity',
         'service_detail_total',
-        'color_code'
+        'color_code',
+        'is_deleted'
     ];
+
+    public function articles()
+    {
+        return $this->hasMany(
+            \App\Models\OrderArticle::class,
+            'order_detail_id',
+            'id'
+        );
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where(
+            'is_deleted',
+            0
+        );
+    }
 }

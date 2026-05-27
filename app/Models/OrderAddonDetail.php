@@ -14,6 +14,15 @@ class OrderAddonDetail extends Model
         'addon_id',
         'addon_name',
         'addon_price',
-        'is_active'   
+        'is_active',
+        'is_deleted'
     ];
+
+    public function scopeActive($query)
+    {
+        return $query->where(
+            'is_deleted',
+            0
+        );
+    }
 }

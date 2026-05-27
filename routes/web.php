@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\Admin;
 use App\Http\Middleware\Store;
+use App\Livewire\Garments\GarmentTracking;
 
 Route::get('/license', \App\Livewire\Installer\LicenseExpired::class)->name('license');
 Route::get('/install', \App\Livewire\Installer\InstallApp::class)->name('install');
@@ -16,6 +17,12 @@ Route::group(['middleware' => [\App\Http\Middleware\InstalledMiddleware::class]]
         Route::get('/pos', \App\Livewire\Orders\PosScreen::class)->name('orders.pos');
         Route::get('/pos/edit/{id}', \App\Livewire\Orders\PosScreen::class)->name('orders.pos.edit');
         Route::get('/order-status-screen', \App\Livewire\Orders\OrderStatusScreen::class)->name('orders.status-screen');
+        Route::get(
+            '/garment-tracking',
+            GarmentTracking::class
+        )->name(
+            'garment.tracking'
+        );
         Route::group(['prefix' => 'orders/'], function () {
             Route::get('/', \App\Livewire\Orders\OrdersList::class)->name('orders');
             Route::get('/view/{id}', \App\Livewire\Orders\ViewOrder::class)->name('order.view');

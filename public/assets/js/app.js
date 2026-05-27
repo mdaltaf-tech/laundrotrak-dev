@@ -35,13 +35,13 @@
     $(function () {
         for (
             var nk = window.location,
-                o = $("ul#sidebar-menu a")
-                    .filter(function () {
-                        return this.href == nk;
-                    })
-                    .addClass("active-page") // anchor
-                    .parent()
-                    .addClass("active-page");
+            o = $("ul#sidebar-menu a")
+                .filter(function () {
+                    return this.href == nk;
+                })
+                .addClass("active-page") // anchor
+                .parent()
+                .addClass("active-page");
             ;
 
         ) {

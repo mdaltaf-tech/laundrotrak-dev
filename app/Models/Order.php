@@ -25,7 +25,8 @@ class Order extends Model
         'status',
         'order_type',
         'created_by',
-        'financial_year_id'
+        'financial_year_id',
+        'is_deleted'
     ];
 
     /* user relation */
@@ -37,18 +38,42 @@ class Order extends Model
     /* user relation */
     public function details()
     {
-        return $this->hasMany(\App\Models\OrderDetail::class, 'order_id', 'id');
+        return $this->hasMany(
+            OrderDetail::class
+        )->where(
+            'is_deleted',
+            0
+        );
     }
-    
-    /* user relation */
+
     public function addons()
     {
-        return $this->hasMany(\App\Models\OrderAddonDetail::class, 'order_id', 'id');
+        return $this->hasMany(
+            \App\Models\OrderAddonDetail::class,
+            'order_id',
+            'id'
+        )->active();
+    }
+
+    public function articles()
+    {
+        return $this->hasMany(
+            OrderArticle::class,
+            'order_id',
+            'id'
+        )->active();
     }
 
     public function getTotalItemsAttribute()
     {
-        return $this->details()
-            ->sum('service_quantity');
+        return $this->articles()->count();
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where(
+            'is_deleted',
+            0
+        );
     }
 }

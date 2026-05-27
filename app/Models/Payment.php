@@ -17,17 +17,27 @@ class Payment extends Model
         'payment_type',
         'payment_note',
         'financial_year_id',
-        'created_by'
+        'created_by',
+        'is_deleted'
     ];
 
-     /* customer relation */
-     public function customer()
-     {
-         return $this->belongsTo(\App\Models\Customer::class, 'customer_id', 'id');
-     }
-      /* order relation */
-      public function order()
-      {
-          return $this->belongsTo(\App\Models\Order::class, 'order_id', 'id');
-      }
+    /* customer relation */
+    public function customer()
+    {
+        return $this->belongsTo(\App\Models\Customer::class, 'customer_id', 'id');
+    }
+
+    /* order relation */
+    public function order()
+    {
+        return $this->belongsTo(\App\Models\Order::class, 'order_id', 'id');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where(
+            'is_deleted',
+            0
+        );
+    }
 }

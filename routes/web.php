@@ -29,6 +29,10 @@ Route::group(['middleware' => [\App\Http\Middleware\InstalledMiddleware::class]]
         )->name(
             'delivery.counter'
         );
+        Route::get(
+            '/pickup-counter',
+            \App\Livewire\Delivery\PickupCounter::class
+        )->name('pickup.counter');
         Route::group(['prefix' => 'orders/'], function () {
             Route::get('/', \App\Livewire\Orders\OrdersList::class)->name('orders');
             Route::get('/view/{id}', \App\Livewire\Orders\ViewOrder::class)->name('order.view');

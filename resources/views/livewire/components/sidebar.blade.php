@@ -64,6 +64,17 @@
                     <span>Delivery Counter</span>
                 </a>
             </li>
+            <li>
+                <a href="{{ route('pickup.counter') }}">
+                <iconify-icon
+                        icon="mdi:shopping-outline"
+                        class="menu-icon">
+                    </iconify-icon>
+
+                    <span>Pickup Counter</span>
+
+                </a>
+            </li>
             <li class="sidebar-menu-group-title">{{ $lang->data['application'] ?? 'Application' }}</li>
             @can('customer_list')
             <li class="@if(Request::is('admin/customers*')) active-page @endif">

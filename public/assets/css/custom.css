@@ -203,4 +203,9 @@ input[type=number] {
         height: 42px;
         margin-right: 5px;
     }
+
+    .pickup-order-card .card-body {
+        padding-top: 18px;
+        padding-bottom: 18px;
+    }
 }

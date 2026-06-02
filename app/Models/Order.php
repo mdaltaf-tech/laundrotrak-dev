@@ -64,6 +64,15 @@ class Order extends Model
         )->active();
     }
 
+    public function payments()
+    {
+        return $this->hasMany(
+            Payment::class,
+            'order_id',
+            'id'
+        )->active();
+    }
+
     public function getTotalItemsAttribute()
     {
         return $this->articles()->count();

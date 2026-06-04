@@ -48,7 +48,7 @@ Route::group(['middleware' => [\App\Http\Middleware\InstalledMiddleware::class]]
         });
         Route::group(['prefix' => 'service/'], function () {
             Route::get('/', \App\Livewire\Service\ServiceList::class)->name('service');
-            Route::get('/service-categories',\App\Livewire\ServiceCategory\ServiceCategoryList::class)->name('service-categories');
+            Route::get('/service-categories',\App\Livewire\ServiceCategory\ServiceCategoryList::class)->name('service.categories');
             Route::get('/service-category/manage',\App\Livewire\ServiceCategory\ServiceCategoryManage::class)->name('service-category.manage');
             Route::get('/service-category/edit/{id}',\App\Livewire\ServiceCategory\ServiceCategoryManage::class)->name('service-category.edit');
             Route::get('/manage/{id?}', \App\Livewire\Service\ServiceManage::class)->name('service.manage');

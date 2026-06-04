@@ -93,7 +93,7 @@
                 <ul class="sidebar-submenu">
                     @can('service_list')
                     <li>
-                        <a href="{{ route('service') }}"><i
+                        <a href="{{ route('service.categories') }}"><i
                                 class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>{{$lang->data['service_categories'] ?? 'Service Categories'}}</a>
                     </li>
                     @endcan

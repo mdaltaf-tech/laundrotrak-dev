@@ -1,13 +1,12 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ServiceDetail;
+use App\Models\ServiceCategory;
 
 class Service extends Model
 {
-    use HasFactory;
     protected $fillable = [
         'service_name',
         'category_id',
@@ -20,6 +19,14 @@ class Service extends Model
         return $this->belongsTo(
             ServiceCategory::class,
             'category_id'
+        );
+    }
+
+    public function serviceDetails()
+    {
+        return $this->hasMany(
+            ServiceDetail::class,
+            'service_id'
         );
     }
 }

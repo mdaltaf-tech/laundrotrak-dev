@@ -12,6 +12,7 @@ use App\Models\OrderArticle;
 use App\Models\OrderDetail;
 use App\Models\Payment;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\ServiceDetail;
 use App\Models\ServiceType;
 use App\Models\OrderAddonDetail;
@@ -27,9 +28,11 @@ class PosScreen extends Component
     public $services, $search_query, $order_id, $inputs = [], $selservices = [], $customer, $date, $delivery_date, $discount, $paid_amount, $payment_type = 1;
     public $payment_notes, $service_types, $service, $inputi, $prices = [], $selling_price = [], $quantity = [], $selected_type = [], $addons, $selected_addons = [], $colors = [];
     public $customer_name, $customer_phone, $email, $tax_no, $address, $selected_customer, $customers, $customer_query, $is_active = 1;
-    public $total, $sub_total, $addon_total, $tax_percent, $tax, $balance, $flag = 0, $lang, $taxamount;
-    public $taxable, $order;
-    public $payments = [], $payment_amount, $notes;
+    public $total, $sub_total, $addon_total, $tax_percent, $tax, $balance, $flag = 0, $lang,$taxamount;
+    public $taxable,$order;
+    public $payments = [],$payment_amount,$notes;
+    public $categories;
+    public $selectedCategory;
 
     #[Layout('components.layouts.pos'), Title('POS')]
     public function render()
@@ -48,7 +51,20 @@ class PosScreen extends Component
         // {
         //     return redirect()->route('license');
         // }
-        $this->services = Service::where('is_active', 1)->latest()->get();
+        $this->loadCategories();
+
+        if ($this->categories->count()) {
+
+            $this->selectedCategory = $this->categories->first()->id;
+
+            $this->services = Service::where('is_active', 1)
+                ->where('category_id', $this->selectedCategory)
+                ->latest()
+                ->get();
+        }
+        else {
+            $this->services = collect();
+        }
         $this->date = Carbon::today()->toDateString();
         $this->addons = Addon::where('is_active', 1)->latest()->get();
         $this->delivery_date = Carbon::today()->toDateString();
@@ -134,10 +150,15 @@ class PosScreen extends Component
         /* if updated value is empty set the value as null */
         if ($value == '') data_set($this, $name, null);
         /* if updated elemtnt is search_query */
-        if ($name == 'search_query' && $value != '') {
-            $this->services = Service::where('service_name', 'like', '%' . $value . '%')->latest()->get();
-        } elseif ($name == 'search_query' && $value == '') {
-            $this->services = Service::latest()->get();
+        if ($name == 'search_query') {
+            $query = Service::where('is_active', 1);
+            if ($this->selectedCategory) {
+                $query->where('category_id', $this->selectedCategory);
+            }
+            if (!empty($value)) {
+                $query->where('service_name', 'like', '%' . $value . '%');
+            }
+            $this->services = $query->latest()->get();
         }
         /* if the updated value is customer_query */
         if ($name == 'customer_query' && $value != '') {
@@ -708,5 +729,29 @@ class PosScreen extends Component
                 '0',
                 STR_PAD_LEFT
             );
+    }
+
+    public function changeCategory($categoryId)
+    {
+        $this->selectedCategory = $categoryId;
+
+        $this->services = Service::where('is_active', 1)
+            ->where('category_id', $categoryId)
+            ->latest()
+            ->get();
+
+        $this->loadCategories();
+    }
+
+    private function loadCategories()
+    {
+        $this->categories = ServiceCategory::withCount([
+            'services' => function ($query) {
+                $query->where('is_active', 1);
+            }
+        ])
+        ->where('is_active', 1)
+        ->orderBy('sort_order')
+        ->get();
     }
 }

@@ -33,6 +33,8 @@ class PosScreen extends Component
     public $payments = [],$payment_amount,$notes;
     public $categories;
     public $selectedCategory;
+    public $serviceLookup = [];
+    public $serviceTypeLookup = [];
 
     #[Layout('components.layouts.pos'), Title('POS')]
     public function render()
@@ -52,6 +54,13 @@ class PosScreen extends Component
         //     return redirect()->route('license');
         // }
         $this->loadCategories();
+
+        $this->serviceLookup = Service::pluck('service_name', 'id')->toArray();
+
+        $this->serviceTypeLookup = ServiceType::pluck(
+            'service_type_name',
+            'id'
+        )->toArray();
 
         if ($this->categories->count()) {
 

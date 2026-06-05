@@ -43,10 +43,8 @@
             class="w-40-px h-40-px bg-neutral-200 rounded-circle tw-hidden justify-content-center align-items-center"></button>
     </div>
 
-    <div class="tw-w-[100%] tw-h-full tw-flex lg:tw-flex-row tw-flex-col tw-relative tw-mt-0.5">
-        <div
-            x-show="!detached || !shown"
-            class="lg:tw-w-1/2 tw-w-full tw-flex tw-flex-col tw-p-2 tw-bg-white tw-min-h-screen">
+    <div class="tw-w-[100%] tw-h-full tw-flex lg:tw-flex-row tw-flex-col  tw-relative tw-mt-0.5">
+        <div class="tw-lg:w-1/2 tw-w-full tw-flex-col tw-h-[calc(100vh-4.0rem)]  tw-p-2 tw-bg-white p-16">
             <div class="tw-flex tw-flex-col">
                 <div class="icon-field has-validation">
                     <span class="icon tw-translate-y-[2px]">
@@ -58,26 +56,6 @@
                     </span>
                     <input type="text" class="form-control" wire:model.live="search_query"
                         placeholder="{{ $lang->data['search_here'] ?? 'Search Here' }}" required="">
-                </div>
-                <div class="d-flex flex-nowrap gap-2 mb-2 overflow-auto category-scroll">
-                    @foreach($categories as $category)
-
-                        <button
-                            wire:click="changeCategory({{ $category->id }})"
-                            class="btn {{ $selectedCategory == $category->id ? 'btn-primary' : 'btn-outline-secondary' }} me-2 mb-3 text-nowrap">
-
-                            @if($selectedCategory == $category->id)
-                                <i class="fas fa-check-circle me-1"></i>
-                            @endif
-
-                            {{ $category->category_name }}
-                            <small class="ms-1">
-                                ({{ $category->services_count ?? 0}})
-                            </small>
-                        </button>
-
-                    @endforeach
-
                 </div>
                 <div
                     class="tw-w-full tw-h-[calc(100vh-9rem)] tw-overflow-y-scroll custom-scroll tw-mt-2 tw-flex tw-p-0.5">
@@ -103,8 +81,10 @@
                 </div>
             </div>
         </div>
-        <div x-show="!detached || shown" class="lg:tw-w-1/2 tw-w-full tw-flex tw-flex-col tw-p-2 tw-bg-white">
-            <div class="tw-flex tw-items-center tw-gap-8 tw-w-full">
+        <div class=" tw-h-[calc(100vh-4rem)]  tw-bg-white p-16"
+            :class="shown && detached ? 'tw-absolute tw-inset-0 tw-w-full' :
+                ' tw-hidden lg:tw-block lg:tw-w-1/2 tw-w-full tw-shrink-0 '">
+            <div class="tw-flex tw-flex-col lg:tw-flex-row tw-gap-4 lg:tw-gap-8 tw-w-full">
                 <div class="tw-flex tw-min-w-fit tw-shrink tw-flex-col" x-data="{}">
                     <div class="tw-text-sm">{{ $lang->data['order'] ?? 'Order' }} : <span
                             class="tw-font-bold">#{{ $order_id }}</span></div>
@@ -149,8 +129,8 @@
                     </div>
 
                 </div>
-                <div class="tw-flex tw-items-center tw-gap-2 tw-w-full tw-shrink">
-                    <div class="icon-field  tw-relative tw-w-full tw-items-center">
+                <div class="tw-flex tw-items-center tw-gap-2 tw-w-full lg:tw-flex-1">
+                    <div class="icon-field tw-relative tw-w-full tw-items-center">
                         <span class="icon -tw-translate-y-[2px]">
                             <iconify-icon icon="f7:person"></iconify-icon>
                         </span>
@@ -220,8 +200,9 @@
                             </table>
                         </div>
 
-                        <div class="tw-flex lg:tw-h-[calc(100dvh-23rem)] tw-max-h-[calc(100dvh-23rem)] tw-overflow-y-auto tw-overflow-x-auto tw-w-full tw-shrink-0">
-                            <table class="tw-w-full tw-text-xs tw-shrink-0 tw-h-fit">
+                        <div
+                            class="tw-flex tw-h-[calc(100dvh-23rem)] tw-overflow-y-auto tw-overflow-x-auto tw-w-full tw-shrink-0">
+                            <table class="  tw-w-full tw-text-xs tw-shrink-0  tw-h-fit">
                                 <tbody>
                                     @php
                                         $currentcount = 0;
@@ -435,24 +416,24 @@
                     </div>
                 </div>
             </div>
-            <div class="tw-grid tw-grid-cols-2 tw-gap-2 tw-mt-2 tw-p-2 tw-w-full lg:tw-flex lg:tw-items-center lg:tw-h-14">
+            <div class="tw-flex tw-items-center tw-gap-2 tw-mt-1 tw-p-2 tw-w-full tw-h-14">
                 <button
-                    class="tw-px-2 tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-success-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 lg:tw-w-full tw-border-0 tw-shadow-md "
+                    class="tw-px-2 tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-success-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-w-full tw-border-0 tw-shadow-md "
                     data-bs-toggle="modal" data-bs-target="#payment">
                     <span>{{ $lang->data['payment'] ?? 'Payment' }}</span>
                 </button>
                 <button
-                    class="tw-px-2 tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-info-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 lg:tw-w-full tw-border-0 tw-shadow-md "
+                    class="tw-px-2 tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-info-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-w-full tw-border-0 tw-shadow-md "
                     wire:click.prevent="save('cash')">
                     <span>{{ $lang->data['cash'] ?? 'Cash' }}</span>
                 </button>
                 <button
-                    class="tw-px-2 tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-primary-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 lg:tw-w-full tw-border-0 tw-shadow-md "
+                    class="tw-px-2 tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-primary-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-w-full tw-border-0 tw-shadow-md "
                     wire:click.prevent="save">
                     <span>{{ $lang->data['save_print'] ?? 'Save & Print' }}</span>
                 </button>
                 <button
-                    class="tw-px-2 tw-py-2.5 tw-bg-red-500 tw-rounded-md tw-text-white tw-h-full tw-flex tw-items-center tw-gap-1.5 tw-border-0 tw-shadow-md"
+                    class="tw-px-2 tw-py-2.5 tw-bg-red-500 tw-rounded-md tw-text-white tw-h-full tw-flex tw-items-center tw-gap-1.5 tw-border-0 tw-shadow-md  "
                     wire:click.prevent="clearAll">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                         class="bi bi-arrow-repeat" viewBox="0 0 16 16">

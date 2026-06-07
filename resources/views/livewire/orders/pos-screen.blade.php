@@ -1,61 +1,111 @@
 <div class="tw-overflow-x-clip" x-data="posFunction">
     <div class="tw-w-full tw-bg-white tw-flex tw-justify-between tw-items-center ">
-        <div class="tw-flex tw-gap-2 tw-px-3 tw-py-2">
-            <a href="{{ route('orders') }}" class="no-underline">
-                <button
-                    class="bg-primary-600 tw-text-white tw-text-xs radius-8 px-20 tw-py-2 d-flex align-items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
-                        stroke="currentColor" class="tw-size-4">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                    </svg>
-                    <span>{{ $lang->data['back'] ?? 'Back' }}</span>
-                </button>
-            </a>
-            <template x-if="detached">
-                <button
-                    class="tw-px-2 tw-py-1.5 bg-primary-600 tw-w-fit tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-border-0 tw-shadow-md"
-                    @click="shown = !shown">
-                    <template x-if="!shown">
-                        <div class="tw-flex  tw-items-center tw-gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="tw-size-4">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                            </svg>
-                            <span class="text-sm ">{{ $lang->data['cart'] ?? 'Cart' }}</span>
-                        </div>
-                    </template>
-                    <template x-if="shown">
-                        <div class="tw-flex tw-items-center tw-gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="tw-size-4">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                            </svg>
+        <div class="tw-flex tw-flex-col lg:tw-flex-row tw-gap-2 tw-px-3 tw-py-2 lg:tw-items-center">
+            <div class="tw-flex tw-gap-2 tw-shrink-0">
+                <a href="{{ route('orders') }}" class="no-underline">
+                    <button style="width:130px;"
+                        class="bg-primary-600 tw-text-white tw-text-xs radius-8
+        tw-h-10
+        tw-w-28
+        tw-flex
+        tw-items-center
+        tw-justify-center
+        gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                            stroke="currentColor" class="tw-size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                        </svg>
+                        <span>{{ $lang->data['back'] ?? 'Back' }}</span>
+                    </button>
+                </a>
 
-                            <span class="text-sm ">{{ $lang->data['products'] ?? 'Products' }}</span>
-                        </div>
-                    </template>
-                </button>
-            </template>
+                <template x-if="detached">
+                    <button style="width:130px;"
+                        class="tw-h-10
+        tw-w-28
+        bg-primary-600
+        tw-rounded-md
+        tw-text-white
+        tw-flex
+        tw-items-center
+        tw-justify-center
+        tw-gap-1.5
+        tw-border-0
+        tw-shadow-md"
+                        @click="shown = !shown">
+                        <template x-if="!shown">
+                            <div class="tw-flex  tw-items-center tw-gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="tw-size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                                </svg>
+                                <span class="text-sm ">{{ $lang->data['cart'] ?? 'Cart' }}</span>
+                            </div>
+                        </template>
+                        <template x-if="shown">
+                            <div class="tw-flex tw-items-center tw-gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="tw-size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                                </svg>
+
+                                <span class="text-sm ">{{ $lang->data['products'] ?? 'Products' }}</span>
+                            </div>
+                        </template>
+                    </button>
+                </template>
+            </div>
+            <div class="icon-field has-validation tw-w-full lg:tw-flex-1">
+                <span class="icon tw-translate-y-[2px]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-search" viewBox="0 0 16 16">
+                        <path
+                            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                    </svg>
+                </span>
+                <input type="text" class="form-control tw-w-full" wire:model.live="search_query"
+                    placeholder="{{ $lang->data['search_here'] ?? 'Search Here' }}" required="">
+            </div>
         </div>
         <button type="button" data-theme-toggle
             class="w-40-px h-40-px bg-neutral-200 rounded-circle tw-hidden justify-content-center align-items-center"></button>
     </div>
 
-    <div class="tw-w-[100%] tw-h-full tw-flex lg:tw-flex-row tw-flex-col  tw-relative tw-mt-0.5">
-        <div class="tw-lg:w-1/2 tw-w-full tw-flex-col tw-h-[calc(100vh-4.0rem)]  tw-p-2 tw-bg-white p-16">
+    <div class="tw-w-full tw-h-full tw-flex lg:tw-flex-row tw-flex-col tw-relative tw-mt-0.5 lg:tw-gap-0">
+        <div class="lg:tw-w-1/2 lg:tw-flex-1 tw-w-full tw-flex tw-flex-col tw-h-[calc(100vh-4rem)] tw-p-2 tw-bg-white p-16">
             <div class="tw-flex tw-flex-col">
-                <div class="icon-field has-validation">
-                    <span class="icon tw-translate-y-[2px]">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                            class="bi bi-search" viewBox="0 0 16 16">
-                            <path
-                                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                        </svg>
-                    </span>
-                    <input type="text" class="form-control" wire:model.live="search_query"
-                        placeholder="{{ $lang->data['search_here'] ?? 'Search Here' }}" required="">
+
+                         <div class="d-flex flex-nowrap gap-2 mb-2 overflow-auto category-scroll">
+                    <button
+                        wire:click="changeCategory(null)"
+                        class="btn {{ !$selectedCategory ? 'btn-primary' : 'btn-outline-secondary' }} text-nowrap">
+
+                        All
+                        <small class="ms-1">({{ collect($this->categories)->sum('services_count') }})</small>
+                    </button>
+
+                    @foreach($this->categories as $category)
+
+                        <button
+                            wire:click="changeCategory({{ $category->id }})"
+                            class="btn {{ $selectedCategory == $category->id ? 'btn-primary' : 'btn-outline-secondary' }} text-nowrap">
+
+                            @if($selectedCategory == $category->id)
+                                <i class="fas fa-check-circle me-1"></i>
+                            @endif
+
+                            {{ $category->category_name }}
+
+                            <small class="ms-1">
+                                ({{ $category->services_count ?? 0 }})
+                            </small>
+
+                        </button>
+
+                    @endforeach
+
                 </div>
                 <div
                     class="tw-w-full tw-h-[calc(100vh-9rem)] tw-overflow-y-scroll custom-scroll tw-mt-2 tw-flex tw-p-0.5">
@@ -81,14 +131,20 @@
                 </div>
             </div>
         </div>
-        <div class=" tw-h-[calc(100vh-4rem)]  tw-bg-white p-16"
+       <div class="lg:tw-w-1/2
+            lg:tw-flex-1
+            tw-h-[calc(100vh-4rem)]
+            tw-bg-white
+            p-16
+            tw-flex
+            tw-flex-col"
             :class="shown && detached ? 'tw-absolute tw-inset-0 tw-w-full' :
-                ' tw-hidden lg:tw-block lg:tw-w-1/2 tw-w-full tw-shrink-0 '">
-            <div class="tw-flex tw-flex-col lg:tw-flex-row tw-gap-4 lg:tw-gap-8 tw-w-full">
-                <div class="tw-flex tw-min-w-fit tw-shrink tw-flex-col" x-data="{}">
+            'tw-hidden lg:tw-block tw-shrink-0'">
+            <div class="tw-flex tw-flex-col lg:tw-flex-row tw-items-start lg:tw-items-center tw-gap-3 lg:tw-gap-8 tw-w-full">
+                <div class="tw-flex tw-w-full lg:tw-w-auto tw-flex-col" x-data="{}">
                     <div class="tw-text-sm">{{ $lang->data['order'] ?? 'Order' }} : <span
                             class="tw-font-bold">#{{ $order_id }}</span></div>
-                    <div class="tw-flex tw-items-center tw-gap-2">
+                    <div class="tw-flex tw-items-start lg:tw-items-center tw-gap-2 tw-flex-wrap">
                         <div class="tw-text-sm tw-relative">
                             {{ $lang->data['date'] ?? 'Date' }} : <span
                                 class="tw-font-bold">{{ $date }}</span>
@@ -108,7 +164,7 @@
                         </button>
                     </div>
 
-                    <div class="tw-flex tw-items-center tw-gap-2">
+                    <div class="tw-flex tw-items-start lg:tw-items-center tw-gap-2 tw-flex-wrap">
                         <div class="tw-text-sm tw-relative">
                             {{ $lang->data['delivery_date'] ?? 'Delivery Date' }} : <span
                                 class="tw-font-bold">{{ $delivery_date }}</span>
@@ -129,29 +185,38 @@
                     </div>
 
                 </div>
-                <div class="tw-flex tw-items-center tw-gap-2 tw-w-full lg:tw-flex-1">
-                    <div class="icon-field tw-relative tw-w-full tw-items-center">
+                <div class="tw-flex tw-items-center tw-gap-2 tw-w-full tw-shrink">
+                    <div class="icon-field  tw-relative tw-w-full tw-items-center">
                         <span class="icon -tw-translate-y-[2px]">
                             <iconify-icon icon="f7:person"></iconify-icon>
                         </span>
                         <input type="text"
                             class="form-control @error('paid_amount_customer') is-invalid   @enderror"
                             placeholder="@if (!$selected_customer) {{ $lang->data['select_a_customer'] ?? 'Select A Customer' }} @else {{ $selected_customer->name }} @endif"
-                            required="" wire:model.live="customer_query">
+                            required="" wire:model.live.debounce.300ms="customer_query">
                         @if ($customers && count($customers) > 0)
                             <div
-                                class="tw-absolute tw-top-[100%] tw-left-0 tw-w-full tw-z-20 tw-shadow-md tw-bg-white tw-rounded-lg ">
+                                class="tw-absolute tw-top-[100%] tw-left-0 tw-right-0 tw-z-[9999]
+                                    tw-bg-white tw-rounded-lg tw-shadow-lg
+                                    tw-max-h-48 tw-overflow-y-auto">
                                 @foreach ($customers as $row)
                                     <li class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900"
-                                        wire:click="selectCustomer({{ $row->id }})">{{ $row->name }} -
-                                        {{ $row->phone }}</li>
+                                        wire:click="selectCustomer({{ $row->id }})">
+                                        <div class="tw-font-medium">
+                                            {{ $row->name }}
+                                        </div>
+
+                                        <div class="tw-text-xs tw-text-gray-500">
+                                            {{ $row->phone }}
+                                        </div>
+                                    </li>
                                 @endforeach
                             </div>
                         @endif
                     </div>
                     @can('customer_create')
                         <button type="button" data-bs-toggle="modal" data-bs-target="#addcustomer"
-                            class="tw-px-4 tw-py-3 bg-primary-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-border-0 tw-shadow-md">
+                            class="tw-min-w-[48px] tw-px-3 tw-py-3 bg-primary-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-border-0 tw-shadow-md">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                 class="bi bi-person-fill-add" viewBox="0 0 16 16">
                                 <path
@@ -164,9 +229,15 @@
                 </div>
             </div>
             <div
-                class="tw-w-full   tw-flex tw-flex-col tw-mt-4 tw-rounded-lg tw-overflow-clip tw-border @error('error') tw-border-red-500 @else tw-border-neutral-200 dark:tw-border-[#1b2431] @enderror tw-border-solid">
+                class="tw-w-full
+       tw-flex
+       tw-flex-col
+       tw-flex-1
+       tw-min-h-0
+       tw-mt-4
+       tw-rounded-lg tw-overflow-visible tw-border @error('error') tw-border-red-500 @else tw-border-neutral-200 dark:tw-border-[#1b2431] @enderror tw-border-solid">
                 <div class="tw-flex tw-flex-col lg:tw-w-full tw-overflow-x-auto">
-                    <div class="tw-flex tw-flex-col lg:tw-w-full tw-w-[100rem] ">
+                    <div class="tw-flex tw-flex-col lg:tw-w-full tw-w-[100rem]">
                         <div class="tw-flex tw-flex-col  tw-overflow-x-auto tw-w-full tw-shrink-0">
                             <table class="tw-w-full tw-text-xs tw-shrink-0 tw-h-fit ">
                                 <thead class="tw-bg-[#e9ecef] dark:tw-bg-[#1b2431]">
@@ -174,20 +245,20 @@
                                         <th class="tw-py-2 tw-px-2 tw-text-xs tw-w-[10rem] lg:tw-w-[10%] tw-text-left">
                                             {{ $lang->data['service'] ?? 'Service' }}</th>
                                         <th
-                                            class="tw-py-2 tw-px-1 tw-text-xs tw-w-[10rem] lg:tw-w-[15%] tw-text-center">
+                                            class="tw-py-2 tw-px-1 tw-text-xs tw-w-[10rem] lg:tw-w-[15%] tw-text-center tw-hidden lg:tw-table-cell">
                                             {{ $lang->data['color'] ?? 'Color' }}</th>
                                         <th
                                             class="tw-py-2 tw-px-1 tw-text-xs tw-w-[10rem] lg:tw-w-[15%] tw-text-center">
                                             {{ $lang->data['price'] ?? 'Price' }}</th>
                                         <th
-                                            class="tw-py-2 tw-px-1 tw-text-xs tw-w-[10rem] lg:tw-w-[15%] tw-text-center">
+                                            class="tw-py-2 tw-px-1 tw-text-xs tw-w-[10rem] lg:tw-w-[15%] tw-text-center tw-hidden lg:tw-table-cell">
                                             {{ $lang->data['rate'] ?? 'Rate' }}</th>
                                         <th
                                             class="tw-py-2 tw-px-1 tw-text-xs tw-w-[10rem] lg:tw-w-[15%] tw-text-center">
                                             {{ $lang->data['qty'] ?? 'QTY' }}</th>
 
                                         <th
-                                            class="tw-py-2 tw-px-1 tw-text-xs tw-w-[10rem] lg:tw-w-[10%] tw-text-center">
+                                            class="tw-py-2 tw-px-1 tw-text-xs tw-w-[10rem] lg:tw-w-[10%] tw-text-center tw-hidden lg:tw-table-cell">
                                             {{ $lang->data['tax'] ?? 'Tax  ' }} ({{ $tax_percent }}%)</th>
                                         <th
                                             class="tw-py-2 tw-px-1 tw-text-xs tw-w-[10rem] lg:tw-w-[10%] tw-text-center">
@@ -202,7 +273,7 @@
 
                         <div
                             class="tw-flex tw-h-[calc(100dvh-23rem)] tw-overflow-y-auto tw-overflow-x-auto tw-w-full tw-shrink-0">
-                            <table class="  tw-w-full tw-text-xs tw-shrink-0  tw-h-fit">
+                            <table class="tw-w-full tw-text-xs tw-shrink-0 tw-h-fit">
                                 <tbody>
                                     @php
                                         $currentcount = 0;
@@ -211,21 +282,8 @@
                                         <tr
                                             class="tw-border-b tw-border-neutral-200 dark:tw-border-neutral-800/50 tw-border-solid">
                                             <td class="tw-py-2 tw-px-2 lg:tw-w-[10%] tw-w-[10rem] tw-text-left">
-                                                <div class="tw-flex tw-flex-col ">
+                                                <div class="tw-flex tw-flex-col">
                                                     @php
-                                                        $serviceinline = null;
-                                                        if (isset($item['service'])) {
-                                                            $serviceinline = \App\Models\Service::where(
-                                                                'id',
-                                                                $item['service'],
-                                                            )->first();
-                                                        }
-                                                        if (isset($item['service_type'])) {
-                                                            $servicetypeinline = \App\Models\ServiceType::where(
-                                                                'id',
-                                                                $item['service_type'],
-                                                            )->first();
-                                                        }
                                                         $currentcount++;
                                                         $itemtaxtotal = 0;
                                                         $itemtotal = 0;
@@ -251,12 +309,12 @@
                                                         }
                                                     @endphp
                                                     <div class="tw-text-xs tw-font-semibold">
-                                                        {{ $serviceinline->service_name }}</div>
+                                                        {{ $serviceLookup[$item['service']] ?? '' }}</div>
                                                     <div class="tw-text-xs tw-font-normal text-primary-600">
-                                                        [{{ $servicetypeinline->service_type_name }}]</div>
+                                                        [{{ $serviceTypeLookup[$item['service_type']] ?? '' }}]</div>
                                                 </div>
                                             </td>
-                                            <td class="tw-py-2 tw-px-1 lg:tw-w-[15%] tw-w-[10rem]  tw-text-center ">
+                                            <td class="tw-py-2 tw-px-1 lg:tw-w-[15%] tw-w-[10rem] tw-text-center tw-hidden lg:tw-table-cell">
                                                 <div
                                                     class="tw-h-full tw-w-full tw-flex tw-items-center tw-justify-center">
                                                     <input type="color" name=""
@@ -266,7 +324,7 @@
                                                         wire:change="changeColor({{ $key }})">
                                                 </div>
                                             </td>
-                                            <td class="tw-py-2 tw-px-1 lg:tw-w-[15%] tw-w-[10rem]  tw-text-center">
+                                            <td class="tw-py-2 tw-px-1 lg:tw-w-[15%] tw-w-[10rem] tw-text-center">
                                                 <div
                                                     class="tw-h-full tw-w-full tw-flex tw-items-center tw-justify-center">
                                                     <input type="text" name=""
@@ -275,13 +333,13 @@
                                                         class="tw-ring-1 tw-px-1 tw-py-0.5 tw-rounded-md tw-w-[4rem]">
                                                 </div>
                                             </td>
-                                            <td class="tw-py-2 tw-px-1 lg:tw-w-[15%] tw-w-[10rem]  tw-text-center">
+                                            <td class="tw-py-2 tw-px-1 lg:tw-w-[15%] tw-w-[10rem] tw-text-center tw-hidden lg:tw-table-cell">
                                                 <div
                                                     class="tw-h-full tw-w-full tw-flex tw-items-center tw-justify-center">
                                                     {{ getFormattedCurrency($localrate ?? 0) }}
                                                 </div>
                                             </td>
-                                            <td class="tw-py-2 tw-px-1 lg:tw-w-[15%] tw-w-[10rem]  tw-text-center">
+                                            <td class="tw-py-2 tw-px-1 lg:tw-w-[15%] tw-w-[10rem] tw-text-center">
                                                 <div
                                                     class="tw-h-full tw-w-full tw-flex tw-items-center tw-justify-center">
                                                     <div
@@ -308,7 +366,7 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="tw-py-2 tw-px-1 lg:tw-w-[10%] tw-w-[10rem] tw-text-center">
+                                            <td class="tw-py-2 tw-px-1 lg:tw-w-[10%] tw-w-[10rem] tw-text-center tw-hidden lg:tw-table-cell">
                                                 <div
                                                     class="tw-h-full tw-w-full tw-flex tw-items-center tw-justify-center">
                                                     {{ getFormattedCurrency($itemtaxtotal ?? 0) }}
@@ -345,9 +403,16 @@
                     </div>
                 </div>
                 <div
-                    class="tw-mt-4 tw-flex tw-justify-between tw-text-sm  tw-p-2 tw-border-t dark:tw-border-[#1b2431] tw-border-dashed tw-border-neutral-200 tw-border-b-0 tw-border-l-0 tw-border-r-0">
-                    <div class="tw-flex tw-flex-col tw-gap-2">
-                        <div class="tw-flex tw-items-end tw-justify-end tw-gap-2">
+                    class="tw-mt-2
+                        tw-grid
+                        tw-grid-cols-2
+                        lg:tw-flex
+                        tw-text-sm
+                        tw-p-2
+                        tw-gap-x-4
+                        tw-gap-y-2 tw-border-t dark:tw-border-[#1b2431] tw-border-dashed tw-border-neutral-200 tw-border-b-0 tw-border-l-0 tw-border-r-0">
+                    <div class="tw-flex tw-flex-col tw-gap-2 tw-w-full">
+                        <div class="tw-flex tw-items-center tw-gap-2">
                             <div class="tw-flex tw-items-center tw-gap-2">
                                 {{ $lang->data['addon'] ?? 'Addon' }} <button data-bs-toggle="modal"
                                     data-bs-target="#addons"
@@ -382,13 +447,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tw-flex tw-flex-col tw-gap-2">
-                        <div class="tw-flex tw-items-end tw-justify-end tw-gap-2">
+                    <div class="tw-flex tw-flex-col tw-gap-2 tw-w-full">
+                        <div class="tw-flex tw-items-center tw-justify-between lg:tw-justify-end tw-gap-2">
                             <div class="">{{ $lang->data['tax'] ?? 'Tax' }}
                                 ({{ getTaxPercentage() }}%) :</div>
                             <div class="tw-font-bold"> {{ getFormattedCurrency($tax) }} </div>
                         </div>
-                        <div class="tw-flex tw-items-end tw-justify-end tw-gap-2">
+                        <div class="tw-flex tw-items-center tw-justify-between lg:tw-justify-end tw-gap-2">
                             <div class="tw-flex tw-items-center tw-gap-2">
                                 {{ $lang->data['discount'] ?? 'Discount' }}
                                 <button data-bs-toggle="modal" data-bs-target="#discount"
@@ -403,11 +468,11 @@
                             </div>
                             <div class="tw-font-bold">{{ getFormattedCurrency($discount) }}</div>
                         </div>
-                        <div class="tw-flex tw-items-center tw-justify-end tw-gap-2">
+                        <div class="tw-flex tw-items-center tw-justify-between lg:tw-justify-end tw-gap-2">
                             <div class="">{{ $lang->data['gross_total'] ?? 'Gross Total' }} :</div>
                             <div class="tw-font-extrabold"> {{ getFormattedCurrency($total) }}</div>
                         </div>
-                        <div class="tw-flex tw-items-center tw-justify-end tw-gap-2">
+                        <div class="tw-flex tw-items-center tw-justify-between lg:tw-justify-end tw-gap-2">
                             <div class="">{{ $lang->data['total_items'] ?? 'Total Items' }} :</div>
                             <div class="tw-font-extrabold">
                                 {{ $this->totalItems() }}
@@ -416,7 +481,7 @@
                     </div>
                 </div>
             </div>
-            <div class="tw-flex tw-items-center tw-gap-2 tw-mt-1 tw-p-2 tw-w-full tw-h-14">
+            <div class="tw-grid tw-grid-cols-2 lg:tw-flex tw-gap-2 tw-mt-1 tw-p-2 tw-w-full">
                 <button
                     class="tw-px-2 tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-success-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-w-full tw-border-0 tw-shadow-md "
                     data-bs-toggle="modal" data-bs-target="#payment">
@@ -806,13 +871,13 @@
                     detached: false,
                     shown: false,
                     init() {
-                        if (window.innerWidth < 1024) {
+                        if (window.innerWidth < 768) {
                             this.detached = true;
                         } else {
                             this.detached = false;
                         }
                         window.addEventListener('resize', (e) => {
-                            if (window.innerWidth < 1024) {
+                            if (window.innerWidth < 768) {
                                 this.detached = true;
                             } else {
                                 this.detached = false;

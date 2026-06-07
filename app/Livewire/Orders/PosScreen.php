@@ -31,10 +31,12 @@ class PosScreen extends Component
     public $total, $sub_total, $addon_total, $tax_percent, $tax, $balance, $flag = 0, $lang,$taxamount;
     public $taxable,$order;
     public $payments = [],$payment_amount,$notes;
-    public $categories;
     public $selectedCategory;
     public $serviceLookup = [];
     public $serviceTypeLookup = [];
+    public $serviceTypeIdLookup = [];
+    public $serviceDetailLookup = [];
+    public $addonLookup = [];
 
     #[Layout('components.layouts.pos'), Title('POS')]
     public function render()
@@ -53,14 +55,28 @@ class PosScreen extends Component
         // {
         //     return redirect()->route('license');
         // }
-        $this->loadCategories();
-
         $this->serviceLookup = Service::pluck('service_name', 'id')->toArray();
 
         $this->serviceTypeLookup = ServiceType::pluck(
             'service_type_name',
             'id'
         )->toArray();
+
+        $this->serviceTypeIdLookup = ServiceType::pluck(
+            'id',
+            'service_type_name'
+        )->toArray();
+
+        $this->serviceDetailLookup =
+            ServiceDetail::all()
+            ->keyBy(function ($item) {
+                return $item->service_id . '_' . $item->service_type_id;
+            });
+
+        $this->addonLookup =
+            Addon::where('is_active',1)
+            ->get()
+            ->keyBy('id');
 
         if ($this->categories->count()) {
 
@@ -124,13 +140,20 @@ class PosScreen extends Component
     public function editItem($row)
     {
         $this->add($this->inputi);
-        $service = Service::whereId($row->service_id)->first();
-        $servicedetails = ServiceDetail::where('service_id', $service->id)->first();
-        $serviceType = ServiceType::where('service_type_name', $row->service_name)->first();
-        $servicedetail = $servicedetails->where('service_type_id', $serviceType?->id)->where('service_id', $service->id)->first();
+        $serviceTypeId =
+            $this->serviceTypeIdLookup[$row->service_name]
+            ?? null;
+
+        $key =
+            $row->service_id . '_' . $serviceTypeId;
+
+        $servicedetail =
+            $this->serviceDetailLookup[$key]
+            ?? null;
+
         if ($servicedetail) {
-            $this->selservices[$this->inputi]['service'] = $service->id;
-            $this->selservices[$this->inputi]['service_type']  = $serviceType?->id;
+            $this->selservices[$this->inputi]['service'] = $row->service_id;
+            $this->selservices[$this->inputi]['service_type'] = $serviceTypeId;
 
             if ($this->order->tax_type == 2) {
                 $this->selling_price[$this->inputi] =  $servicedetail->service_price;
@@ -178,10 +201,15 @@ class PosScreen extends Component
             $this->customers = collect();
         }
 
-        if ($name == 'discount' || strpos($name, 'selling_price') !== false || strpos($name, 'prices') !== false || strpos($name, 'quantity') !== false) {
+        if (
+            $name == 'discount' ||
+            strpos($name, 'selling_price') !== false ||
+            strpos($name, 'prices') !== false ||
+            strpos($name, 'quantity') !== false ||
+            strpos($name, 'selected_addons') !== false
+        ) {
             $this->calculateTotal();
         }
-        $this->calculateTotal();
     }
 
 
@@ -194,10 +222,15 @@ class PosScreen extends Component
         /* if service is not empty */
         if ($this->service) {
             $servicedetails = ServiceDetail::where('service_id', $id)->get();
+            $serviceTypes = $this->serviceTypeLookup;
             foreach ($servicedetails as $row) {
-                $servicetype = ServiceType::where('id', $row->service_type_id)->first();
-                $servicetype['price'] = getFormattedCurrency($row->service_price);
-                $this->service_types->push($servicetype->toArray());
+                $this->service_types->push([
+                    'id' => $row->service_type_id,
+                    'service_type_name' =>
+                        $serviceTypes[$row->service_type_id] ?? '',
+                    'price' =>
+                        getFormattedCurrency($row->service_price)
+                ]);
             }
         }
         if ($this->service_types) {
@@ -228,7 +261,11 @@ class PosScreen extends Component
                         $this->add($this->inputi);
                         $this->selservices[$this->inputi]['service'] = $this->service->id;
                         $this->selservices[$this->inputi]['service_type']  = $item;
-                        $servicedetail = ServiceDetail::where('service_id', $this->service->id)->where('service_type_id', $item)->first();
+                        $key = $this->service->id . '_' . $item;
+
+                        $servicedetail =
+                            $this->serviceDetailLookup[$key]
+                            ?? null;
                         /* if service details is not empty */
                         if ($servicedetail) {
                             if ($tax_type == 2) {
@@ -379,7 +416,7 @@ class PosScreen extends Component
 
                 $itemtotal += ($this->selling_price[$key] * $this->quantity[$key]);
                 $itemtaxtotal2 += $itemtaxtotal;
-                $this->taxable += $itemtotal;
+                $this->taxable += $itemtotallocal;
                 $sub_total += $itemtotallocal;
             } else {
                 $itemtotallocal =  ($this->selling_price[$key] * $this->quantity[$key]);
@@ -396,13 +433,20 @@ class PosScreen extends Component
             foreach ($this->selected_addons as $key => $value) {
                 if ($value === true) {
                     $itemtaxtotal = 0;
-                    $addon = Addon::where('id', $key)->first();
+
+                    $addon =
+                        $this->addonLookup[$key]
+                        ?? null;
+                    if (!$addon) {
+                        continue;
+                    }
+
                     if ($tax_type == 2) {
                         $itemtotallocal =  ($addon->addon_price)  * (100 / (100 + $this->tax_percent ?? 0));
                         $itemtaxtotal +=  ($addon->addon_price) - $itemtotallocal ?? 0;
                         $itemtotal +=  ($addon->addon_price);
                         $itemtaxtotal2 += $itemtaxtotal;
-                        $this->taxable += $itemtotal;
+                        $this->taxable += $itemtotallocal;
                         $sub_total += $itemtotallocal;
                         $this->addon_total += $itemtotallocal;
                     } else {
@@ -570,17 +614,18 @@ class PosScreen extends Component
             }
 
             foreach ($this->selservices as $key => $value) {
-                $service = Service::where('id', $value['service'])->first();
-                $service_type = ServiceType::where('id', $value['service_type'])->first();
-                $service_type_detail = ServiceDetail::where('service_type_id', $service_type->id)->first();
+                $serviceId = $value['service'];
+                $serviceTypeId = $value['service_type'];
+                $serviceTypeName =
+                    $this->serviceTypeLookup[$serviceTypeId]
+                    ?? '';
                 $amount += $this->prices[$key];
-
-                $orderDetail = OrderDetail::create([
-                    'order_id' => $order->id,
-                    'service_id' => $service->id,
-                    'service_name' => $service_type->service_type_name,
-                    'service_quantity' => $this->quantity[$key],
-                    'service_detail_total' => $this->selling_price[$key] * $this->quantity[$key],
+                OrderDetail::create([
+                    'order_id'  => $order->id,
+                    'service_id'    => $serviceId,
+                    'service_name' => $serviceTypeName,
+                    'service_quantity'  => $this->quantity[$key],
+                    'service_detail_total'  => $this->selling_price[$key] * $this->quantity[$key],
                     'service_price' => $this->selling_price[$key],
                     'color_code' => $this->colors[$key],
                 ]);
@@ -604,7 +649,15 @@ class PosScreen extends Component
             if ($this->selected_addons) {
                 foreach ($this->selected_addons as $key => $value) {
                     if ($value === true) {
-                        $addon = Addon::where('id', $key)->first();
+
+                        $addon =
+                            $this->addonLookup[$key]
+                            ?? null;
+
+                        if (!$addon) {
+                            continue;
+                        }
+
                         \App\Models\OrderAddonDetail::create([
                             'order_id'  => $order->id,
                             'addon_id'    => $addon->id,
@@ -740,21 +793,27 @@ class PosScreen extends Component
             );
     }
 
-    public function changeCategory($categoryId)
+    public function changeCategory($categoryId = null)
     {
         $this->selectedCategory = $categoryId;
 
-        $this->services = Service::where('is_active', 1)
-            ->where('category_id', $categoryId)
-            ->latest()
-            ->get();
+        $query = Service::where('is_active', 1);
 
-        $this->loadCategories();
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+
+        if (!empty($this->search_query)) {
+            $query->where('service_name', 'like', '%' . $this->search_query . '%');
+        }
+
+        $this->services = $query->latest()->get();
     }
 
-    private function loadCategories()
+    #[Computed]
+    public function categories()
     {
-        $this->categories = ServiceCategory::withCount([
+        return ServiceCategory::withCount([
             'services' => function ($query) {
                 $query->where('is_active', 1);
             }

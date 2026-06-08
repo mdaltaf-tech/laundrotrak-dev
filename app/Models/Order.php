@@ -26,8 +26,16 @@ class Order extends Model
         'order_type',
         'created_by',
         'financial_year_id',
-        'is_deleted'
+        'is_deleted',
+        'payment_status',
+        'paid_amount',
+        'balance_amount',
     ];
+
+    const PAYMENT_UNPAID = 0;
+    const PAYMENT_PARTIAL = 1;
+    const PAYMENT_PAID = 2;
+    const PAYMENT_CREDIT = 3;
 
     /* user relation */
     public function user()

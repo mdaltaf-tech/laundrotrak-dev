@@ -86,13 +86,14 @@ class OrdersList extends Component
                     )
                     ->sum('received_amount');
 
-                    if ($paidAmount == 0) {
-                        $order->payment_status = 3;
+                    if ($paidAmount <= 0) {
+                        $order->payment_status = Order::PAYMENT_UNPAID;
                     } elseif ($paidAmount < $order->total) {
-                        $order->payment_status = 2;
-                    } elseif ($paidAmount >= $order->total) {
-                        $order->payment_status = 1;
+                        $order->payment_status = Order::PAYMENT_PARTIAL;
+                    } else {
+                        $order->payment_status = Order::PAYMENT_PAID;
                     }
+
                     return $order;
                 })
                     ->filter(function ($order) use ($paymentStatus) {
@@ -130,13 +131,14 @@ class OrdersList extends Component
                     )
                     ->sum('received_amount');
 
-                    if ($paidAmount == 0) {
-                        $order->payment_status = 3;
+                    if ($paidAmount <= 0) {
+                        $order->payment_status = Order::PAYMENT_UNPAID;
                     } elseif ($paidAmount < $order->total) {
-                        $order->payment_status = 2;
-                    } elseif ($paidAmount >= $order->total) {
-                        $order->payment_status = 1;
+                        $order->payment_status = Order::PAYMENT_PARTIAL;
+                    } else {
+                        $order->payment_status = Order::PAYMENT_PAID;
                     }
+
                     return $order;
                 })
                     ->filter(function ($order) use ($paymentStatus) {
@@ -170,13 +172,14 @@ class OrdersList extends Component
                     )
                     ->sum('received_amount');
 
-                    if ($paidAmount == 0) {
-                        $order->payment_status = 3;
+                    if ($paidAmount <= 0) {
+                        $order->payment_status = Order::PAYMENT_UNPAID;
                     } elseif ($paidAmount < $order->total) {
-                        $order->payment_status = 2;
-                    } elseif ($paidAmount >= $order->total) {
-                        $order->payment_status = 1;
+                        $order->payment_status = Order::PAYMENT_PARTIAL;
+                    } else {
+                        $order->payment_status = Order::PAYMENT_PAID;
                     }
+
                     return $order;
                 })
                     ->filter(function ($order) use ($paymentStatus) {
@@ -364,19 +367,12 @@ class OrdersList extends Component
                             'received_amount'
                         );
 
-                    if ($paidAmount == 0) {
-
-                        $order->payment_status = 3;
-
-                    } elseif (
-                        $paidAmount < $order->total
-                    ) {
-
-                        $order->payment_status = 2;
-
+                    if ($paidAmount <= 0) {
+                        $order->payment_status = Order::PAYMENT_UNPAID;
+                    } elseif ($paidAmount < $order->total) {
+                        $order->payment_status = Order::PAYMENT_PARTIAL;
                     } else {
-
-                        $order->payment_status = 1;
+                        $order->payment_status = Order::PAYMENT_PAID;
                     }
 
                     return $order;

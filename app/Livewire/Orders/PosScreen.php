@@ -8,6 +8,7 @@ use Livewire\Component;
 use App\Models\Addon;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\OrderArticle;
 use App\Models\OrderDetail;
 use App\Models\Payment;
 use App\Models\Service;
@@ -26,11 +27,11 @@ class PosScreen extends Component
     public $services, $search_query, $order_id, $inputs = [], $selservices = [], $customer, $date, $delivery_date, $discount, $paid_amount, $payment_type = 1;
     public $payment_notes, $service_types, $service, $inputi, $prices = [], $selling_price = [], $quantity = [], $selected_type = [], $addons, $selected_addons = [], $colors = [];
     public $customer_name, $customer_phone, $email, $tax_no, $address, $selected_customer, $customers, $customer_query, $is_active = 1;
-    public $total, $sub_total, $addon_total, $tax_percent, $tax, $balance, $flag = 0, $lang,$taxamount;
-    public $taxable,$order;
-    public $payments = [],$payment_amount,$notes;
+    public $total, $sub_total, $addon_total, $tax_percent, $tax, $balance, $flag = 0, $lang, $taxamount;
+    public $taxable, $order;
+    public $payments = [], $payment_amount, $notes;
 
-    #[Layout('components.layouts.pos'),Title('POS')]
+    #[Layout('components.layouts.pos'), Title('POS')]
     public function render()
     {
         return view('livewire.orders.pos-screen');
@@ -38,7 +39,7 @@ class PosScreen extends Component
 
     public function mount($id = null)
     {
-        if(!\Illuminate\Support\Facades\Gate::allows('order_create')){
+        if (!\Illuminate\Support\Facades\Gate::allows('order_create')) {
             abort(404);
         }
         // $posManager = new InstallController();
@@ -54,12 +55,16 @@ class PosScreen extends Component
         $this->tax_percent = getTaxPercentage();
         $this->generateOrderID();
 
-        if($id)
-        {
+        if ($id) {
             $this->order = Order::whereId($id)->firstOrFail();
-            $payments = Payment::where('order_id', $this->order->id)->get();
-            foreach($payments as $payment){
-                array_push($this->payments,[
+            $payments = Payment::active()
+                ->where(
+                    'order_id',
+                    $this->order->id
+                )
+                ->get();
+            foreach ($payments as $payment) {
+                array_push($this->payments, [
                     'payment_type' => $payment->payment_type,
                     'amount' => $payment->received_amount,
                     'notes' => $payment->notes
@@ -79,7 +84,6 @@ class PosScreen extends Component
             foreach ($this->order->addons as $row) {
                 $this->selected_addons[$row->addon_id] = true;
             }
-            
         }
         if (session()->has('selected_language')) {
             /* if session has selected language */
@@ -92,11 +96,12 @@ class PosScreen extends Component
         $this->calculateTotal();
     }
 
-    public function editItem($row){
+    public function editItem($row)
+    {
         $this->add($this->inputi);
         $service = Service::whereId($row->service_id)->first();
         $servicedetails = ServiceDetail::where('service_id', $service->id)->first();
-        $serviceType = ServiceType::where('service_type_name',$row->service_name)->first();
+        $serviceType = ServiceType::where('service_type_name', $row->service_name)->first();
         $servicedetail = $servicedetails->where('service_type_id', $serviceType?->id)->where('service_id', $service->id)->first();
         if ($servicedetail) {
             $this->selservices[$this->inputi]['service'] = $service->id;
@@ -169,7 +174,7 @@ class PosScreen extends Component
             if (count($this->service_types) > 0) {
                 $first = $this->service_types->first();
                 if ($first) {
-                    $this->selected_type [$first['id']] = true;
+                    $this->selected_type[$first['id']] = true;
                 }
             }
         }
@@ -181,15 +186,15 @@ class PosScreen extends Component
 
         if ($this->service) {
             $anyTicked = false;
-            foreach($this->selected_type as $item){
-                if($item == true){
+            foreach ($this->selected_type as $item) {
+                if ($item == true) {
                     $anyTicked = true;
                 }
             }
             if (count($this->selected_type) > 0 && $anyTicked) {
                 $tax_type = getTaxType();
-                foreach($this->selected_type as $item => $value){
-                    if($value === true){
+                foreach ($this->selected_type as $item => $value) {
+                    if ($value === true) {
                         $this->add($this->inputi);
                         $this->selservices[$this->inputi]['service'] = $this->service->id;
                         $this->selservices[$this->inputi]['service_type']  = $item;
@@ -385,14 +390,15 @@ class PosScreen extends Component
         $this->sub_total = $sub_total;
         $this->tax = $itemtaxtotal2;
         $this->total = ($this->sub_total + $itemtaxtotal2) - $this->discount;
-        $this->total = round($this->total,3,PHP_ROUND_HALF_UP);
+        $this->total = round($this->total, 3, PHP_ROUND_HALF_UP);
         $this->balance = $this->total - $this->paid_amount;
     }
     //add payment
-    public function add_payment(){
+    public function add_payment()
+    {
         $this->validate([
             'payment_type'  => 'required',
-            'payment_amount' => 'lte:'.$this->getPaymentBalance()
+            'payment_amount' => 'lte:' . $this->getPaymentBalance()
         ]);
 
         $payment = [
@@ -404,7 +410,7 @@ class PosScreen extends Component
         $this->payment_amount = '';
         $this->notes = '';
         $this->payment_type = 1;
-        array_push($this->payments,$payment);
+        array_push($this->payments, $payment);
         $this->dispatch(
             'alert',
             ['type' => 'success',  'message' => ' Payment has been created']
@@ -412,7 +418,8 @@ class PosScreen extends Component
     }
 
     #[Computed()]
-    public function currentBalance(){
+    public function currentBalance()
+    {
         return $this->getPaymentBalance();
     }
 
@@ -420,9 +427,9 @@ class PosScreen extends Component
     public function save($type = null)
     {
         $amount = 0;
-        if($type === 'cash'){
+        if ($type === 'cash') {
             $this->payments = [];
-            array_push($this->payments,[
+            array_push($this->payments, [
                 'amount' => $this->total,
                 'notes' => $this->payment_notes,
                 'payment_type' => $this->payment_type,
@@ -461,8 +468,7 @@ class PosScreen extends Component
         $this->generateOrderID();
         if ($this->flag == 0) {
             $order = $this->order;
-            if($this->order)
-            {
+            if ($this->order) {
                 Order::whereId($this->order->id)->update([
                     'customer_id'   => $this->selected_customer->id ?? null,
                     'customer_name' => $this->selected_customer->name ?? null,
@@ -480,12 +486,36 @@ class PosScreen extends Component
                     'note'  => $this->payment_notes,
                     'status'    => 0,
                     'order_type'    => 1,
-                ],$this->order->id);
-                OrderDetail::whereOrderId($this->order->id)->delete();
-                OrderAddonDetail::whereOrderId($this->order->id)->delete();
-                Payment::whereOrderId($this->order->id)->delete();
-            }
-            else{
+                ], $this->order->id);
+
+                OrderDetail::whereOrderId(
+                    $this->order->id
+                )->update([
+                    'is_deleted'=>1
+                ]);
+
+                OrderAddonDetail::whereOrderId(
+                    $this->order->id
+                )->update([
+                    'is_deleted'=>1
+                ]);
+
+                Payment::whereOrderId(
+                    $this->order->id
+                )->update([
+                    'is_deleted'=>1
+                ]);
+
+                OrderArticle::where(
+                    'order_id',
+                    $this->order->id
+                )
+                ->active()
+                ->update([
+                    'status'=>OrderArticle::STATUS_CANCELLED
+                ]);
+
+            } else {
                 $order = Order::create([
                     'order_number'  => $this->order_id,
                     'customer_id'   => $this->selected_customer->id ?? null,
@@ -509,21 +539,37 @@ class PosScreen extends Component
                 ]);
             }
 
-           
             foreach ($this->selservices as $key => $value) {
                 $service = Service::where('id', $value['service'])->first();
                 $service_type = ServiceType::where('id', $value['service_type'])->first();
                 $service_type_detail = ServiceDetail::where('service_type_id', $service_type->id)->first();
                 $amount += $this->prices[$key];
-               OrderDetail::create([
-                    'order_id'  => $order->id,
-                    'service_id'    => $service->id,
-                    'service_name'  => $service_type->service_type_name,
-                    'service_quantity'  => $this->quantity[$key],
-                    'service_detail_total'  => $this->selling_price[$key] * $this->quantity[$key],
+
+                $orderDetail = OrderDetail::create([
+                    'order_id' => $order->id,
+                    'service_id' => $service->id,
+                    'service_name' => $service_type->service_type_name,
+                    'service_quantity' => $this->quantity[$key],
+                    'service_detail_total' => $this->selling_price[$key] * $this->quantity[$key],
                     'service_price' => $this->selling_price[$key],
                     'color_code' => $this->colors[$key],
                 ]);
+
+                for ($i = 1; $i <= $this->quantity[$key]; $i++) {
+                    OrderArticle::create([
+                        'order_id' => $order->id,
+                        'order_detail_id' => $orderDetail->id,
+                        'tag_number'=>
+                            $this->generateTag(
+                            $order->order_number
+                        ),
+                        'article_name' => $service->service_name,
+                        'service_name' => $service_type->service_type_name,
+                        'color_code' => $this->colors[$key],
+                        'status' => 0,
+                        'created_by' => Auth::id()
+                    ]);
+                }
             }
             if ($this->selected_addons) {
                 foreach ($this->selected_addons as $key => $value) {
@@ -568,26 +614,25 @@ class PosScreen extends Component
                 ['type' => 'success',  'message' => $order->order_number . ' Was Successfully Created!']
             );
         }
-        if(\Illuminate\Support\Facades\Gate::allows('order_print')){
-            if($this->order){
+        if (\Illuminate\Support\Facades\Gate::allows('order_print')) {
+            if ($this->order) {
                 $this->dispatch('printPageOrder', $order->id);
-            }
-            else{
+            } else {
                 $this->dispatch('printPage', $order->id);
                 $this->clearAll();
             }
         }
-        if($this->order){
-        }
-        else{
+        if ($this->order) {
+        } else {
             $this->clearAll();
         }
     }
 
-    public function getPaymentBalance(){
+    public function getPaymentBalance()
+    {
         $orderBalance = $this->total;
         $paymentsTotal = 0;
-        foreach($this->payments as $payment){
+        foreach ($this->payments as $payment) {
             $paymentsTotal += $payment['amount'];
         }
         return $orderBalance - $paymentsTotal;
@@ -608,8 +653,9 @@ class PosScreen extends Component
     }
 
     //remove payment
-    public function removePayment($paymentIndex){
-        array_splice($this->payments,$paymentIndex,1);
+    public function removePayment($paymentIndex)
+    {
+        array_splice($this->payments, $paymentIndex, 1);
     }
 
     #[Computed]
@@ -617,9 +663,50 @@ class PosScreen extends Component
     {
         return array_sum(
             array_map(
-                fn($qty)=> (int)$qty,
+                fn($qty) => (int)$qty,
                 $this->quantity ?? []
             )
         );
+    }
+
+    public function generateTag($orderNumber)
+    {
+        $orderNo = preg_replace(
+            '/[^0-9]/',
+            '',
+            $orderNumber
+        );
+
+        $lastTag =
+        OrderArticle::where(
+            'tag_number',
+            'like',
+            'FBL'.$orderNo.'-%'
+        )
+        ->latest('id')
+        ->first();
+
+        $next=1;
+
+        if($lastTag)
+        {
+            preg_match(
+                '/(\d+)$/',
+                $lastTag->tag_number,
+                $match
+            );
+
+            $next=((int)$match[1])+1;
+        }
+
+        return 'FBL'
+            .$orderNo
+            .'-'
+            .str_pad(
+                $next,
+                3,
+                '0',
+                STR_PAD_LEFT
+            );
     }
 }

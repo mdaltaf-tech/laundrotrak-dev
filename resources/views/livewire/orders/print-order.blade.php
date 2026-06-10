@@ -31,18 +31,18 @@
                     </div>
                     <div class="tw-flex tw-flex-col tw-mt-2 tw-items-end">
                         <div class="text-neutral-600">
-                            {{ $lang->data['order_id'] ?? 'Order ID' }} : <span class="tw-font-medium text-primary-light">#{{ $order->order_number }}</span> 
+                            {{ $lang->data['order_id'] ?? 'Order ID' }} : <span class="tw-font-medium text-primary-light">#{{ $order->order_number }}</span>
                         </div>
                         <div class="text-neutral-600">
-                            {{ $lang->data['order_date'] ?? 'Order Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($order->order_date)->format('d/m/Y') }}</span> 
+                            {{ $lang->data['order_date'] ?? 'Order Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($order->order_date)->format('d/m/Y') }}</span>
                         </div>
                         <div class="text-neutral-600">
-                            {{ $lang->data['delivery_date'] ?? 'Delivery Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}</span> 
+                            {{ $lang->data['delivery_date'] ?? 'Delivery Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}</span>
                         </div>
-    
+
                         <div class="tw-mt-2 tw-flex tw-items-center tw-gap-2">
                             <div class="">
-                                {{ $lang->data['order_status'] ?? 'Order Status' }} : 
+                                {{ $lang->data['order_status'] ?? 'Order Status' }} :
                             </div>
                             <div class="dropdown">
                                 <button class="" type="button" data-bs-toggle="dropdown" aria-expanded="false"> {{ getOrderStatus($order->status) }} </button>
@@ -103,7 +103,7 @@
                                 <td class="text-primary">
                                     {{ getFormattedCurrency($item->service_detail_total) }}
                                 </td>
-                               
+
                             </tr>
                             @endforeach
                       </tbody>
@@ -135,12 +135,12 @@
                             <div class=" tw-text-sm">
                                 {{ $customer->address ?? '' }}
                             </div>
-    
+
                             <div class="tw-text-sm tw-mt-2">
                                 {{ $lang->data['vat'] ?? 'VAT' }} : {{ $customer->tax_number ?? 'TAX' }}
                             </div>
                         </div>
-    
+
                         <div class="tw-flex tw-flex-col ">
                             <div class="pb-2">{{ $lang->data['payment_details'] ?? 'Payment Details' }}</div>
                             <div class="tw-flex tw-justify-between tw-items-center tw-w-[17rem] tw-mt-2">
@@ -629,7 +629,12 @@
                         </div>
                         @endforeach
                         @php
-                        $addons = \App\Models\OrderAddonDetail::where('order_id', $order->id)->get();
+                        $addons = \App\Models\OrderAddonDetail::active()
+                            ->where(
+                                'order_id',
+                                $order->id
+                            )
+                            ->get();
                         @endphp
                         @if ($addons)
                         @if (count($addons) > 0)
@@ -1199,7 +1204,13 @@
                         </div>
                         @endforeach
                         @php
-                        $addons = \App\Models\OrderAddonDetail::where('order_id', $order->id)->get();
+                        $addons = \App\Models\OrderAddonDetail::active()
+                            ->where(
+                                'order_id',
+                                $order->id
+                            )
+                            ->get();
+                        @endphp
                         @endphp
                         @if ($addons)
                         @if (count($addons) > 0)
@@ -1705,7 +1716,7 @@
                         <div class="text-center" style="margin-top:8px;margin-bottom:8px;">
                             <h4 class="heading font-bold" style="font-size: 25px">{{ $lang->data['tax_invoice'] ?? 'Tax Invoice' }}</h4>
                             <h4 class="heading heading-child"></h4>
-                        </div> 
+                        </div>
                         <div class="row" style="border:none; margin-bottom: 0px;padding : 0px;">
                             <div class="item-info">
                                 <div class="item-title text-sm">{{ $lang->data['invoice_to'] ?? 'Invoice To' }}:</div>
@@ -1773,7 +1784,13 @@
                         </div>
                         @endforeach
                         @php
-                        $addons = \App\Models\OrderAddonDetail::where('order_id', $order->id)->get();
+                        $addons = \App\Models\OrderAddonDetail::active()
+                            ->where(
+                                'order_id',
+                                $order->id
+                            )
+                            ->get();
+                        @endphp
                         @endphp
                         @if ($addons)
                         @if (count($addons) > 0)

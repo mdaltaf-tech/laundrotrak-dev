@@ -77,8 +77,16 @@ class CustomerInvoice extends Component
         $this->order = Order::where('id', $id)->first();
         $this->customer = Customer::where('id', $this->order->customer_id)->first();
         $this->customer_name = $this->customer->name ?? null;
-        $this->paid_amount = Payment::where('order_id', $this->order->id)->sum('received_amount');
-        $this->balance = number_format($this->order->total - $this->paid_amount, 2);
+        $this->paid_amount = Payment::active()
+            ->where(
+                'order_id',
+                $this->order->id
+            )
+            ->sum('received_amount');
+
+        $this->balance =
+            $this->order->total -
+            $this->paid_amount;
     }
     /* reset input fields */
     private function resetInputFields()
@@ -118,14 +126,17 @@ class CustomerInvoice extends Component
                 'payment_type'  => $this->payment_mode,
                 'payment_note'  => $this->note,
                 'financial_year_id' => getFinancialYearId(),
-                'received_amount'   => $this->balance,
+                'received_amount' => (float)$this->balance,
                 'created_by'    => Auth::user()->id,
             ]);
+
+            $this->order->refreshPaymentStatus();
+            $this->reloadOrders();
             $this->resetInputFields();
             $this->dispatch('closemodal');
             $this->dispatch(
                 'alert',
-                ['type' => 'success',  'message' => 'Payment Updated has been updated!']
+                ['type' => 'success',  'message' => 'Payment recorded successfully!']
             );
         }
     }

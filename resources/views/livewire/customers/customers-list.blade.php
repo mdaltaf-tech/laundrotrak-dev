@@ -23,6 +23,7 @@
                             <th scope="col" class="">{{ $lang->data['customer_name'] ?? 'Customer Name' }}</th>
                             <th scope="col" class="">{{ $lang->data['contact'] ?? 'Contact' }}</th>
                             <th scope="col" class="">{{ $lang->data['address'] ?? 'Address' }}</th>
+                            <th scope="col" class="">{{ $lang->data['billing_type'] ?? 'Billing Type' }}</th>
                             <th scope="col" class="text-center">{{ $lang->data['action'] ?? 'Action' }}</th>
                         </tr>
                     </thead>
@@ -38,6 +39,22 @@
                             </td>
                             <td class="">
                                 {{$row->address}}
+                            </td>
+                            <td>
+                                @if($row->billing_type ==
+                                    \App\Models\Customer::BILLING_CREDIT)
+
+                                    <span class="badge bg-warning">
+                                        Credit
+                                    </span>
+
+                                @else
+
+                                    <span class="badge bg-success">
+                                        Standard
+                                    </span>
+
+                                @endif
                             </td>
                             <td class="text-center">
                                 <div class="d-flex align-items-center gap-10 justify-content-center">
@@ -137,6 +154,27 @@
                                 <label for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['address'] ?? 'Address' }}</label>
                                 <textarea class="form-control radius-8" placeholder="{{ $lang->data['enter_address'] ?? 'Enter Address' }}" wire:model="address"></textarea>
                             </div>
+                            <div class="col-12 mb-20">
+                                <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                    Billing Type
+                                </label>
+
+                                <select
+                                    class="form-control radius-8"
+                                    wire:model="billing_type"
+                                >
+                                    <option value="0">
+                                        Standard Customer
+                                    </option>
+
+                                    <option value="1">
+                                        Credit Customer
+                                    </option>
+                                </select>
+                                @error('billing_type')
+                                <span class="error text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
                             <div class="col-12 tw-mt-6">
                                 <div class="form-switch switch-primary d-flex align-items-center gap-3">
                                     <input class="form-check-input" type="checkbox" role="switch" id="switch1" checked="" wire:model="is_active">
@@ -195,6 +233,24 @@
                             <div class="col-12 mb-20">
                                 <label for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['address'] ?? 'Address' }}</label>
                                 <textarea class="form-control radius-8" placeholder="{{ $lang->data['enter_address'] ?? 'Enter Address' }}" wire:model="address"></textarea>
+                            </div>
+                            <div class="col-12 mb-20">
+                                <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                    Billing Type
+                                </label>
+
+                                <select
+                                    class="form-control radius-8"
+                                    wire:model="billing_type"
+                                >
+                                    <option value="0">
+                                        Standard Customer
+                                    </option>
+
+                                    <option value="1">
+                                        Credit Customer
+                                    </option>
+                                </select>
                             </div>
                             <div class="col-12 tw-mt-6">
                                 <div class="form-switch switch-primary d-flex align-items-center gap-3">

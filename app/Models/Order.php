@@ -37,6 +37,12 @@ class Order extends Model
     const PAYMENT_PAID = 2;
     const PAYMENT_CREDIT = 3;
 
+    const STATUS_NEW = 0;
+    const STATUS_PROCESSING = 1;
+    const STATUS_READY = 2;
+    const STATUS_DELIVERED = 3;
+    const STATUS_RETURNED = 4;
+
     /* user relation */
     public function user()
     {
@@ -92,5 +98,39 @@ class Order extends Model
             'is_deleted',
             0
         );
+    }
+
+    public function refreshPaymentStatus()
+    {
+        $paidAmount = Payment::active()
+            ->where(
+                'order_id',
+                $this->id
+            )
+            ->sum('received_amount');
+
+        $balanceAmount = max(
+            0,
+            $this->total - $paidAmount
+        );
+
+        if ($paidAmount <= 0) {
+
+            $paymentStatus = self::PAYMENT_UNPAID;
+
+        } elseif ($balanceAmount > 0) {
+
+            $paymentStatus = self::PAYMENT_PARTIAL;
+
+        } else {
+
+            $paymentStatus = self::PAYMENT_PAID;
+        }
+
+        $this->update([
+            'paid_amount' => $paidAmount,
+            'balance_amount' => $balanceAmount,
+            'payment_status' => $paymentStatus,
+        ]);
     }
 }

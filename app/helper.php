@@ -425,7 +425,12 @@ function getFormatedTextSMS($order, $type)
         '<order_number>'    => 'Order Number',
         '<current_time>'    => 'Current Time'
     ];
-    $count = \App\Models\OrderDetail::where('order_id', $order)->count();
+    $count = \App\Models\OrderDetail::active()
+                                            ->where(
+                                                'order_id',
+                                                $order
+                                            )
+                                            ->count();
     $paid = \App\Models\Payment::where('order_id', $order)->sum('received_amount');
     $replacement = [
         $myorder->customer_name,

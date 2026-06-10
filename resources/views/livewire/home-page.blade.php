@@ -117,7 +117,11 @@
                                 </div>
                                 <div class="tw-flex tw-gap-2 tw-items-center tw-my-2">
                                     @php
-                                        $services = \App\Models\OrderDetail::where('order_id', $item->id)
+                                        $services = \App\Models\OrderDetail::active()
+                                            ->where(
+                                                'order_id',
+                                                $item->id
+                                            )
                                             ->limit(4)
                                             ->get();
                                     @endphp

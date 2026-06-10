@@ -38,16 +38,34 @@ class ViewOrder extends Component
             $this->order = Order::where('created_by',Auth::user()->id)->where('id',$id)->first();
             if($this->order) {
                 $this->current_delivery_date = \Carbon\Carbon::parse($this->order->delivery_date)->toDateString();
-                }
+            }
         }
         if(!$this->order)
         {
             abort(404);
         }
         $this->customer = Customer::where('id',$this->order->customer_id)->first();
-        $this->orderaddons = OrderAddonDetail::where('order_id',$this->order->id)->get();
-        $this->orderdetails = OrderDetail::where('order_id',$this->order->id)->get();
-        $this->payments = Payment::where('order_id',$this->order->id)->get();
+
+        $this->orderaddons = OrderAddonDetail::active()
+            ->where(
+                'order_id',
+                $this->order->id
+            )
+            ->get();
+
+        $this->orderdetails = OrderDetail::active()
+            ->where(
+                'order_id',
+                $this->order->id
+            )
+            ->get();
+
+        $this->payments = Payment::active()
+            ->where(
+                'order_id',
+                $this->order->id
+            )
+            ->get();
         $settings = new MasterSettings();
         $site = $settings->siteData();
         if(isset($site['default_application_name']))
@@ -81,7 +99,11 @@ class ViewOrder extends Component
             $store_email = (($site['store_email']) && ($site['store_email'] !=""))? $site['store_email'] : 'store@store.com';
             $this->store_email = $store_email;
         }
-        $this->balance = $this->order->total -  Payment::where('order_id',$this->order->id)->sum('received_amount');
+        $this->order->refreshPaymentStatus();
+        $this->order->refresh();
+
+        $this->balance = $this->order->balance_amount;
+        // Default payment input to outstanding balance
         $this->paid_amount = $this->balance;
         if(session()->has('selected_language'))
         {   /* session has selected language */
@@ -119,8 +141,18 @@ class ViewOrder extends Component
             'received_amount'   => $this->paid_amount,
             'created_by'    => Auth::user()->id,
         ]);
-        $this->payments = Payment::where('order_id',$this->order->id)->get();
-        $this->balance = $this->order->total -  Payment::where('order_id',$this->order->id)->sum('received_amount');
+        $this->order->refreshPaymentStatus();
+        $this->order->refresh();
+        $this->payments = Payment::active()
+            ->where(
+                'order_id',
+                $this->order->id
+            )
+            ->get();
+
+        $this->balance = $this->order->balance_amount;
+
+        // preload remaining balance into payment input
         $this->paid_amount = $this->balance;
         $this->notes = '';
         $this->payment_type = '';
@@ -131,17 +163,75 @@ class ViewOrder extends Component
     /* change the status */
     public function changeStatus($status)
     {
-        $this->order->status = $status;
-        
-        $this->order->save();
-        $message = sendOrderStatusChangeSMS($this->order->id,$status);
-        if($message)
-        {
-            $this->dispatch(
-                'alert', ['type' => 'error',  'message' => $message,'title'=>'SMS Error']);
+        if ($status == Order::STATUS_DELIVERED) {
+
+            $customer =
+                $this->customer;
+
+            if (
+                $this->balance > 0
+                &&
+                (
+                    !$customer
+                    ||
+                    $customer->billing_type
+                        != Customer::BILLING_CREDIT
+                )
+            ) {
+
+                $this->dispatch(
+                    'alert',
+                    [
+                        'type' => 'error',
+                        'message' =>
+                            'Outstanding balance must be paid before delivery.'
+                    ]
+                );
+
+                return;
+            }
+            if (
+                $this->balance > 0
+                &&
+                $customer
+                &&
+                $customer->billing_type
+                    == Customer::BILLING_CREDIT
+            ) {
+
+                $this->order->payment_status =
+                    Order::PAYMENT_CREDIT;
+            }
         }
+
+        $this->order->status = $status;
+
+        $this->order->save();
+
+        $message = sendOrderStatusChangeSMS(
+            $this->order->id,
+            $status
+        );
+
+        if ($message) {
+            $this->dispatch(
+                'alert',
+                [
+                    'type' => 'error',
+                    'message' => $message,
+                    'title' => 'SMS Error'
+                ]
+            );
+        }
+
         $this->dispatch(
-            'alert', ['type' => 'success',  'message' => 'Status Successfully Updated!']);
+            'alert',
+            [
+                'type' => 'success',
+                'message' =>
+                    'Status Successfully Updated!'
+            ]
+        );
     }
 
     public function changeDeliveryDate(){

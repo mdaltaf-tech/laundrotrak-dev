@@ -24,12 +24,12 @@ use Livewire\Attributes\Title;
 
 class PosScreen extends Component
 {
-    public $services, $search_query, $order_id, $inputs = [], $selservices = [], $customer, $date, $delivery_date, $discount, $paid_amount, $payment_type = 1;
-    public $payment_notes, $service_types, $service, $inputi, $prices = [], $selling_price = [], $quantity = [], $selected_type = [], $addons, $selected_addons = [], $colors = [];
+    public $services, $search_query, $order_id, $inputs = [], $selservices = [], $customer, $date, $delivery_date, $discount, $note, $paid_amount, $payment_type = 1;
+    public $service_types, $service, $inputi, $prices = [], $selling_price = [], $quantity = [], $selected_type = [], $addons, $selected_addons = [], $colors = [];
     public $customer_name, $customer_phone, $email, $tax_no, $address, $selected_customer, $customers, $customer_query, $is_active = 1;
     public $total, $sub_total, $addon_total, $tax_percent, $tax, $balance, $flag = 0, $lang, $taxamount;
     public $taxable, $order;
-    public $payments = [], $payment_amount, $notes;
+    public $payments = [], $payment_amount, $payment_note;
 
     #[Layout('components.layouts.pos'), Title('POS')]
     public function render()
@@ -51,25 +51,17 @@ class PosScreen extends Component
         $this->services = Service::where('is_active', 1)->latest()->get();
         $this->date = Carbon::today()->toDateString();
         $this->addons = Addon::where('is_active', 1)->latest()->get();
-        $this->delivery_date = Carbon::today()->toDateString();
+        $this->delivery_date = Carbon::today()
+            ->addDays(4)
+            ->toDateString();
         $this->tax_percent = getTaxPercentage();
         $this->generateOrderID();
 
         if ($id) {
             $this->order = Order::whereId($id)->firstOrFail();
-            $payments = Payment::active()
-                ->where(
-                    'order_id',
-                    $this->order->id
-                )
-                ->get();
-            foreach ($payments as $payment) {
-                array_push($this->payments, [
-                    'payment_type' => $payment->payment_type,
-                    'amount' => $payment->received_amount,
-                    'notes' => $payment->notes
-                ]);
-            }
+            // Payments are managed from View Order / Orders List.
+            // Do not load payments into Edit Order.
+            $this->payments = [];
             if ($this->order->customer_id && $this->order->customer_id != NULL) {
                 $this->selectCustomer($this->order->customer_id);
             }
@@ -79,7 +71,7 @@ class PosScreen extends Component
             $this->delivery_date = Carbon::parse($this->order->delivery_date)->toDateString();
             $this->date = Carbon::parse($this->order->order_date)->toDateString();
             $this->order_id = $this->order->order_number;
-            $this->payment_notes = $this->order->notes;
+            $this->note = $this->order->note;
             $this->discount = $this->order->discount;
             foreach ($this->order->addons as $row) {
                 $this->selected_addons[$row->addon_id] = true;
@@ -403,12 +395,12 @@ class PosScreen extends Component
 
         $payment = [
             'amount' => (float)$this->payment_amount,
-            'notes' => $this->notes,
+            'payment_note' => $this->payment_note,
             'payment_type' => $this->payment_type,
             'payment_id' => null
         ];
         $this->payment_amount = '';
-        $this->notes = '';
+        $this->payment_note = '';
         $this->payment_type = 1;
         array_push($this->payments, $payment);
         $this->dispatch(
@@ -431,7 +423,7 @@ class PosScreen extends Component
             $this->payments = [];
             array_push($this->payments, [
                 'amount' => $this->total,
-                'notes' => $this->payment_notes,
+                'payment_note' => $this->payment_note,
                 'payment_type' => $this->payment_type,
                 'payment_id' => null
             ]);
@@ -455,7 +447,7 @@ class PosScreen extends Component
         if ($balance < 0) {
             $this->dispatch(
                 'alert',
-                ['type' => 'error',  'message' => ' Paid Amount cannot be greater than total.']
+                ['type' => 'error',  'message' => 'Paid Amount cannot be greater than total.']
             );
             $this->addError('paid_amount', 'Paid Amount cannot be greater than total.');
             return 0;
@@ -466,6 +458,34 @@ class PosScreen extends Component
             return 0;
         }
         $this->generateOrderID();
+
+        if ($this->order) {
+            $paidAmount = Payment::active()
+                ->where('order_id', $this->order->id)
+                ->sum('received_amount');
+        } else {
+            $paidAmount = collect($this->payments)
+                ->sum('amount');
+        }
+
+        $balanceAmount = max(
+            0,
+            $this->total - $paidAmount
+        );
+
+        if ($paidAmount <= 0) {
+
+            $paymentStatus = Order::PAYMENT_UNPAID;
+
+        } elseif ($balanceAmount > 0) {
+
+            $paymentStatus = Order::PAYMENT_PARTIAL;
+
+        } else {
+
+            $paymentStatus = Order::PAYMENT_PAID;
+        }
+
         if ($this->flag == 0) {
             $order = $this->order;
             if ($this->order) {
@@ -483,10 +503,12 @@ class PosScreen extends Component
                     'tax_type'  => getTaxType(),
                     'taxable_amount'    => $this->taxable,
                     'total' => $this->total,
-                    'note'  => $this->payment_notes,
-                    'status'    => 0,
+                    'note'  => $this->note,
+                    'paid_amount' => $paidAmount,
+                    'balance_amount' => $balanceAmount,
+                    'payment_status' => $paymentStatus,
                     'order_type'    => 1,
-                ], $this->order->id);
+                ]);
 
                 OrderDetail::whereOrderId(
                     $this->order->id
@@ -495,12 +517,6 @@ class PosScreen extends Component
                 ]);
 
                 OrderAddonDetail::whereOrderId(
-                    $this->order->id
-                )->update([
-                    'is_deleted'=>1
-                ]);
-
-                Payment::whereOrderId(
                     $this->order->id
                 )->update([
                     'is_deleted'=>1
@@ -531,9 +547,12 @@ class PosScreen extends Component
                     'tax_type'  => getTaxType(),
                     'taxable_amount'    => $this->taxable,
                     'total' => $this->total,
-                    'note'  => $this->payment_notes,
+                    'note'  => $this->note,
                     'status'    => 0,
                     'order_type'    => 1,
+                    'paid_amount' => $paidAmount,
+                    'balance_amount' => $balanceAmount,
+                    'payment_status' => $paymentStatus,
                     'created_by'    => Auth::user()->id,
                     'financial_year_id' => getFinancialYearId()
                 ]);
@@ -566,7 +585,6 @@ class PosScreen extends Component
                         'article_name' => $service->service_name,
                         'service_name' => $service_type->service_type_name,
                         'color_code' => $this->colors[$key],
-                        'status' => 0,
                         'created_by' => Auth::id()
                     ]);
                 }
@@ -584,7 +602,7 @@ class PosScreen extends Component
                     }
                 }
             }
-            if (count($this->payments) > 0) {
+            if (!$this->order && count($this->payments) > 0) {
                 foreach ($this->payments as $payment) {
                     $payment = \App\Models\Payment::create([
                         'payment_date'  => $this->date,
@@ -593,10 +611,12 @@ class PosScreen extends Component
                         'order_id'  => $order->id,
                         'payment_type'  => $payment['payment_type'],
                         'received_amount'    => $payment['amount'],
-                        'notes'  =>  $payment['notes'] ?? "Notes",
+                        'payment_note' => $payment['payment_note'] ?? null,
                         'financial_year_id' => getFinancialYearId(),
                         'created_by'    => Auth::user()->id,
                     ]);
+
+                    $order->refreshPaymentStatus();
                 }
             }
             $this->flag = 1;
@@ -609,14 +629,22 @@ class PosScreen extends Component
                     );
                 }
             }
+
+            $message = $this->order
+                ? 'Order Updated Successfully!'
+                : $order->order_number.' Was Successfully Created!';
+
             $this->dispatch(
                 'alert',
-                ['type' => 'success',  'message' => $order->order_number . ' Was Successfully Created!']
+                ['type' => 'success',  'message' => $message]
             );
         }
         if (\Illuminate\Support\Facades\Gate::allows('order_print')) {
             if ($this->order) {
-                $this->dispatch('printPageOrder', $order->id);
+                $this->dispatch(
+                    'printPageOrder',
+                    $this->order->id
+                );
             } else {
                 $this->dispatch('printPage', $order->id);
                 $this->clearAll();

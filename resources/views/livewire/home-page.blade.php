@@ -9,6 +9,9 @@
                                 <p class="fw-medium text-primary-light mb-1">
                                     {{ $lang->data['pending_order'] ?? 'Pending Orders' }}</p>
                                 <h6 class="mb-0">{{ $pending_count }}</h6>
+                                <small class="text-secondary-light">
+                                    Click to view
+                                </small>
                             </div>
                             <div
                                 class="w-50-px h-50-px bg-cyan rounded-circle d-flex justify-content-center align-items-center">
@@ -60,18 +63,39 @@
             </a>
         </div>
         <div class="col">
-            <a href="{{ url('admin/orders') }}?status=3" class="tw-no-underline">
-                <div class="card shadow-none border bg-gradient-start-4 h-100 tw-cursor-pointer">
+            <a href="{{ url('admin/orders') }}?overdue=1" class="tw-no-underline">
+                <div class="card shadow-none border bg-warning-subtle h-100 tw-cursor-pointer">
                     <div class="card-body p-20">
                         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
                             <div>
                                 <p class="fw-medium text-primary-light mb-1">
-                                    {{ $lang->data['delivered_orders'] ?? 'Delivered Orders' }}</p>
-                                <h6 class="mb-0">{{ $delivered_count }}</h6>
+                                    {{ $lang->data['overdue_orders'] ?? 'Delayed Orders' }}
+                                </p>
+                                <h6 class="mb-0">{{ $delayedOrders }}</h6>
                             </div>
                             <div
                                 class="w-50-px h-50-px bg-success-main rounded-circle d-flex justify-content-center align-items-center">
-                                <iconify-icon icon="mdi:check-bold" class="text-white text-2xl mb-0"></iconify-icon>
+                                <iconify-icon icon="mdi:alert-circle" class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col">
+            <a href="{{ url('admin/orders') }}?overdue=1" class="tw-no-underline">
+                <div class="card shadow-none border bg-danger-subtle h-100 tw-cursor-pointer">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">
+                                    {{ $lang->data['overdue_orders'] ?? 'Overdue Pickup' }}
+                                </p>
+                                <h6 class="mb-0">{{ $overduePickups }}</h6>
+                            </div>
+                            <div
+                                class="w-50-px h-50-px bg-warning rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="mdi:clock-alert" class="text-white text-2xl mb-0"></iconify-icon>
                             </div>
                         </div>
                     </div>
@@ -83,76 +107,89 @@
         <div class="col-xxl-9 col-xl-12">
             <div class="card h-100">
                 <div class="card-body">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between">
-                        <h6 class="text-lg mb-0">{{ $lang->data['todays_delivery'] ?? "Tomorrow's Delivery" }}</h6>
-                        <div class="tw-flex tw-items-center tw-gap-4">
-                            <input type="text" class="form-control"
-                                placeholder="{{ $lang->data['search_here'] ?? 'Search Here...' }}"
-                                wire:model.live="search_query">
-
-                            <select class="form-select" wire:model.live="order_filter">
-                                <option class="select-box" value="">
-                                    {{ $lang->data['all_orders'] ?? 'All Orders' }}</option>
-                                <option class="select-box" value="0">{{ $lang->data['pending'] ?? 'Pending' }}
-                                </option>
-                                <option class="select-box" value="1">
-                                    {{ $lang->data['processing'] ?? 'Processing' }}</option>
-                                <option class="select-box" value="2">
-                                    {{ $lang->data['ready_to_deliver'] ?? 'Ready To Deliver' }}</option>
-                                <option class="select-box" value="3">{{ $lang->data['delivered'] ?? 'Delivered' }}
-                                </option>
-                                <option class="select-box" value="4">{{ $lang->data['returned'] ?? 'Returned' }}
-                                </option>
-                            </select>
+                    <div>
+                        <h6 class="text-lg mb-0">
+                            Tomorrow's Delivery
+                        </h6>
+                        <div class="text-secondary-light small mt-1">
+                            {{ count($orders) }} Orders • {{ $tomorrowGarments }} Garments
                         </div>
                     </div>
                     <div class="tw-grid tw-mt-4 tw-grid-cols-1 lg:tw-grid-cols-2 xl:tw-grid-cols-3  align-items-center tw-gap-2">
-                        @foreach ($orders as $item)
-                            <div class=" bg-neutral-50 p-16 radius-8 ">
-                                <div class="tw-flex tw-justify-between tw-items-center">
-                                    <div class="tw-flex tw-flex-col">
-                                        <div class="tw-font-bold text-primary-light">{{ $item->order_number }}</div>
+                       @foreach ($orders as $item)
+                        <a href="{{ url('admin/orders/view/'.$item->id) }}" class="text-decoration-none">
+                            <div class="bg-neutral-50 p-16 radius-8" style="cursor:pointer;">
+                                <div class="tw-flex tw-justify-between tw-items-start">
+                                    <div>
+                                        <div class="tw-font-bold text-primary-light">
+                                            {{ $item->order_number }}
+                                        </div>
 
                                         <div
                                             class="text-sm text-secondary-light fw-normal tw-flex tw-items-center tw-gap-2 tw-mt-1">
                                             <iconify-icon icon="mdi:user-outline"
                                                 class="text-primary-light"></iconify-icon>
+
                                             {{ $lang->data['customer'] ?? 'Customer' }}:
-                                            <span
-                                                class="tw-font-bold">{{ $item->customer_name ?? ($lang->data['walk_in_customer'] ?? 'Walk In Customer') }}</span>
+
+                                            <span class="tw-font-bold">
+                                                {{ $item->customer_name ?? ($lang->data['walk_in_customer'] ?? 'Walk In Customer') }}
+                                            </span>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="tw-flex tw-gap-2 tw-items-center tw-my-2">
-                                    @php
-                                        $services = \App\Models\OrderDetail::active()
-                                            ->where(
-                                                'order_id',
-                                                $item->id
-                                            )
-                                            ->limit(4)
-                                            ->get();
-                                    @endphp
-                                    <div class="tw-size-8 tw-rounded-lg tw-overflow-clip">
-                                        @foreach ($services as $row)
-                                            @php
-                                                $service = \App\Models\Service::where('id', $row->service_id)->first();
-                                            @endphp
-                                            <img src="{{ asset('assets/img/service-icons/' . $service->icon) }}"
-                                                alt="">
-                                        @endforeach
+
+                                    <div>
+                                        @if($item->status == 0)
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary">
+                                                Pending
+                                            </span>
+
+                                        @elseif($item->status == 1)
+                                            <span class="badge bg-warning-subtle text-warning border border-warning">
+                                                Processing
+                                            </span>
+
+                                        @elseif($item->status == 2)
+                                            <span class="badge bg-success-subtle text-success border border-success">
+                                                Ready
+                                            </span>
+                                        @endif
                                     </div>
+                                </div>
+
+                                <div class="tw-my-3 tw-space-y-1">
+                                    <div class="text-sm text-secondary-light">
+                                        Garments :
+                                        <span class="tw-font-bold">
+                                            {{ $item->garment_count }}
+                                        </span>
+                                    </div>
+                                    @if($item->balance_amount > 0)
+                                        <div class="text-sm">
+                                            <span class="text-secondary-light">
+                                                Balance :
+                                            </span>
+                                            <span class="fw-bold text-danger">
+                                                ₹{{ number_format($item->balance_amount,2) }}
+                                            </span>
+                                        </div>
+                                    @else
+                                        <div class="text-success text-sm fw-semibold">
+                                            Fully Paid
+                                        </div>
+                                    @endif
                                 </div>
                                 <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
                                     <div class="d-flex align-items-center justify-content-between gap-10">
                                         <iconify-icon icon="solar:calendar-outline"
                                             class="text-primary-light"></iconify-icon>
                                         <span
-                                            class="start-date text-secondary-light">{{ \Carbon\Carbon::parse($item->order_date)->format('d/m/Y') }}</span>
+                                            class="start-date text-secondary-light">{{ \Carbon\Carbon::parse($item->delivery_date)->format('d/m/Y') }}</span>
                                     </div>
 
                                 </div>
                             </div>
+                        </a>
                         @endforeach
                     </div>
                     @if(count($orders) <= 0)
@@ -161,6 +198,48 @@
                 </div>
             </div>
         </div>
+        <div class="card mt-3">
+
+    <div class="card-body">
+
+        <h6 class="mb-3">
+            ⚠ Delayed Orders
+        </h6>
+
+        @forelse($delayedOrderList as $order)
+
+            <a
+                href="{{ url('admin/orders/view/'.$order->id) }}"
+                class="text-decoration-none">
+
+                <div class="border-bottom py-2">
+
+                    <div class="fw-bold">
+                        {{ $order->order_number }}
+                    </div>
+
+                    <small class="text-danger">
+
+                        {{ \Carbon\Carbon::parse($order->delivery_date)->diffInDays(today()) }}
+                        day(s) overdue
+
+                    </small>
+
+                </div>
+
+            </a>
+
+        @empty
+
+            <div class="text-success">
+                No delayed orders
+            </div>
+
+        @endforelse
+
+    </div>
+
+</div>
         <div class="col-xxl-3 col-xl-6" wire:ignore>
             <div class="card h-100 radius-8 border-0 overflow-hidden">
                 <div class="card-body p-24">

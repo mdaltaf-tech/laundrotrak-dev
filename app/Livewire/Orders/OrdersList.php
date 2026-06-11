@@ -25,6 +25,7 @@ class OrdersList extends Component
     protected $currentCursor;
     public $hasMorePages;
     public $paid_filter;
+    public $overdue_filter;
 
     #[Title('Orders')]
     public function render()
@@ -39,6 +40,7 @@ class OrdersList extends Component
             abort(404);
         }
         $this->order_filter = request('status');
+        $this->overdue_filter = request('overdue');
         $this->orders = new EloquentCollection();
 
         $this->loadOrders();
@@ -393,6 +395,18 @@ class OrdersList extends Component
             return new \Illuminate\Pagination\CursorPaginator(
                 $orders,
                 10
+            );
+        }
+
+        if ($this->overdue_filter) {
+            $orders->whereDate(
+                'delivery_date',
+                '<',
+                now()->toDateString()
+            )
+            ->whereNotIn(
+                'status',
+                [3,4]
             );
         }
 

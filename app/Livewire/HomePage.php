@@ -11,6 +11,11 @@ class HomePage extends Component
 {
     #[Title('Dashboard')]
     public $pending_count,$processing_count,$ready_count,$delivered_count,$orders,$array,$search_query,$order_filter,$lang;
+    public $delayedOrders = 0;
+    public $tomorrowGarments = 0;
+    public $overduePickups = 0;
+    public $delayedOrderList;
+
     public function render()
     {
         $this->pending_count = Order::where('status',0)->count();
@@ -40,10 +45,72 @@ class HomePage extends Component
                     Order::STATUS_RETURNED
                 ]
             )
+            ->orderBy('status')
+            ->orderBy('delivery_date')
+            ->get();
+
+        $this->orders->each(function ($order) {
+            $order->garment_count = \App\Models\OrderArticle::active()
+                ->where('order_id', $order->id)
+                ->count();
+        });
+
+        $this->delayedOrders = Order::active()
+            ->whereDate(
+                'delivery_date',
+                '<',
+                \Carbon\Carbon::today()->toDateString()
+            )
+            ->whereIn(
+                'status',
+                [
+                    Order::STATUS_NEW,
+                    Order::STATUS_PROCESSING
+                ]
+            )
+            ->count();
+
+        $this->tomorrowGarments =
+            \App\Models\OrderArticle::active()
+            ->whereIn(
+                'order_id',
+                $this->orders->pluck('id')
+            )
+            ->count();
+
+        $this->overduePickups = Order::active()
+            ->whereDate(
+                'delivery_date',
+                '<',
+                \Carbon\Carbon::today()->toDateString()
+            )
+            ->whereIn(
+                'status',
+                [
+                    Order::STATUS_READY,
+                ]
+            )
+            ->count();
+
+        $this->delayedOrderList = Order::active()
+            ->whereDate(
+                'delivery_date',
+                '<',
+                now()->toDateString()
+            )
+            ->whereIn(
+                'status',
+                [
+                    Order::STATUS_NEW,
+                    Order::STATUS_PROCESSING
+                ]
+            )
             ->orderBy(
                 'delivery_date'
             )
+            ->limit(5)
             ->get();
+
         if(session()->has('selected_language'))
         {
             /* if the session has selected language */

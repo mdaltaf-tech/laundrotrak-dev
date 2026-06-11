@@ -38,6 +38,7 @@ class OrdersList extends Component
         if (!\Illuminate\Support\Facades\Gate::allows('order_list')) {
             abort(404);
         }
+        $this->order_filter = request('status');
         $this->orders = new EloquentCollection();
 
         $this->loadOrders();
@@ -344,8 +345,10 @@ class OrdersList extends Component
         }
 
         // Order Status Filter
-        if (!empty($this->order_filter)) {
-
+        if (
+            $this->order_filter !== null &&
+            $this->order_filter !== ''
+        ) {
             $orders->where(
                 'status',
                 $this->order_filter

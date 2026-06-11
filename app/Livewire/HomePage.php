@@ -28,7 +28,22 @@ class HomePage extends Component
         $this->ready_count = Order::where('status',2)->count();
         $this->delivered_count = Order::where('status',3)->count();
         $returned_count =  Order::where('status',4)->count();
-        $this->orders = Order::whereDate('delivery_date',\Carbon\Carbon::today()->toDateString())->get();
+        $this->orders = Order::active()
+            ->whereDate(
+                'delivery_date',
+                \Carbon\Carbon::tomorrow()->toDateString()
+            )
+            ->whereNotIn(
+                'status',
+                [
+                    Order::STATUS_DELIVERED,
+                    Order::STATUS_RETURNED
+                ]
+            )
+            ->orderBy(
+                'delivery_date'
+            )
+            ->get();
         if(session()->has('selected_language'))
         {
             /* if the session has selected language */

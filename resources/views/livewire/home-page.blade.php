@@ -1,74 +1,82 @@
 <div class="dashboard-main-body">
     <div class="tw-grid 2xl:tw-grid-cols-4 tw-gap-4 lg:tw-grid-cols-2 tw-grid-cols-1 gy-4">
         <div class="col">
-            <div class="card shadow-none border bg-gradient-start-1 h-100">
-                <div class="card-body p-20">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                        <div>
-                            <p class="fw-medium text-primary-light mb-1">
-                                {{ $lang->data['pending_order'] ?? 'Pending Orders' }}</p>
-                            <h6 class="mb-0">{{ $pending_count }}</h6>
-                        </div>
-                        <div
-                            class="w-50-px h-50-px bg-cyan rounded-circle d-flex justify-content-center align-items-center">
-                            <iconify-icon icon="game-icons:basket" class="text-white text-2xl mb-0"></iconify-icon>
+            <a href="{{ url('admin/orders') }}?status=0" class="tw-no-underline">
+                <div class="card shadow-none border bg-gradient-start-1 h-100 tw-cursor-pointer">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">
+                                    {{ $lang->data['pending_order'] ?? 'Pending Orders' }}</p>
+                                <h6 class="mb-0">{{ $pending_count }}</h6>
+                            </div>
+                            <div
+                                class="w-50-px h-50-px bg-cyan rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="game-icons:basket" class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col">
-            <div class="card shadow-none border bg-gradient-start-2 h-100">
-                <div class="card-body p-20">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                        <div>
-                            <p class="fw-medium text-primary-light mb-1">
-                                {{ $lang->data['processing_order'] ?? 'Processing Order' }}</p>
-                            <h6 class="mb-0"> {{ $processing_count }}</h6>
+            <a href="{{ url('admin/orders') }}?status=1" class="tw-no-underline">
+                <div class="card shadow-none border bg-gradient-start-2 h-100 tw-cursor-pointer">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">
+                                    {{ $lang->data['processing_order'] ?? 'Processing Order' }}</p>
+                                <h6 class="mb-0"> {{ $processing_count }}</h6>
+                            </div>
+                            <div
+                                class="w-50-px h-50-px bg-purple rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="material-symbols:hub-outline"
+                                    class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
                         </div>
-                        <div
-                            class="w-50-px h-50-px bg-purple rounded-circle d-flex justify-content-center align-items-center">
-                            <iconify-icon icon="material-symbols:hub-outline"
-                                class="text-white text-2xl mb-0"></iconify-icon>
-                        </div>
-                    </div>
 
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col">
-            <div class="card shadow-none border bg-gradient-start-3 h-100">
-                <div class="card-body p-20">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                        <div>
-                            <p class="fw-medium text-primary-light mb-1">
-                                {{ $lang->data['ready_to_deliver'] ?? 'Ready To Deliver' }}</p>
-                            <h6 class="mb-0">{{ $ready_count }}</h6>
-                        </div>
-                        <div
-                            class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
-                            <iconify-icon icon="ion:thumbs-up" class="text-white text-2xl mb-0"></iconify-icon>
+            <a href="{{ url('admin/orders') }}?status=2" class="tw-no-underline">
+                <div class="card shadow-none border bg-gradient-start-3 h-100 tw-cursor-pointer">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">
+                                    {{ $lang->data['ready_to_deliver'] ?? 'Ready To Deliver' }}</p>
+                                <h6 class="mb-0">{{ $ready_count }}</h6>
+                            </div>
+                            <div
+                                class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="ion:thumbs-up" class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col">
-            <div class="card shadow-none border bg-gradient-start-4 h-100">
-                <div class="card-body p-20">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                        <div>
-                            <p class="fw-medium text-primary-light mb-1">
-                                {{ $lang->data['delivered_orders'] ?? 'Delivered Orders' }}</p>
-                            <h6 class="mb-0">{{ $delivered_count }}</h6>
-                        </div>
-                        <div
-                            class="w-50-px h-50-px bg-success-main rounded-circle d-flex justify-content-center align-items-center">
-                            <iconify-icon icon="mdi:check-bold" class="text-white text-2xl mb-0"></iconify-icon>
+            <a href="{{ url('admin/orders') }}?status=3" class="tw-no-underline">
+                <div class="card shadow-none border bg-gradient-start-4 h-100 tw-cursor-pointer">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">
+                                    {{ $lang->data['delivered_orders'] ?? 'Delivered Orders' }}</p>
+                                <h6 class="mb-0">{{ $delivered_count }}</h6>
+                            </div>
+                            <div
+                                class="w-50-px h-50-px bg-success-main rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="mdi:check-bold" class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
     <div class="row gy-4 mt-1">
@@ -76,7 +84,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <div class="d-flex flex-wrap align-items-center justify-content-between">
-                        <h6 class="text-lg mb-0">{{ $lang->data['todays_delivery'] ?? "Today's Delivery" }}</h6>
+                        <h6 class="text-lg mb-0">{{ $lang->data['todays_delivery'] ?? "Tomorrow's Delivery" }}</h6>
                         <div class="tw-flex tw-items-center tw-gap-4">
                             <input type="text" class="form-control"
                                 placeholder="{{ $lang->data['search_here'] ?? 'Search Here...' }}"

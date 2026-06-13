@@ -13,4 +13,12 @@ class ServiceDetail extends Model
         'service_type_id',
         'service_price'
     ];
+
+    public function serviceType()
+    {
+        return $this->belongsTo(
+            ServiceType::class,
+            'service_type_id'
+        );
+    }
 }

@@ -92,9 +92,17 @@ class PosScreen extends Component
     {
         $this->add($this->inputi);
         $service = Service::whereId($row->service_id)->first();
-        $servicedetails = ServiceDetail::where('service_id', $service->id)->first();
-        $serviceType = ServiceType::where('service_type_name', $row->service_name)->first();
-        $servicedetail = $servicedetails->where('service_type_id', $serviceType?->id)->where('service_id', $service->id)->first();
+        $serviceType = $row->serviceType;
+
+        $servicedetail = ServiceDetail::where(
+            'service_id',
+            $service->id
+        )
+        ->where(
+            'service_type_id',
+            $row->service_type_id
+        )
+        ->first();
         if ($servicedetail) {
             $this->selservices[$this->inputi]['service'] = $service->id;
             $this->selservices[$this->inputi]['service_type']  = $serviceType?->id;
@@ -611,6 +619,7 @@ class PosScreen extends Component
                     $orderDetail = OrderDetail::create([
                         'order_id' => $order->id,
                         'service_id' => $service->id,
+                        'service_type_id' => $service_type->id,
                         'service_name' => $service_type->service_type_name,
                         'service_quantity' => $this->quantity[$key],
                         'service_detail_total' => $this->selling_price[$key] * $this->quantity[$key],

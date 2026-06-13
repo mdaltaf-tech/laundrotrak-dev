@@ -476,11 +476,9 @@ class PosScreen extends Component
         if ($paidAmount <= 0) {
 
             $paymentStatus = Order::PAYMENT_UNPAID;
-
         } elseif ($balanceAmount > 0) {
 
             $paymentStatus = Order::PAYMENT_PARTIAL;
-
         } else {
 
             $paymentStatus = Order::PAYMENT_PAID;
@@ -489,6 +487,32 @@ class PosScreen extends Component
         if ($this->flag == 0) {
             $order = $this->order;
             if ($this->order) {
+                $hasProcessedArticles =
+                    OrderArticle::where(
+                        'order_id',
+                        $this->order->id
+                    )
+                    ->where(
+                        'status',
+                        '>',
+                        OrderArticle::STATUS_RECEIVED
+                    )
+                    ->exists();
+
+                if ($hasProcessedArticles) {
+
+                    $this->dispatch(
+                        'alert',
+                        [
+                            'type' => 'error',
+                            'message' =>
+                            'This order cannot be edited because garment processing has already started.'
+                        ]
+                    );
+
+                    return;
+                }
+
                 Order::whereId($this->order->id)->update([
                     'customer_id'   => $this->selected_customer->id ?? null,
                     'customer_name' => $this->selected_customer->name ?? null,
@@ -513,24 +537,19 @@ class PosScreen extends Component
                 OrderDetail::whereOrderId(
                     $this->order->id
                 )->update([
-                    'is_deleted'=>1
+                    'is_deleted' => 1
                 ]);
 
                 OrderAddonDetail::whereOrderId(
                     $this->order->id
                 )->update([
-                    'is_deleted'=>1
+                    'is_deleted' => 1
                 ]);
 
                 OrderArticle::where(
                     'order_id',
                     $this->order->id
-                )
-                ->active()
-                ->update([
-                    'status'=>OrderArticle::STATUS_CANCELLED
-                ]);
-
+                )->delete();
             } else {
                 $order = Order::create([
                     'order_number'  => $this->order_id,
@@ -578,8 +597,8 @@ class PosScreen extends Component
                     OrderArticle::create([
                         'order_id' => $order->id,
                         'order_detail_id' => $orderDetail->id,
-                        'tag_number'=>
-                            $this->generateTag(
+                        'tag_number' =>
+                        $this->generateTag(
                             $order->order_number
                         ),
                         'article_name' => $service->service_name,
@@ -632,7 +651,7 @@ class PosScreen extends Component
 
             $message = $this->order
                 ? 'Order Updated Successfully!'
-                : $order->order_number.' Was Successfully Created!';
+                : $order->order_number . ' Was Successfully Created!';
 
             $this->dispatch(
                 'alert',
@@ -706,31 +725,30 @@ class PosScreen extends Component
         );
 
         $lastTag =
-        OrderArticle::where(
-            'tag_number',
-            'like',
-            'FBL'.$orderNo.'-%'
-        )
-        ->latest('id')
-        ->first();
+            OrderArticle::where(
+                'tag_number',
+                'like',
+                'FBL' . $orderNo . '-%'
+            )
+            ->latest('id')
+            ->first();
 
-        $next=1;
+        $next = 1;
 
-        if($lastTag)
-        {
+        if ($lastTag) {
             preg_match(
                 '/(\d+)$/',
                 $lastTag->tag_number,
                 $match
             );
 
-            $next=((int)$match[1])+1;
+            $next = ((int)$match[1]) + 1;
         }
 
         return 'FBL'
-            .$orderNo
-            .'-'
-            .str_pad(
+            . $orderNo
+            . '-'
+            . str_pad(
                 $next,
                 3,
                 '0',

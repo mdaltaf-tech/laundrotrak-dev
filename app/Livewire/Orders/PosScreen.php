@@ -4,7 +4,7 @@ namespace App\Livewire\Orders;
 
 use App\Livewire\Installer\InstallController;
 use Livewire\Component;
-
+use Illuminate\Support\Facades\DB;
 use App\Models\Addon;
 use App\Models\Customer;
 use App\Models\Order;
@@ -418,97 +418,112 @@ class PosScreen extends Component
     /* save the order */
     public function save($type = null)
     {
-        $amount = 0;
-        if ($type === 'cash') {
-            $this->payments = [];
-            array_push($this->payments, [
-                'amount' => $this->total,
-                'payment_note' => $this->payment_note,
-                'payment_type' => $this->payment_type,
-                'payment_id' => null
+        if ($this->flag == 1) {
+            return;
+        }
+        $this->flag = 1;
+        DB::beginTransaction();
+
+        try {
+            $amount = 0;
+            if ($type === 'cash') {
+                $this->payments = [];
+                array_push($this->payments, [
+                    'amount' => $this->total,
+                    'payment_note' => $this->payment_note,
+                    'payment_type' => $this->payment_type,
+                    'payment_id' => null
+                ]);
+            }
+            $this->calculateTotal();
+
+            $this->validate([
+                'payment_type'  => 'required'
             ]);
-        }
-        $this->calculateTotal();
+            /* if selected services > 0  send error alert*/
+            if (count($this->selservices) <= 0) {
+                $this->dispatch(
+                    'alert',
+                    ['type' => 'error',  'message' => ' You have not added any service to the cart']
+                );
+                $this->addError('error', 'Select a service');
 
-        $this->validate([
-            'payment_type'  => 'required'
-        ]);
-        /* if selected services > 0  send error alert*/
-        if (count($this->selservices) <= 0) {
-            $this->dispatch(
-                'alert',
-                ['type' => 'error',  'message' => ' You have not added any service to the cart']
+                $this->flag = 0;
+                DB::rollBack();
+                return 0;
+            }
+            $balance = $this->getPaymentBalance();
+            /* if balance is <0 send error alert*/
+            if ($balance < 0) {
+                $this->dispatch(
+                    'alert',
+                    ['type' => 'error',  'message' => 'Paid Amount cannot be greater than total.']
+                );
+                $this->addError('paid_amount', 'Paid Amount cannot be greater than total.');
+
+                $this->flag = 0;
+                DB::rollBack();
+                return 0;
+            }
+            /* if customer not exist and has any balance to pay send the error alert */
+            if ($balance != 0 && $this->selected_customer == null) {
+                $this->addError('paid_amount_customer', 'The customer must be registered to use ledger.');
+
+                $this->flag = 0;
+                DB::rollBack();
+                return 0;
+            }
+            $this->generateOrderID();
+
+            if ($this->order) {
+                $paidAmount = Payment::active()
+                    ->where('order_id', $this->order->id)
+                    ->sum('received_amount');
+            } else {
+                $paidAmount = collect($this->payments)
+                    ->sum('amount');
+            }
+
+            $balanceAmount = max(
+                0,
+                $this->total - $paidAmount
             );
-            $this->addError('error', 'Select a service');
-            return 0;
-        }
-        $balance = $this->getPaymentBalance();
-        /* if balance is <0 send error alert*/
-        if ($balance < 0) {
-            $this->dispatch(
-                'alert',
-                ['type' => 'error',  'message' => 'Paid Amount cannot be greater than total.']
-            );
-            $this->addError('paid_amount', 'Paid Amount cannot be greater than total.');
-            return 0;
-        }
-        /* if customer not exist and has any balance to pay send the error alert */
-        if ($balance != 0 && $this->selected_customer == null) {
-            $this->addError('paid_amount_customer', 'The customer must be registered to use ledger.');
-            return 0;
-        }
-        $this->generateOrderID();
 
-        if ($this->order) {
-            $paidAmount = Payment::active()
-                ->where('order_id', $this->order->id)
-                ->sum('received_amount');
-        } else {
-            $paidAmount = collect($this->payments)
-                ->sum('amount');
-        }
+            if ($paidAmount <= 0) {
 
-        $balanceAmount = max(
-            0,
-            $this->total - $paidAmount
-        );
+                $paymentStatus = Order::PAYMENT_UNPAID;
+            } elseif ($balanceAmount > 0) {
 
-        if ($paidAmount <= 0) {
+                $paymentStatus = Order::PAYMENT_PARTIAL;
+            } else {
 
-            $paymentStatus = Order::PAYMENT_UNPAID;
-        } elseif ($balanceAmount > 0) {
+                $paymentStatus = Order::PAYMENT_PAID;
+            }
 
-            $paymentStatus = Order::PAYMENT_PARTIAL;
-        } else {
+            $garmentsChanged = false;
+            $addonsChanged = false;
 
-            $paymentStatus = Order::PAYMENT_PAID;
-        }
-
-        if ($this->flag == 0) {
             $order = $this->order;
             if ($this->order) {
-                $hasProcessedArticles =
-                    OrderArticle::where(
-                        'order_id',
-                        $this->order->id
-                    )
-                    ->where(
-                        'status',
-                        '>',
-                        OrderArticle::STATUS_RECEIVED
-                    )
-                    ->exists();
+                $garmentsChanged = $this->garmentsChanged();
+                $addonsChanged = $this->addonsChanged();
 
-                if ($hasProcessedArticles) {
-
+                if (
+                    $this->hasProcessedArticles()
+                    &&
+                    $garmentsChanged
+                ) {
                     $this->dispatch(
                         'alert',
                         [
                             'type' => 'error',
                             'message' =>
-                            'This order cannot be edited because garment processing has already started.'
+                            'Garments cannot be modified after processing has started. You may update delivery date, notes and customer information.'
                         ]
                     );
+
+                    $this->flag = 0;
+                    DB::rollBack();
 
                     return;
                 }
@@ -534,22 +549,28 @@ class PosScreen extends Component
                     'order_type'    => 1,
                 ]);
 
-                OrderDetail::whereOrderId(
-                    $this->order->id
-                )->update([
-                    'is_deleted' => 1
-                ]);
+                if ($garmentsChanged)
+                {
+                    OrderDetail::whereOrderId(
+                        $this->order->id
+                    )->update([
+                        'is_deleted' => 1
+                    ]);
 
-                OrderAddonDetail::whereOrderId(
-                    $this->order->id
-                )->update([
-                    'is_deleted' => 1
-                ]);
+                    OrderArticle::where(
+                        'order_id',
+                        $this->order->id
+                    )->delete();
+                }
 
-                OrderArticle::where(
-                    'order_id',
-                    $this->order->id
-                )->delete();
+                if ($addonsChanged)
+                {
+                    OrderAddonDetail::whereOrderId(
+                        $this->order->id
+                    )->update([
+                        'is_deleted' => 1
+                    ]);
+                }
             } else {
                 $order = Order::create([
                     'order_number'  => $this->order_id,
@@ -577,51 +598,62 @@ class PosScreen extends Component
                 ]);
             }
 
-            foreach ($this->selservices as $key => $value) {
-                $service = Service::where('id', $value['service'])->first();
-                $service_type = ServiceType::where('id', $value['service_type'])->first();
-                $service_type_detail = ServiceDetail::where('service_type_id', $service_type->id)->first();
-                $amount += $this->prices[$key];
+            if (
+                !$this->order
+                || $garmentsChanged
+            )
+            {
+                foreach ($this->selservices as $key => $value) {
+                    $service = Service::find($value['service']);
+                    $service_type = ServiceType::find($value['service_type']);
+                    $amount += $this->prices[$key];
 
-                $orderDetail = OrderDetail::create([
-                    'order_id' => $order->id,
-                    'service_id' => $service->id,
-                    'service_name' => $service_type->service_type_name,
-                    'service_quantity' => $this->quantity[$key],
-                    'service_detail_total' => $this->selling_price[$key] * $this->quantity[$key],
-                    'service_price' => $this->selling_price[$key],
-                    'color_code' => $this->colors[$key],
-                ]);
-
-                for ($i = 1; $i <= $this->quantity[$key]; $i++) {
-                    OrderArticle::create([
+                    $orderDetail = OrderDetail::create([
                         'order_id' => $order->id,
-                        'order_detail_id' => $orderDetail->id,
-                        'tag_number' =>
-                        $this->generateTag(
-                            $order->order_number
-                        ),
-                        'article_name' => $service->service_name,
+                        'service_id' => $service->id,
                         'service_name' => $service_type->service_type_name,
+                        'service_quantity' => $this->quantity[$key],
+                        'service_detail_total' => $this->selling_price[$key] * $this->quantity[$key],
+                        'service_price' => $this->selling_price[$key],
                         'color_code' => $this->colors[$key],
-                        'created_by' => Auth::id()
                     ]);
-                }
-            }
-            if ($this->selected_addons) {
-                foreach ($this->selected_addons as $key => $value) {
-                    if ($value === true) {
-                        $addon = Addon::where('id', $key)->first();
-                        \App\Models\OrderAddonDetail::create([
-                            'order_id'  => $order->id,
-                            'addon_id'    => $addon->id,
-                            'addon_name'    => $addon->addon_name,
-                            'addon_price'   => $addon->addon_price,
+
+                    for ($i = 1; $i <= $this->quantity[$key]; $i++) {
+                        OrderArticle::create([
+                            'order_id' => $order->id,
+                            'order_detail_id' => $orderDetail->id,
+                            'tag_number' =>
+                            $this->generateTag(
+                                $order->order_number
+                            ),
+                            'article_name' => $service->service_name,
+                            'service_name' => $service_type->service_type_name,
+                            'color_code' => $this->colors[$key],
+                            'created_by' => Auth::id()
                         ]);
                     }
                 }
             }
-            if (!$this->order && count($this->payments) > 0) {
+            if (
+                !$this->order
+                || $addonsChanged
+            )
+            {
+                if ($this->selected_addons) {
+                    foreach ($this->selected_addons as $key => $value) {
+                        if ($value === true) {
+                            $addon = Addon::find($key);
+                            \App\Models\OrderAddonDetail::create([
+                                'order_id'  => $order->id,
+                                'addon_id'    => $addon->id,
+                                'addon_name'    => $addon->addon_name,
+                                'addon_price'   => $addon->addon_price,
+                            ]);
+                        }
+                    }
+                }
+            }
+            if (!$this->order && !empty($this->payments)) {
                 foreach ($this->payments as $payment) {
                     $payment = \App\Models\Payment::create([
                         'payment_date'  => $this->date,
@@ -638,7 +670,6 @@ class PosScreen extends Component
                     $order->refreshPaymentStatus();
                 }
             }
-            $this->flag = 1;
             if ($this->selected_customer) {
                 $message = sendOrderCreateSMS($order->id, $this->selected_customer->id);
                 if ($message) {
@@ -649,6 +680,9 @@ class PosScreen extends Component
                 }
             }
 
+            DB::commit();
+            $this->flag = 0;
+
             $message = $this->order
                 ? 'Order Updated Successfully!'
                 : $order->order_number . ' Was Successfully Created!';
@@ -657,21 +691,24 @@ class PosScreen extends Component
                 'alert',
                 ['type' => 'success',  'message' => $message]
             );
-        }
-        if (\Illuminate\Support\Facades\Gate::allows('order_print')) {
-            if ($this->order) {
-                $this->dispatch(
-                    'printPageOrder',
-                    $this->order->id
-                );
-            } else {
-                $this->dispatch('printPage', $order->id);
+            if (\Illuminate\Support\Facades\Gate::allows('order_print')) {
+                if ($this->order) {
+                    $this->dispatch(
+                        'printPageOrder',
+                        $this->order->id
+                    );
+                } else {
+                    $this->dispatch('printPage', $order->id);
+                    $this->clearAll();
+                }
+            }
+            if (!$this->order) {
                 $this->clearAll();
             }
-        }
-        if ($this->order) {
-        } else {
-            $this->clearAll();
+        } catch (\Exception $e) {
+            $this->flag = 0;
+            DB::rollBack();
+            throw $e;
         }
     }
 
@@ -754,5 +791,88 @@ class PosScreen extends Component
                 '0',
                 STR_PAD_LEFT
             );
+    }
+
+    private function hasProcessedArticles(): bool
+    {
+        if (!$this->order) {
+            return false;
+        }
+
+        return OrderArticle::where(
+            'order_id',
+            $this->order->id
+        )
+        ->where(
+            'status',
+            '>',
+            OrderArticle::STATUS_RECEIVED
+        )
+        ->exists();
+    }
+
+    private function garmentsChanged(): bool
+    {
+        if (!$this->order) {
+            return false;
+        }
+
+        $existing = [];
+
+        foreach ($this->order->details as $detail) {
+
+            $existing[] = [
+                'service_id' => $detail->service_id,
+                'service_name' => $detail->service_name,
+                'qty' => (int)$detail->service_quantity,
+                'color' => $detail->color_code,
+            ];
+        }
+
+        $current = [];
+
+        foreach ($this->selservices as $key => $value) {
+
+            $serviceType = ServiceType::find(
+                $value['service_type']
+            );
+
+            $current[] = [
+                'service_id' => $value['service'],
+                'service_name' => $serviceType?->service_type_name,
+                'qty' => (int)$this->quantity[$key],
+                'color' => $this->colors[$key] ?? '',
+            ];
+        }
+
+        sort($existing);
+        sort($current);
+
+        return $existing != $current;
+    }
+
+    private function addonsChanged(): bool
+    {
+        if (!$this->order) {
+            return false;
+        }
+
+        $existing = $this->order->addons
+            ->pluck('addon_id')
+            ->sort()
+            ->values()
+            ->toArray();
+
+        $current = [];
+
+        foreach ($this->selected_addons as $id => $selected) {
+            if ($selected === true) {
+                $current[] = (int)$id;
+            }
+        }
+
+        sort($current);
+
+        return $existing != $current;
     }
 }

@@ -16,6 +16,10 @@ class HomePage extends Component
     public $tomorrowGarments = 0;
     public $totalTomorrowOrders = 0;
     public $overduePickups = 0;
+    public $delayedGarments = 0;
+    public $totalDelayedOrders = 0;
+    public $overdueGarments = 0;
+    public $totalOverdueOrders = 0;
     public $delayedOrderList;
     public $overduePickupList;
     public $unpaid_count;
@@ -92,9 +96,9 @@ class HomePage extends Component
         $this->totalTomorrowOrders = $tomorrowOrdersQuery->count();
 
         $this->orders = $tomorrowOrdersQuery
-            ->orderByDesc('status')
+            ->orderBy('status')
             ->orderBy('delivery_date')
-            ->limit(8)
+            ->limit(4)
             ->get();
 
         $this->orders->each(function ($order) {
@@ -129,23 +133,24 @@ class HomePage extends Component
             )
             ->count();
 
-        $this->delayedOrderList = Order::active()
-            ->whereDate(
-                'delivery_date',
-                '<',
-                now()->toDateString()
-            )
-            ->whereIn(
-                'status',
-                [
-                    Order::STATUS_NEW,
-                    Order::STATUS_PROCESSING
-                ]
-            )
-            ->orderBy(
-                'delivery_date'
-            )
-            ->limit(5)
+        $delayedQuery = Order::active()
+            ->whereDate('delivery_date', '<', now()->toDateString())
+            ->whereIn('status', [
+                Order::STATUS_NEW,
+                Order::STATUS_PROCESSING
+            ]);
+
+        $this->totalDelayedOrders = $delayedQuery->count();
+        $allDelayedOrderIds = $delayedQuery->pluck('id');
+
+        $this->delayedGarments =
+            \App\Models\OrderArticle::active()
+                ->whereIn('order_id', $allDelayedOrderIds)
+                ->count();
+
+        $this->delayedOrderList = $delayedQuery
+            ->orderBy('delivery_date')
+            ->limit(4)
             ->get();
 
         $this->delayedOrderList->each(function ($order) {
@@ -155,18 +160,15 @@ class HomePage extends Component
                     ->count();
         });
 
-        $this->overduePickupList = Order::active()
-            ->whereDate(
-                'delivery_date',
-                '<',
-                today()
-            )
-            ->where(
-                'status',
-                Order::STATUS_READY
-            )
+        $overdueQuery = Order::active()
+            ->whereDate('delivery_date', '<', today())
+            ->where('status', Order::STATUS_READY);
+
+        $this->totalOverdueOrders = $overdueQuery->count();
+
+        $this->overduePickupList = $overdueQuery
             ->orderBy('delivery_date')
-            ->limit(5)
+            ->limit(4)
             ->get();
 
         $this->overduePickupList->each(function ($order) {
@@ -175,6 +177,13 @@ class HomePage extends Component
                     ->where('order_id', $order->id)
                     ->count();
         });
+
+        $allOverdueOrderIds = $overdueQuery->pluck('id');
+
+        $this->overdueGarments =
+            \App\Models\OrderArticle::active()
+                ->whereIn('order_id', $allOverdueOrderIds)
+                ->count();
 
         if(session()->has('selected_language'))
         {

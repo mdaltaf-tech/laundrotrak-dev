@@ -26,6 +26,7 @@ class OrdersList extends Component
     public $hasMorePages;
     public $paid_filter;
     public $overdue_filter;
+    public $quick_filter;
 
     #[Title('Orders')]
     public function render()
@@ -41,6 +42,9 @@ class OrdersList extends Component
         }
         $this->order_filter = request('status');
         $this->overdue_filter = request('overdue');
+        $this->quick_filter = request('quick_filter');
+        $this->paid_filter = request('paid_filter');
+
         $this->orders = new EloquentCollection();
 
         $this->loadOrders();
@@ -410,6 +414,56 @@ class OrdersList extends Component
             );
         }
 
+        // Quick Filters
+        if ($this->quick_filter == 'tomorrow') {
+
+            $orders->whereDate(
+                'delivery_date',
+                \Carbon\Carbon::tomorrow()->toDateString()
+            )->whereNotIn(
+                'status',
+                [
+                    Order::STATUS_DELIVERED,
+                    Order::STATUS_RETURNED
+                ]
+            );
+        }
+
+        elseif ($this->quick_filter == 'delayed') {
+
+            $orders->whereDate(
+                'delivery_date',
+                '<',
+                today()
+            )->whereIn(
+                'status',
+                [
+                    Order::STATUS_NEW,
+                    Order::STATUS_PROCESSING
+                ]
+            );
+        }
+
+        elseif ($this->quick_filter == 'pickup_overdue') {
+
+            $orders->whereDate(
+                'delivery_date',
+                '<',
+                today()
+            )->where(
+                'status',
+                Order::STATUS_READY
+            );
+        }
+
+        elseif ($this->quick_filter == 'unpaid') {
+
+            $orders->where(
+                'payment_status',
+                Order::PAYMENT_UNPAID
+            );
+        }
+
         return $orders
             ->orderBy(
                 'order_number',
@@ -473,5 +527,10 @@ class OrdersList extends Component
                 'message'=>'Order archived successfully'
             ]
         );
+    }
+
+    public function updatedQuickFilter()
+    {
+        $this->reloadOrders();
     }
 }

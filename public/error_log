@@ -1,7 +1,0 @@
-[16-Sep-2025 19:23:23 UTC] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.28. in /home/faebloadmin/app.faeblo.com/vendor/composer/platform_check.php on line 28
-[16-Sep-2025 19:23:33 UTC] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 8.0.28. in /home/faebloadmin/app.faeblo.com/vendor/composer/platform_check.php on line 28
-[07-Feb-2026 08:18:19 UTC] PHP Warning:  Undefined array key "d" in /home/faebloadmin/app.faeblo.com/public/480160df4bef.php on line 1
-[07-Mar-2026 00:52:41 UTC] PHP Warning:  Undefined array key "d" in /home/faebloadmin/app.faeblo.com/public/480160df4bef.php on line 1
-[07-Mar-2026 20:02:00 UTC] PHP Warning:  Undefined array key "d" in /home/faebloadmin/app.faeblo.com/public/480160df4bef.php on line 1
-[15-Mar-2026 00:53:36 UTC] PHP Warning:  Undefined array key "d" in /home/faebloadmin/app.faeblo.com/public/480160df4bef.php on line 1
-[18-Mar-2026 13:04:26 UTC] PHP Warning:  Undefined array key "d" in /home/faebloadmin/app.faeblo.com/public/480160df4bef.php on line 1

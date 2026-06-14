@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Order;
 use App\Models\Translation;
+use App\Models\Payment;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -13,8 +14,12 @@ class HomePage extends Component
     public $pending_count,$processing_count,$ready_count,$delivered_count,$orders,$array,$search_query,$order_filter,$lang;
     public $delayedOrders = 0;
     public $tomorrowGarments = 0;
+    public $totalTomorrowOrders = 0;
     public $overduePickups = 0;
     public $delayedOrderList;
+    public $overduePickupList;
+    public $unpaid_count;
+    public $today_collection;
 
     public function render()
     {
@@ -31,29 +36,30 @@ class HomePage extends Component
         $this->pending_count = Order::where('status',0)->count();
         $this->processing_count = Order::where('status',1)->count();
         $this->ready_count = Order::where('status',2)->count();
-        $this->delivered_count = Order::where('status',3)->count();
         $returned_count =  Order::where('status',4)->count();
-        $this->orders = Order::active()
-            ->whereDate(
-                'delivery_date',
-                \Carbon\Carbon::tomorrow()->toDateString()
-            )
-            ->whereNotIn(
-                'status',
-                [
-                    Order::STATUS_DELIVERED,
-                    Order::STATUS_RETURNED
-                ]
-            )
-            ->orderBy('status')
-            ->orderBy('delivery_date')
-            ->get();
 
-        $this->orders->each(function ($order) {
-            $order->garment_count = \App\Models\OrderArticle::active()
-                ->where('order_id', $order->id)
-                ->count();
-        });
+        $this->delivered_count = Order::active()
+            ->where(
+                'status',
+                Order::STATUS_DELIVERED
+            )
+            ->count();
+
+        $this->unpaid_count = Order::active()
+            ->where(
+                'payment_status',
+                Order::PAYMENT_UNPAID
+            )
+            ->count();
+
+        $this->today_collection = Payment::active()
+            ->whereDate(
+                'payment_date',
+                today()
+            )
+            ->sum(
+                'received_amount'
+            );
 
         $this->delayedOrders = Order::active()
             ->whereDate(
@@ -70,13 +76,44 @@ class HomePage extends Component
             )
             ->count();
 
+        $tomorrowOrdersQuery = Order::active()
+            ->whereDate(
+                'delivery_date',
+                \Carbon\Carbon::tomorrow()->toDateString()
+            )
+            ->whereNotIn(
+                'status',
+                [
+                    Order::STATUS_DELIVERED,
+                    Order::STATUS_RETURNED
+                ]
+            );
+
+        $this->totalTomorrowOrders = $tomorrowOrdersQuery->count();
+
+        $this->orders = $tomorrowOrdersQuery
+            ->orderByDesc('status')
+            ->orderBy('delivery_date')
+            ->limit(8)
+            ->get();
+
+        $this->orders->each(function ($order) {
+            $order->garment_count =
+                \App\Models\OrderArticle::active()
+                    ->where('order_id', $order->id)
+                    ->count();
+        });
+
+        $allTomorrowOrderIds = $tomorrowOrdersQuery
+            ->pluck('id');
+
         $this->tomorrowGarments =
             \App\Models\OrderArticle::active()
-            ->whereIn(
-                'order_id',
-                $this->orders->pluck('id')
-            )
-            ->count();
+                ->whereIn(
+                    'order_id',
+                    $allTomorrowOrderIds
+                )
+                ->count();
 
         $this->overduePickups = Order::active()
             ->whereDate(
@@ -110,6 +147,34 @@ class HomePage extends Component
             )
             ->limit(5)
             ->get();
+
+        $this->delayedOrderList->each(function ($order) {
+            $order->garment_count =
+                \App\Models\OrderArticle::active()
+                    ->where('order_id', $order->id)
+                    ->count();
+        });
+
+        $this->overduePickupList = Order::active()
+            ->whereDate(
+                'delivery_date',
+                '<',
+                today()
+            )
+            ->where(
+                'status',
+                Order::STATUS_READY
+            )
+            ->orderBy('delivery_date')
+            ->limit(5)
+            ->get();
+
+        $this->overduePickupList->each(function ($order) {
+            $order->garment_count =
+                \App\Models\OrderArticle::active()
+                    ->where('order_id', $order->id)
+                    ->count();
+        });
 
         if(session()->has('selected_language'))
         {

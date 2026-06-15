@@ -18,7 +18,10 @@
             <div class="d-flex flex-wrap gap-2">
                 <button
                     class="btn btn-sm rounded-pill {{ $quick_filter == '' ? 'btn-primary' : 'btn-outline-primary' }}"
-                    wire:click="$set('quick_filter','')">
+                    wire:click="
+                        $set('quick_filter','');
+                        $set('paid_filter','');
+                    ">
                     All Orders
                 </button>
                 <button
@@ -35,6 +38,23 @@
                     class="btn btn-sm rounded-pill {{ $quick_filter == 'pickup_overdue' ? 'btn-primary' : 'btn-outline-primary' }}"
                     wire:click="$set('quick_filter','pickup_overdue')">
                     Overdue Pickup
+                </button>
+                <button
+                    class="btn btn-sm rounded-pill {{ $paid_filter === '0' || $paid_filter === 0 ? 'btn-danger' : 'btn-outline-danger' }}"
+                    wire:click="$set('paid_filter',0)">
+                    Unpaid
+                </button>
+
+                <button
+                    class="btn btn-sm rounded-pill {{ $paid_filter === '1' || $paid_filter === 1 ? 'btn-warning' : 'btn-outline-warning' }}"
+                    wire:click="$set('paid_filter',1)">
+                    Partial
+                </button>
+
+                <button
+                    class="btn btn-sm rounded-pill {{ $paid_filter === '2' || $paid_filter === 2 ? 'btn-success' : 'btn-outline-success' }}"
+                    wire:click="$set('paid_filter',2)">
+                    Paid
                 </button>
             </div>
         </div>

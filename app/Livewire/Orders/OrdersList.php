@@ -362,8 +362,10 @@ class OrdersList extends Component
         }
 
         // Paid Filter
-        if (!empty($this->paid_filter)) {
-
+        if (
+            $this->paid_filter !== null &&
+            $this->paid_filter !== ''
+        ) {
             $paymentStatus = $this->paid_filter;
 
             $orders = $orders
@@ -531,6 +533,13 @@ class OrdersList extends Component
 
     public function updatedQuickFilter()
     {
+        $this->resetPage();
+        $this->reloadOrders();
+    }
+
+    public function updatedPaidFilter()
+    {
+        $this->resetPage();
         $this->reloadOrders();
     }
 }

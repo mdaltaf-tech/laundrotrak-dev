@@ -14,6 +14,50 @@
             </a>
             @endcan
         </div>
+        <div class="d-flex flex-wrap gap-2 mt-3 mb-3">
+            <div class="d-flex flex-wrap gap-2">
+                <button
+                    class="btn btn-sm rounded-pill {{ $quick_filter == '' ? 'btn-primary' : 'btn-outline-primary' }}"
+                    wire:click="
+                        $set('quick_filter','');
+                        $set('paid_filter','');
+                    ">
+                    All Orders
+                </button>
+                <button
+                    class="btn btn-sm rounded-pill {{ $quick_filter == 'tomorrow' ? 'btn-primary' : 'btn-outline-primary' }}"
+                    wire:click="$set('quick_filter','tomorrow')">
+                    Tomorrow Delivery
+                </button>
+                <button
+                    class="btn btn-sm rounded-pill {{ $quick_filter == 'delayed' ? 'btn-primary' : 'btn-outline-primary' }}"
+                    wire:click="$set('quick_filter','delayed')">
+                    Delayed Orders
+                </button>
+                <button
+                    class="btn btn-sm rounded-pill {{ $quick_filter == 'pickup_overdue' ? 'btn-primary' : 'btn-outline-primary' }}"
+                    wire:click="$set('quick_filter','pickup_overdue')">
+                    Overdue Pickup
+                </button>
+                <button
+                    class="btn btn-sm rounded-pill {{ $paid_filter === '0' || $paid_filter === 0 ? 'btn-danger' : 'btn-outline-danger' }}"
+                    wire:click="$set('paid_filter',0)">
+                    Unpaid
+                </button>
+
+                <button
+                    class="btn btn-sm rounded-pill {{ $paid_filter === '1' || $paid_filter === 1 ? 'btn-warning' : 'btn-outline-warning' }}"
+                    wire:click="$set('paid_filter',1)">
+                    Partial
+                </button>
+
+                <button
+                    class="btn btn-sm rounded-pill {{ $paid_filter === '2' || $paid_filter === 2 ? 'btn-success' : 'btn-outline-success' }}"
+                    wire:click="$set('paid_filter',2)">
+                    Paid
+                </button>
+            </div>
+        </div>
         <div class="tw-p-0">
             <div class="table-responsive scroll-sm">
                 <table class="table bordered-table sm-table mb-0">
@@ -34,13 +78,13 @@
                             <td>
                                 <div class="tw-flex tw-flex-col">
                                     <div class="text-neutral-600">
-                                        {{ $lang->data['order_id'] ?? 'Order ID' }} : <span class="tw-font-medium text-primary-light">{{ $item->order_number }}</span> 
+                                        {{ $lang->data['order_id'] ?? 'Order ID' }} : <span class="tw-font-medium text-primary-light">{{ $item->order_number }}</span>
                                     </div>
                                     <div class="text-neutral-600">
-                                        {{ $lang->data['order_date'] ?? 'Order Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($item->order_date)->format('d/m/y') }}</span> 
+                                        {{ $lang->data['order_date'] ?? 'Order Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($item->order_date)->format('d/m/y') }}</span>
                                     </div>
                                     <div class="text-neutral-600">
-                                        {{ $lang->data['delivery_date'] ?? 'Delivery Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($item->delivery_date)->format('d/m/y') }}</span> 
+                                        {{ $lang->data['delivery_date'] ?? 'Delivery Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($item->delivery_date)->format('d/m/y') }}</span>
                                     </div>
                                     <div class="text-neutral-600">
                                         Total Items :
@@ -86,13 +130,13 @@
                                 @endphp
                                 <div class="tw-flex tw-flex-col">
                                     <div class="text-neutral-600">
-                                        {{ $lang->data['total_amount'] ?? 'Total Amount' }} : <span class="tw-font-medium text-primary-light">{{ getFormattedCurrency($item->total) }}</span> 
+                                        {{ $lang->data['total_amount'] ?? 'Total Amount' }} : <span class="tw-font-medium text-primary-light">{{ getFormattedCurrency($item->total) }}</span>
                                     </div>
                                     <div class="text-neutral-600">
                                         @php
                                         $current_paid_amount = \App\Models\Payment::where('order_id',$item->id)->sum('received_amount');
                                         @endphp
-                                        {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} : <span class="tw-font-medium text-primary-light"> {{ getFormattedCurrency($current_paid_amount) }}</span> 
+                                        {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} : <span class="tw-font-medium text-primary-light"> {{ getFormattedCurrency($current_paid_amount) }}</span>
                                     </div>
                                     @if ($paidamount < $item->total)
                                         @if($item->status != 4)
@@ -115,7 +159,7 @@
                             <td class="">
                                 {{ $item->user->name ?? "" }}
                             </td>
-                            <td class="text-center"> 
+                            <td class="text-center">
                                 <div class="d-flex align-items-center gap-10 justify-content-center">
                                     @can('order_view')
                                     <a href="{{route('order.view',$item->id)}}" type="button" class="bg-success-100 text-success-600 bg-hover-success-200 fw-medium tw-size-8 d-flex justify-content-center align-items-center rounded-circle" >
@@ -133,12 +177,12 @@
                                     </a>
                                     @endcan
                                     @can('order_delete')
-                                    <button type="button" wire:click.prevent="deleteOrder({{$item->id}})" class="remove-item-button bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium tw-size-8 d-flex justify-content-center align-items-center rounded-circle"> 
+                                    <button type="button" wire:click.prevent="deleteOrder({{$item->id}})" class="remove-item-button bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium tw-size-8 d-flex justify-content-center align-items-center rounded-circle">
                                         <iconify-icon icon="fluent:delete-24-regular" class="menu-icon"></iconify-icon>
                                     </button>
                                     @endcan
                                 </div>
-                            </td> 
+                            </td>
                         </tr>
                         @endforeach
                   </tbody>
@@ -171,7 +215,7 @@
                 </div>
                 @endif
             </div>
-            
+
         </div>
     </div>
 
@@ -185,7 +229,7 @@
                 @if ($order)
                     <div class="modal-body p-24">
                         <form action="#">
-                            <div class="row">   
+                            <div class="row">
                                 <div class="col-12">
                                     <div class="">
                                         <ul>
@@ -265,10 +309,10 @@
                                     @enderror
                                 </div>
                                 <div class="d-flex align-items-start justify-content-end gap-3 mt-24">
-                                    <button data-bs-dismiss="modal" type="button" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8"> 
+                                    <button data-bs-dismiss="modal" type="button" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8">
                                     {{ $lang->data['cancel'] ?? 'Cancel' }}
                                     </button>
-                                    <button type="button" wire:click.prevent="addPayment()" class="btn btn-primary border border-primary-600 text-md px-24 py-12 radius-8"> 
+                                    <button type="button" wire:click.prevent="addPayment()" class="btn btn-primary border border-primary-600 text-md px-24 py-12 radius-8">
                                     {{ $lang->data['save'] ?? 'Save' }}
                                     </button>
                                 </div>

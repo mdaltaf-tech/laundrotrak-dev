@@ -64,7 +64,7 @@
                     </a>
                 </div>
                 <div class="col-xl-3 col-lg-3 col-md-6">
-                    <a href="{{ url('admin/orders') }}?overdue=1" class="text-decoration-none d-block h-100">
+                    <a href="{{ url('admin/orders') }}?quick_filter=delayed" class="text-decoration-none d-block h-100">
                         <div class="card shadow-none border h-100 dashboard-kpi-card">
                             <div class="card-body p-20">
                                 <div class="d-flex align-items-center h-100">
@@ -132,7 +132,7 @@
                     </a>
                 </div>
                 <div class="col-xl-3 col-lg-3 col-md-6">
-                    <a href="{{ url('admin/orders') }}?pickup_overdue=1" class="text-decoration-none d-block h-100">
+                    <a href="{{ url('admin/orders') }}?quick_filter=pickup_overdue" class="text-decoration-none d-block h-100">
                         <div class="card shadow-none border h-100 dashboard-kpi-card">
                             <div class="card-body p-20">
                                 <div class="d-flex align-items-center h-100">
@@ -193,7 +193,7 @@
                                         {{ $totalTomorrowOrders }} Orders • {{ $tomorrowGarments }} Garments
                                     </div>
                                     @if($totalTomorrowOrders > 4)
-                                        <a href="{{ url('admin/orders?delivery=tomorrow') }}"
+                                        <a href="{{ url('admin/orders?quick_filter=tomorrow') }}"
                                         class="text-primary small fw-semibold">
                                             View All
                                         </a>
@@ -287,7 +287,7 @@
                                     {{ $totalDelayedOrders }} Orders • {{ $delayedGarments }} Garments
                                 </div>
                                 @if($totalDelayedOrders > 4)
-                                    <a href="{{ url('admin/orders?overdue=1') }}"
+                                    <a href="{{ url('admin/orders?quick_filter=delayed') }}"
                                     class="text-primary small fw-semibold">
                                         View All
                                     </a>
@@ -375,7 +375,7 @@
                                     {{ $totalOverdueOrders }} Orders • {{ $overdueGarments }} Garments
                                 </div>
                                 @if($totalOverdueOrders > 4)
-                                    <a href="{{ url('admin/orders?pickup_overdue=1') }}"
+                                    <a href="{{ url('admin/orders?quick_filter=pickup_overdue') }}"
                                     class="text-primary small fw-semibold">
                                         View All
                                     </a>

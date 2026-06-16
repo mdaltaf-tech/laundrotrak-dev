@@ -140,14 +140,7 @@ class OrdersList extends Component
             );
         }
     }
-    /* refresh the page */
-    public function refresh()
-    {
-        /* if search query or order filter is empty */
-        if ($this->search_query == '' && $this->order_filter == '') {
-            $this->orders->fresh();
-        }
-    }
+
     public function loadOrders()
     {
         if ($this->hasMorePages !== null  && !$this->hasMorePages) {
@@ -162,18 +155,8 @@ class OrdersList extends Component
     }
     public function reloadOrders()
     {
-        $this->orders = new EloquentCollection();
-        $this->nextCursor = null;
-        $this->hasMorePages = null;
-        if ($this->hasMorePages !== null  && !$this->hasMorePages) {
-            return;
-        }
-        $orders = $this->filterdata();
-        $this->orders->push(...$orders->items());
-        if ($this->hasMorePages = $orders->hasMorePages()) {
-            $this->nextCursor = $orders->nextCursor()->encode();
-        }
-        $this->currentCursor = $orders->cursor();
+        $this->resetCursorPagination();
+        $this->loadOrders();
     }
 
     public function filterdata()
@@ -299,10 +282,7 @@ class OrdersList extends Component
         }
 
         return $orders
-            ->orderBy(
-                'order_number',
-                'DESC'
-            )
+            ->latest('id')
             ->cursorPaginate(
                 10,
                 ['*'],

@@ -361,46 +361,14 @@ class OrdersList extends Component
             );
         }
 
-        // Paid Filter
-        if (
+       if (
             $this->paid_filter !== null &&
             $this->paid_filter !== ''
         ) {
-            $paymentStatus = $this->paid_filter;
 
-            $orders = $orders
-                ->orderBy('order_number', 'DESC')
-                ->get()
-                ->map(function ($order) {
-
-                    $paidAmount = Payment::active()
-                        ->where(
-                            'order_id',
-                            $order->id
-                        )
-                        ->sum(
-                            'received_amount'
-                        );
-
-                    if ($paidAmount <= 0) {
-                        $order->payment_status = Order::PAYMENT_UNPAID;
-                    } elseif ($paidAmount < $order->total) {
-                        $order->payment_status = Order::PAYMENT_PARTIAL;
-                    } else {
-                        $order->payment_status = Order::PAYMENT_PAID;
-                    }
-
-                    return $order;
-                })
-                ->filter(function ($order) use ($paymentStatus) {
-
-                    return $order->payment_status == $paymentStatus;
-
-                });
-
-            return new \Illuminate\Pagination\CursorPaginator(
-                $orders,
-                10
+            $orders->where(
+                'payment_status',
+                $this->paid_filter
             );
         }
 
@@ -531,15 +499,23 @@ class OrdersList extends Component
         );
     }
 
+    private function resetCursorPagination()
+    {
+        $this->orders = new EloquentCollection();
+        $this->nextCursor = null;
+        $this->currentCursor = null;
+        $this->hasMorePages = null;
+    }
+
     public function updatedQuickFilter()
     {
-        $this->resetPage();
-        $this->reloadOrders();
+        $this->resetCursorPagination();
+        $this->loadOrders();
     }
 
     public function updatedPaidFilter()
     {
-        $this->resetPage();
-        $this->reloadOrders();
+        $this->resetCursorPagination();
+        $this->loadOrders();
     }
 }

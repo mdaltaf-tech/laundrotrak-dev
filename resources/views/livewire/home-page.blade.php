@@ -70,13 +70,20 @@
                                 <div class="d-flex align-items-center h-100">
                                     <div class="flex-grow-1">
                                         <p class="fw-medium text-primary-light mb-1">
-                                            {{ $lang->data['overdue_orders'] ?? 'Delayed Orders' }}
+                                            {{ $lang->data['monthly_orders'] ?? 'Monthly Orders' }}
                                         </p>
-                                        <h6 class="mb-0">{{ $delayedOrders }}</h6>
+                                        <h6 class="mb-0">
+                                            {{ $monthlyOrders }}
+                                        </h6>
+                                        <small class="text-primary">
+                                            {{ now()->format('F Y') }}
+                                        </small>
                                     </div>
-                                    <div
-                                        class="w-50-px h-50-px bg-success-main rounded-circle d-flex justify-content-center align-items-center">
-                                        <iconify-icon icon="mdi:alert-circle" class="text-white text-2xl mb-0"></iconify-icon>
+                                    <div class="w-50-px h-50-px bg-success rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon
+                                            icon="mdi:calendar-month"
+                                            class="text-white text-2xl">
+                                        </iconify-icon>
                                     </div>
                                 </div>
                             </div>
@@ -95,6 +102,15 @@
                                         <h6 class="mb-0">
                                             ₹{{ number_format($today_collection,2) }}
                                         </h6>
+                                        <div class="d-flex flex-wrap gap-2 mt-1">
+                                            <span class="badge bg-success-subtle text-success">
+                                                Cash ₹{{ number_format($todayCash, 0) }}
+                                            </span>
+
+                                            <span class="badge bg-primary-subtle text-primary">
+                                                UPI ₹{{ number_format($todayUpi, 0) }}
+                                            </span>
+                                        </div>
                                     </div>
                                     <div class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
                                         <iconify-icon
@@ -114,11 +130,16 @@
                                 <div class="d-flex align-items-center h-100">
                                     <div class="flex-grow-1">
                                         <p class="fw-medium mb-1">
-                                            Unpaid Orders
+                                            Pending Collection
                                         </p>
-                                        <h6 class="mb-0">
-                                            {{ $unpaid_count }}
+
+                                        <h6 class="mb-1">
+                                            ₹{{ number_format($pendingCollection,2) }}
                                         </h6>
+
+                                        <small class="text-muted">
+                                            {{ $unpaidOrderCount }} Orders
+                                        </small>
                                     </div>
                                     <div class="w-50-px h-50-px bg-danger rounded-circle d-flex justify-content-center align-items-center">
                                         <iconify-icon
@@ -163,6 +184,9 @@
                                         <h6 class="mb-0">
                                             {{ $delivered_count }}
                                         </h6>
+                                        <small class="text-success">
+                                            {{ $todayDelivered }} delivered today
+                                        </small>
                                     </div>
                                     <div class="w-50-px h-50-px bg-success rounded-circle d-flex justify-content-center align-items-center">
                                         <iconify-icon

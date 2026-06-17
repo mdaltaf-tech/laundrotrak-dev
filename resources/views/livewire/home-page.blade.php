@@ -492,6 +492,87 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-12 mt-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="mb-3">
+                                💰 Credit Delivered Orders
+                            </h6>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <div class="fw-medium text-dark mt-1">
+                                    {{ $creditDeliveredOrders }} Orders • ₹{{ number_format($creditDeliveredAmount,2) }}
+                                </div>
+                                @if($creditDeliveredOrders > 4)
+                                    <a href="{{ url('admin/orders?credit_filter=1') }}"
+                                    class="text-primary small fw-semibold">
+                                        View All
+                                    </a>
+                                @endif
+                            </div>
+                            <div class="row g-2 mt-1">
+                                @foreach($creditDeliveredList as $order)
+                                    <div class="col-md-6 col-xl-3">
+                                        <a href="{{ url('admin/orders/view/'.$order->id) }}" class="text-decoration-none d-block h-100">
+                                            <div class="bg-neutral-50 p-16 radius-8 border dashboard-order-card">
+                                                <div class="tw-flex tw-justify-between tw-items-start">
+                                                    <div class="tw-font-bold text-primary-light">
+                                                        {{ $order->order_number }}
+                                                    </div>
+                                                    <span class="badge bg-danger">
+                                                        Credit
+                                                    </span>
+                                                </div>
+                                                <div class="tw-mt-2 text-sm">
+                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div class="d-flex align-items-center justify-content-between gap-10">
+                                                            <iconify-icon icon="mdi:user-outline"
+                                                                class="text-primary-light"></iconify-icon>
+                                                            <span class="tw-font-bold text-truncate d-inline-block"
+                                                                style="max-width:180px;">
+                                                                {{ $order->customer_name }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        Garments :
+                                                        <span class="tw-font-bold">
+                                                            {{ $order->garment_count }}
+                                                        </span>
+                                                    </div>
+                                                    @if($order->balance_amount > 0)
+                                                        <div class="text-danger">
+                                                            Balance :
+                                                            ₹{{ number_format($order->balance_amount,2) }}
+                                                        </div>
+                                                    @endif
+                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div class="d-flex text-sm align-items-center justify-content-between gap-10">
+                                                            <iconify-icon icon="solar:calendar-outline"
+                                                                class="text-primary-light"></iconify-icon>
+                                                            <span
+                                                                class="start-date text-secondary-light">{{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="small text-muted">
+                                                        Delivered :
+                                                        {{ \Carbon\Carbon::parse($order->updated_at)->format('d/m/Y') }}
+                                                    </div>
+
+                                                    <div class="text-danger fw-semibold">
+                                                        {{ $order->credit_days }} days outstanding
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                @endforeach
+                                @if($overduePickupList->count() == 0)
+                                    <x-empty-item/>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

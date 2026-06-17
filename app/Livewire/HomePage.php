@@ -30,6 +30,9 @@ class HomePage extends Component
     public $unpaidOrderCount = 0;
     public $todayDelivered = 0;
     public $monthlyOrders = 0;
+    public $creditDeliveredAmount = 0;
+    public $creditDeliveredOrders = 0;
+    public $creditDeliveredList;
 
     public function render()
     {
@@ -204,6 +207,43 @@ class HomePage extends Component
             ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
+
+        $creditQuery = Order::active()
+            ->where(
+                'status',
+                Order::STATUS_DELIVERED
+            )
+            ->where(
+                'balance_amount',
+                '>',
+                0
+            );
+
+        $this->creditDeliveredOrders =
+            (clone $creditQuery)->count();
+
+        $this->creditDeliveredAmount =
+            (clone $creditQuery)->sum('balance_amount');
+
+        $this->creditDeliveredList =
+            (clone $creditQuery)
+                ->orderByDesc('balance_amount')
+                ->limit(4)
+                ->get();
+
+        $this->creditDeliveredList->each(function ($order) {
+            $order->garment_count =
+                OrderArticle::active()
+                    ->where('order_id', $order->id)
+                    ->count();
+
+            $order->credit_days =
+                Carbon::parse($order->updated_at)
+                    ->startOfDay()
+                    ->diffInDays(
+                        today()->startOfDay()
+                    );
+        });
     }
 
     /* process while update the element */

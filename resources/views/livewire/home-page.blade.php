@@ -220,7 +220,7 @@
                                     <div class="fw-medium text-dark mt-1">
                                         {{ $totalTodayOrders  }} Orders • {{ $todayGarments  }} Garments
                                     </div>
-                                    @if($totalTodayOrders  > 1)
+                                    @if($totalTodayOrders  > 4)
                                         <a href="{{ url('admin/orders?quick_filter=today') }}"
                                         class="text-primary small fw-semibold">
                                             View All
@@ -609,7 +609,7 @@
                                 <div class="fw-medium text-dark mt-1">
                                     {{ $creditDeliveredOrders }} Orders • ₹{{ number_format($creditDeliveredAmount,2) }}
                                 </div>
-                                @if($creditDeliveredOrders > 1)
+                                @if($creditDeliveredOrders > 4)
                                     <a href="{{ url('admin/orders?paid_filter=3') }}"
                                     class="text-primary small fw-semibold">
                                         View All

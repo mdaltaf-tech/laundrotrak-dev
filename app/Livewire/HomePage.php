@@ -33,6 +33,9 @@ class HomePage extends Component
     public $creditDeliveredAmount = 0;
     public $creditDeliveredOrders = 0;
     public $creditDeliveredList;
+    public $todayOrders;
+    public $todayGarments = 0;
+    public $totalTodayOrders = 0;
 
     public function render()
     {
@@ -65,6 +68,50 @@ class HomePage extends Component
             ->where('status', Order::STATUS_DELIVERED)
             ->whereDate('updated_at', today())
             ->count();
+
+        $todayOrdersQuery = Order::active()
+            ->whereDate(
+                'delivery_date',
+                today()
+            )
+            ->whereNotIn(
+                'status',
+                [
+                    Order::STATUS_DELIVERED,
+                    Order::STATUS_RETURNED
+                ]
+            );
+
+        $this->totalTodayOrders =
+            (clone $todayOrdersQuery)->count();
+
+        $allTodayOrderIds =
+            (clone $todayOrdersQuery)->pluck('id');
+
+        $this->todayGarments =
+            OrderArticle::active()
+                ->whereIn(
+                    'order_id',
+                    $allTodayOrderIds
+                )
+                ->count();
+
+        $this->todayOrders =
+            (clone $todayOrdersQuery)
+                ->orderBy('status')
+                ->orderBy('delivery_date')
+                ->limit(4)
+                ->get();
+
+        $this->todayOrders->each(function ($order) {
+            $order->garment_count =
+                OrderArticle::active()
+                    ->where(
+                        'order_id',
+                        $order->id
+                    )
+                    ->count();
+        });
 
         $tomorrowOrdersQuery = Order::active()
             ->whereDate(

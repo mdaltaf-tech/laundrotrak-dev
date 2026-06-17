@@ -18,43 +18,51 @@
             <div class="d-flex flex-wrap gap-2">
                 <button
                     class="btn btn-sm rounded-pill {{ $quick_filter == '' ? 'btn-primary' : 'btn-outline-primary' }}"
-                    wire:click="
-                        $set('quick_filter','');
-                        $set('paid_filter','');
-                    ">
+                    wire:click="resetFilters">
                     All Orders
                 </button>
                 <button
+                    class="btn btn-sm rounded-pill {{ $quick_filter == 'today' ? 'btn-primary' : 'btn-outline-primary' }}"
+                    wire:click="filterByQuick('today')">
+                    Today's Delivery
+                </button>
+                <button
                     class="btn btn-sm rounded-pill {{ $quick_filter == 'tomorrow' ? 'btn-primary' : 'btn-outline-primary' }}"
-                    wire:click="$set('quick_filter','tomorrow')">
-                    Tomorrow Delivery
+                    wire:click="filterByQuick('tomorrow')">
+                    Tomorrow's Delivery
                 </button>
                 <button
                     class="btn btn-sm rounded-pill {{ $quick_filter == 'delayed' ? 'btn-primary' : 'btn-outline-primary' }}"
-                    wire:click="$set('quick_filter','delayed')">
+                    wire:click="filterByQuick('delayed')">
                     Delayed Orders
                 </button>
                 <button
                     class="btn btn-sm rounded-pill {{ $quick_filter == 'pickup_overdue' ? 'btn-primary' : 'btn-outline-primary' }}"
-                    wire:click="$set('quick_filter','pickup_overdue')">
+                    wire:click="filterByQuick('pickup_overdue')">
                     Overdue Pickup
                 </button>
                 <button
                     class="btn btn-sm rounded-pill {{ $paid_filter === '0' || $paid_filter === 0 ? 'btn-danger' : 'btn-outline-danger' }}"
-                    wire:click="$set('paid_filter',0)">
+                    wire:click="filterByPayment(0)">
                     Unpaid
                 </button>
 
                 <button
                     class="btn btn-sm rounded-pill {{ $paid_filter === '1' || $paid_filter === 1 ? 'btn-warning' : 'btn-outline-warning' }}"
-                    wire:click="$set('paid_filter',1)">
+                   wire:click="filterByPayment(1)">
                     Partial
                 </button>
 
                 <button
                     class="btn btn-sm rounded-pill {{ $paid_filter === '2' || $paid_filter === 2 ? 'btn-success' : 'btn-outline-success' }}"
-                    wire:click="$set('paid_filter',2)">
+                    wire:click="filterByPayment(2)">
                     Paid
+                </button>
+
+                <button
+                    class="btn btn-sm rounded-pill {{ $paid_filter === '3' || $paid_filter === 3 ? 'btn-info' : 'btn-outline-info' }}"
+                    wire:click="filterByPayment(3)">
+                    Credit
                 </button>
             </div>
         </div>

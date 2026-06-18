@@ -23,9 +23,9 @@ class OrdersList extends Component
     public $nextCursor;
     protected $currentCursor;
     public $hasMorePages;
-    public $paid_filter;
+    public $paid_filter = '';
     public $overdue_filter;
-    public $quick_filter;
+    public $quick_filter = '';
 
     #[Title('Orders')]
     public function render()
@@ -147,12 +147,14 @@ class OrdersList extends Component
             return;
         }
         $myorder = $this->filterdata();
+
         $this->orders->push(...$myorder->items());
         if ($this->hasMorePages = $myorder->hasMorePages()) {
             $this->nextCursor = $myorder->nextCursor()->encode();
         }
         $this->currentCursor = $myorder->cursor();
     }
+
     public function reloadOrders()
     {
         $this->resetCursorPagination();
@@ -273,11 +275,18 @@ class OrdersList extends Component
             );
         }
 
-        elseif ($this->quick_filter == 'unpaid') {
+        elseif ($this->quick_filter == 'today') {
 
-            $orders->where(
-                'payment_status',
-                Order::PAYMENT_UNPAID
+            $orders->whereDate(
+                'delivery_date',
+                today()
+            )
+            ->whereNotIn(
+                'status',
+                [
+                    Order::STATUS_DELIVERED,
+                    Order::STATUS_RETURNED
+                ]
             );
         }
 
@@ -341,6 +350,30 @@ class OrdersList extends Component
                 'message'=>'Order archived successfully'
             ]
         );
+    }
+
+    public function filterByPayment($status)
+    {
+        $this->quick_filter = '';
+        $this->paid_filter = $status;
+
+        $this->reloadOrders();
+    }
+
+    public function filterByQuick($filter)
+    {
+        $this->paid_filter = '';
+        $this->quick_filter = $filter;
+
+        $this->reloadOrders();
+    }
+
+    public function resetFilters()
+    {
+        $this->paid_filter = '';
+        $this->quick_filter = '';
+
+        $this->reloadOrders();
     }
 
     private function resetCursorPagination()

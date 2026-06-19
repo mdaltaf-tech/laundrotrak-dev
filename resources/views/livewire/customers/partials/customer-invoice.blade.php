@@ -18,13 +18,13 @@
                             <td>
                                 <div class="tw-flex tw-flex-col">
                                     <div class="text-neutral-600">
-                                        {{ $lang->data['order_id'] ?? 'Order ID' }} : <span class="tw-font-medium text-primary-light">{{ $item->order_number }}</span> 
+                                        {{ $lang->data['order_id'] ?? 'Order ID' }} : <span class="tw-font-medium text-primary-light">{{ $item->order_number }}</span>
                                     </div>
                                     <div class="text-neutral-600">
-                                        {{ $lang->data['order_date'] ?? 'Order Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($item->order_date)->format('d/m/y') }}</span> 
+                                        {{ $lang->data['order_date'] ?? 'Order Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($item->order_date)->format('d/m/y') }}</span>
                                     </div>
                                     <div class="text-neutral-600">
-                                        {{ $lang->data['delivery_date'] ?? 'Delivery Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($item->delivery_date)->format('d/m/y') }}</span> 
+                                        {{ $lang->data['delivery_date'] ?? 'Delivery Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($item->delivery_date)->format('d/m/y') }}</span>
                                     </div>
                                 </div>
                             </td>
@@ -60,13 +60,13 @@
                                 @endphp
                                 <div class="tw-flex tw-flex-col">
                                     <div class="text-neutral-600">
-                                        {{ $lang->data['total_amount'] ?? 'Total Amount' }} : <span class="tw-font-medium text-primary-light">{{ getFormattedCurrency($item->total) }}</span> 
+                                        {{ $lang->data['total_amount'] ?? 'Total Amount' }} : <span class="tw-font-medium text-primary-light">{{ getFormattedCurrency($item->total) }}</span>
                                     </div>
                                     <div class="text-neutral-600">
                                         @php
                                         $current_paid_amount = \App\Models\Payment::where('order_id',$item->id)->sum('received_amount');
                                         @endphp
-                                        {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} : <span class="tw-font-medium text-primary-light"> {{ getFormattedCurrency($current_paid_amount) }}</span> 
+                                        {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} : <span class="tw-font-medium text-primary-light"> {{ getFormattedCurrency($current_paid_amount) }}</span>
                                     </div>
                                     @if ($paidamount < $item->total)
                                         @if($item->status != 4)
@@ -133,7 +133,7 @@
                 @if ($order)
                     <div class="modal-body p-24">
                         <form action="#">
-                            <div class="row">   
+                            <div class="row">
                                 <div class="col-12">
                                     <div class="">
                                         <ul>
@@ -205,6 +205,27 @@
                                     @enderror
                                 </div>
                                 <div class="col-12 mb-20">
+                                    <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                        {{ $lang->data['payment_date'] ?? 'Payment Date' }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+
+                                    <input
+                                        type="date"
+                                        class="form-control radius-8"
+                                        wire:model="payment_date">
+
+                                    @error('payment_date')
+                                        <span class="error text-danger d-block">
+                                            {{ $message }}
+                                        </span>
+                                    @enderror
+
+                                    <small class="text-muted d-block mt-1">
+                                        Use actual payment receipt date.
+                                    </small>
+                                </div>
+                                <div class="col-12 mb-20">
                                     <label for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['notes'] ?? 'Notes' }} </label>
                                     <textarea class="form-control radius-8" placeholder="{{ $lang->data['enter_notes'] ?? 'Enter Notes' }}"  wire:model="note"></textarea>
                                     @error('note')
@@ -212,10 +233,10 @@
                                     @enderror
                                 </div>
                                 <div class="d-flex align-items-start justify-content-end gap-3 mt-24">
-                                    <button data-bs-dismiss="modal" type="button" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8"> 
+                                    <button data-bs-dismiss="modal" type="button" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8">
                                         Cancel
                                     </button>
-                                    <button type="button" wire:click.prevent="addPayment()" class="btn btn-primary border border-primary-600 text-md px-24 py-12 radius-8"> 
+                                    <button type="button" wire:click.prevent="addPayment()" class="btn btn-primary border border-primary-600 text-md px-24 py-12 radius-8">
                                         Save Change
                                     </button>
                                 </div>

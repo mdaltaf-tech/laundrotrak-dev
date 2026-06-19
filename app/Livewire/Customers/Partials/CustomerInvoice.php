@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Customers\Partials;
 
+use \Carbon\Carbon;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Payment;
@@ -18,7 +19,7 @@ class CustomerInvoice extends Component
     public $hasMorePages;
     public $customer;
     public $orders;
-    public $order, $amount_to_pay, $note, $balance, $payment_mode, $order_filter, $lang;
+    public $order, $amount_to_pay, $note, $balance, $payment_mode, $payment_date, $order_filter, $lang;
     public $paid_amount, $customer_name, $search_query;
 
 
@@ -31,6 +32,9 @@ class CustomerInvoice extends Component
         $this->customer = $customer;
         $this->orders = new EloquentCollection();
         $this->loadOrders();
+
+        $this->payment_date = now()->format('Y-m-d');
+
         if (session()->has('selected_language')) { /* if session has selected laugage*/
             $this->lang = Translation::where('id', session()->get('selected_language'))->first();
         } else {
@@ -96,37 +100,69 @@ class CustomerInvoice extends Component
         $this->customer = '';
         $this->note = '';
         $this->payment_mode = "";
+        $this->payment_date = now()->format('Y-m-d');
     }
     /* add paymentinformation */
     public function addPayment()
     {
+        if($this->order->status == 4)
+        {
+            return 0;
+        }
+        $this->validate([
+            'paid_amount'   => 'required',
+            'payment_mode'  => 'required',
+            'payment_date' => 'required|date',
+        ]);
+
         /* if balance is < 0 */
         if ($this->balance < 0) {
             $this->addError('balance', 'Pls Provide Valid Amount.');
             return 0;
         }
+
+        /* if paid amount > balance */
+        if($this->paid_amount > $this->balance)
+        {
+            $this->addError('payment_type','Amount cannot be greater than balance');
+            return 0;
+        }
+
         /* if the balance is > order total */
         if ($this->balance > $this->order->total) {
             $this->addError('balance', 'Paid Amount cannot be greater than total.');
             return 0;
         }
-        if ($this->order->status == 4) {
-            return 0;
+
+        $orderDate = Carbon::parse(
+            $this->order->order_date
+        )->startOfDay();
+
+        $paymentDate = Carbon::parse(
+            $this->payment_date
+        )->startOfDay();
+
+        if ($paymentDate->lt($orderDate)) {
+
+            $this->addError(
+                'payment_date',
+                'Payment date cannot be earlier than order booking date.'
+            );
+
+            return;
         }
-        $this->validate([
-            'payment_mode' => 'required',
-        ]);
+
         /* if any balance */
         if ($this->balance) {
             \App\Models\Payment::create([
-                'payment_date'  => \Carbon\Carbon::today()->toDateString(),
+                'payment_date' => Carbon::parse($this->payment_date),
                 'customer_id'   => $this->customer->id ?? null,
                 'customer_name' => $this->customer->name ?? null,
                 'order_id'  => $this->order->id,
                 'payment_type'  => $this->payment_mode,
                 'payment_note'  => $this->note,
                 'financial_year_id' => getFinancialYearId(),
-                'received_amount' => (float)$this->balance,
+                'received_amount' => (float)$this->paid_amount,
                 'created_by'    => Auth::user()->id,
             ]);
 

@@ -257,8 +257,8 @@ class HomePage extends Component
 
         $creditQuery = Order::active()
             ->where(
-                'status',
-                Order::STATUS_DELIVERED
+                'was_delivered_on_credit',
+                true
             )
             ->where(
                 'balance_amount',
@@ -285,11 +285,13 @@ class HomePage extends Component
                     ->count();
 
             $order->credit_days =
-                Carbon::parse($order->updated_at)
-                    ->startOfDay()
-                    ->diffInDays(
-                        today()->startOfDay()
-                    );
+                Carbon::parse(
+                    $order->credit_delivered_at
+                )
+                ->startOfDay()
+                ->diffInDays(
+                    today()->startOfDay()
+                );
         });
     }
 

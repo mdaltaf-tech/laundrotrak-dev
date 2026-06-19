@@ -308,7 +308,27 @@
                                     <span class="error text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
+                                <div class="col-12 mb-20">
+                                    <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                        {{ $lang->data['payment_date'] ?? 'Payment Date' }}
+                                        <span class="text-danger">*</span>
+                                    </label>
 
+                                    <input
+                                        type="date"
+                                        class="form-control radius-8"
+                                        wire:model="payment_date">
+
+                                    @error('payment_date')
+                                        <span class="error text-danger d-block">
+                                            {{ $message }}
+                                        </span>
+                                    @enderror
+
+                                    <small class="text-muted d-block mt-1">
+                                        Use actual payment receipt date.
+                                    </small>
+                                </div>
                                 <div class="col-12 mb-20">
                                     <label for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['notes'] ?? 'Notes' }} </label>
                                     <textarea class="form-control radius-8" placeholder="{{ $lang->data['enter_notes'] ?? 'Enter Notes' }}"  wire:model="note"></textarea>

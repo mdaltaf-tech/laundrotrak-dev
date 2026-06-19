@@ -4,6 +4,7 @@ namespace App\Livewire\Orders;
 
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Carbon\Carbon;
 use App\Models\Customer;
 use App\Models\MasterSettings;
 use App\Models\Order;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ViewOrder extends Component
 {
-    public $order,$orderdetails,$orderaddons,$lang,$balance,$total,$customer,$payments,$sitename,$address,$phone,$paid_amount,$payment_type,$zipcode,$tax_number,$store_email,$notes;
+    public $order,$orderdetails,$orderaddons,$lang,$balance,$total,$customer,$payments,$sitename,$address,$phone,$paid_amount,$payment_type,$payment_date,$zipcode,$tax_number,$store_email,$notes;
     public $current_delivery_date;
     #[Title('View Order')]
     public function render()
@@ -32,12 +33,12 @@ class ViewOrder extends Component
         if(Auth::user()->user_type==1)
         {  $this->order = Order::where('id',$id)->first();
             if($this->order) {
-                $this->current_delivery_date = \Carbon\Carbon::parse($this->order->delivery_date)->toDateString();
+                $this->current_delivery_date = Carbon::parse($this->order->delivery_date)->toDateString();
             }
         } else {
             $this->order = Order::where('created_by',Auth::user()->id)->where('id',$id)->first();
             if($this->order) {
-                $this->current_delivery_date = \Carbon\Carbon::parse($this->order->delivery_date)->toDateString();
+                $this->current_delivery_date = Carbon::parse($this->order->delivery_date)->toDateString();
             }
         }
         if(!$this->order)
@@ -105,6 +106,8 @@ class ViewOrder extends Component
         $this->balance = $this->order->balance_amount;
         // Default payment input to outstanding balance
         $this->paid_amount = $this->balance;
+        $this->payment_date = now()->format('Y-m-d');
+
         if(session()->has('selected_language'))
         {   /* session has selected language */
             $this->lang = Translation::where('id',session()->get('selected_language'))->first();
@@ -120,18 +123,46 @@ class ViewOrder extends Component
         {
             return 0;
         }
+
         $this->validate([
             'paid_amount'   => 'required',
             'payment_type'  => 'required',
+            'payment_date' => 'required|date',
         ]);
+
+        /* if balance is < 0 */
+        if ($this->balance < 0) {
+            $this->addError('balance', 'Pls Provide Valid Amount.');
+            return 0;
+        }
+
         /* if paid amount > balance */
         if($this->paid_amount > $this->balance)
         {
             $this->addError('payment_type','Amount cannot be greater than balance');
             return 0;
         }
+
+        $orderDate = Carbon::parse(
+            $this->order->order_date
+        )->startOfDay();
+
+        $paymentDate = Carbon::parse(
+            $this->payment_date
+        )->startOfDay();
+
+        if ($paymentDate->lt($orderDate)) {
+
+            $this->addError(
+                'payment_date',
+                'Payment date cannot be earlier than order booking date.'
+            );
+
+            return;
+        }
+
         Payment::create([
-            'payment_date'  => \Carbon\Carbon::today(),
+            'payment_date' => Carbon::parse($this->payment_date),
             'customer_id'   => $this->customer->id ?? null,
             'customer_name' => $this->customer->name ?? null,
             'payment_note'  => $this->notes,
@@ -141,6 +172,7 @@ class ViewOrder extends Component
             'received_amount'   => $this->paid_amount,
             'created_by'    => Auth::user()->id,
         ]);
+
         $this->order->refreshPaymentStatus();
         $this->order->refresh();
         $this->payments = Payment::active()
@@ -156,6 +188,7 @@ class ViewOrder extends Component
         $this->paid_amount = $this->balance;
         $this->notes = '';
         $this->payment_type = '';
+        $this->payment_date = now()->format('Y-m-d');
         $this->dispatch('closemodal');
         $this->dispatch(
             'alert', ['type' => 'success',  'message' => 'Payment Successfully Added!']);
@@ -201,6 +234,10 @@ class ViewOrder extends Component
 
                 $this->order->payment_status =
                     Order::PAYMENT_CREDIT;
+
+                $this->order->was_delivered_on_credit = true;
+
+                $this->order->credit_delivered_at = now();
             }
         }
 

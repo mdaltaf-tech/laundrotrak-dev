@@ -45,9 +45,20 @@
                                     {{ $lang->data['ready_to_deliver'] ?? 'Ready To Deliver' }}
                                 </span>
                                 @elseif($item->status == 3)
-                                <span class="badge  fw-semibold text-success-600 bg-success-100 px-20 py-9 radius-4 text-white">
-                                    {{ $lang->data['delivered'] ?? 'Delivered' }}
-                                </span>
+                                    <div class="tw-flex tw-flex-col tw-gap-1">
+                                        <span class="badge fw-semibold text-success-600 bg-success-100 px-20 py-9 radius-4 text-white">
+                                            {{ $lang->data['delivered'] ?? 'Delivered' }}
+                                        </span>
+                                        @if(
+                                            $item->was_delivered_on_credit
+                                            &&
+                                            $item->balance_amount > 0
+                                        )
+                                            <span class="badge fw-semibold text-danger-600 bg-danger-100 px-20 py-9 radius-4">
+                                                CREDIT
+                                            </span>
+                                        @endif
+                                    </div>
                                 @elseif($item->status == 4)
                                 <span class="badge  fw-semibold text-danger-600 bg-danger-100 px-20 py-9 radius-4 text-white">
                                     {{ $lang->data['returned'] ?? 'Returned' }}
@@ -67,6 +78,24 @@
                                         $current_paid_amount = \App\Models\Payment::where('order_id',$item->id)->sum('received_amount');
                                         @endphp
                                         {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} : <span class="tw-font-medium text-primary-light"> {{ getFormattedCurrency($current_paid_amount) }}</span>
+                                        @if(
+                                            $item->was_delivered_on_credit
+                                            && $item->balance_amount > 0
+                                        )
+                                            <div class="text-warning">
+                                                Credit Age :
+                                                {{
+                                                    \Carbon\Carbon::parse(
+                                                        $item->credit_delivered_at
+                                                    )
+                                                    ->startOfDay()
+                                                    ->diffInDays(
+                                                        today()->startOfDay()
+                                                    )
+                                                }}
+                                                Days
+                                            </div>
+                                        @endif
                                     </div>
                                     @if ($paidamount < $item->total)
                                         @if($item->status != 4)

@@ -45,7 +45,8 @@
                                 <iconify-icon icon="mdi:dollar" class="text-neutral-900 tw-text-lg"></iconify-icon>
                             </div>
                             <div class="flex-grow-1">
-                                <h6 class="text-md mb-0 fw-normal">{{ $lang->data['total_balance'] ?? 'Total Balance' }}</h6>
+                                <h6 class="text-md mb-0 fw-normal">{{ $lang->data['credit_outstanding'] ?? 'Credit Outstanding' }}</h6>
+
                                 <span class="text-sm text-secondary-light fw-normal">
                                     @php
                                     $balance_amount = $invoice_amount - $payment;
@@ -60,6 +61,34 @@
                                     @endif
                                 @endif
                                 </span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-12">
+                            <div class="w-40-px h-40-px radius-8 flex-shrink-0 bg-warning-50 d-flex justify-content-center align-items-center">
+                                <iconify-icon
+                                    icon="hugeicons:money-receive-circle"
+                                    class="text-neutral-900 tw-text-lg">
+                                </iconify-icon>
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <h6 class="text-md mb-0 fw-normal">
+                                    Credit Orders
+                                </h6>
+
+                                <div class="text-sm text-secondary-light fw-normal">
+                                    <div>{{ $creditOrderCount }} Orders</div>
+                                    <div class="text-danger">
+                                        Outstanding :
+                                        {{ getFormattedCurrency($creditOutstanding) }}
+                                    </div>
+                                    @if($creditOrderCount > 0)
+                                        <div>
+                                            Oldest Due :
+                                            {{ $oldestCreditDays }} Days
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-12">
@@ -113,11 +142,11 @@
                         </li>
                         <li class="nav-item" role="presentation">
                           <button class="nav-link d-flex align-items-center px-24" id="pills-change-passwork-tab" data-bs-toggle="pill" data-bs-target="#pills-change-passwork" type="button" role="tab" aria-controls="pills-change-passwork" aria-selected="false" tabindex="-1">
-                          {{ $lang->data['payments'] ?? 'Payments' }} 
+                          {{ $lang->data['payments'] ?? 'Payments' }}
                           </button>
                         </li>
                     </ul>
-                    <div class="tab-content" id="pills-tabContent">   
+                    <div class="tab-content" id="pills-tabContent">
                         <livewire:customers.partials.customer-invoice :customer="$customer"/>
                         <livewire:customers.partials.customer-payments :customer="$customer"/>
                     </div>

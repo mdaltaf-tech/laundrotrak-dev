@@ -9,22 +9,24 @@
                         <th scope="col" class="">{{ $lang->data['invoice'] ?? 'Invoice' }}</th>
                         <th scope="col" class=""> {{ $lang->data['payment_type'] ?? 'Payment Type' }}</th>
                         <th scope="col" class="">{{ $lang->data['amount'] ?? 'Amount' }}</th>
+                        <th scope="col" class="">{{ $lang->data['payment_note'] ?? 'Note' }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($payments as $item)
                         <tr class="tw-text-xs">
                             <td class="">
-                                {{ \Carbon\Carbon::parse($item->order_date)->format('d/m/y') }}
+                                {{ \Carbon\Carbon::parse($item->payment_date)->format('d/m/y') }}
                             </td>
                             <td>
                                 <div class="tw-flex tw-flex-col">
-                                    <div class="text-neutral-600">
-                                        ID : <span class="tw-font-medium text-primary-light">{{ $item->order_number }}</span>
-                                    </div>
-                                    <div class="text-neutral-600">
-                                        Date : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($item->order->order_date)->format('d/m/y') }}</span>
-                                    </div>
+                                    <span class="fw-semibold text-primary-light">
+                                        {{ $item->order->order_number }}
+                                    </span>
+
+                                    <small class="text-muted">
+                                        {{ \Carbon\Carbon::parse($item->order->order_date)->format('d/m/y') }}
+                                    </small>
                                 </div>
                             </td>
                             <td>
@@ -35,6 +37,15 @@
                             </td>
                             <td class="text-primary">
                                 {{ getFormattedCurrency($item->received_amount) }}
+                            </td>
+                            <td>
+                                @if($item->payment_note)
+                                    <small>
+                                        {{ Str::limit($item->payment_note, 20) }}
+                                    </small>
+                                @else
+                                    -
+                                @endif
                             </td>
                         </tr>
                     @endforeach

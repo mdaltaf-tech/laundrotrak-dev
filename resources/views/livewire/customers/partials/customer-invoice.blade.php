@@ -67,31 +67,33 @@
                             </td>
                             <td>
                                 @php
-                                $paidamount = \App\Models\Payment::where('order_id', $item->id)->sum('received_amount');
+                                    $paidamount = $item->paid_amount ?? 0;
                                 @endphp
                                 <div class="tw-flex tw-flex-col">
                                     <div class="text-neutral-600">
                                         {{ $lang->data['total_amount'] ?? 'Total Amount' }} : <span class="tw-font-medium text-primary-light">{{ getFormattedCurrency($item->total) }}</span>
                                     </div>
                                     <div class="text-neutral-600">
-                                        @php
-                                        $current_paid_amount = \App\Models\Payment::where('order_id',$item->id)->sum('received_amount');
-                                        @endphp
-                                        {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} : <span class="tw-font-medium text-primary-light"> {{ getFormattedCurrency($current_paid_amount) }}</span>
+                                        {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} :
+                                        <span class="tw-font-medium text-primary-light">
+                                            {{ getFormattedCurrency($paidamount) }}
+                                        </span>
+
                                         @if(
                                             $item->was_delivered_on_credit
                                             && $item->balance_amount > 0
                                         )
+                                            <div class="text-danger fw-semibold">
+                                                Outstanding :
+                                                {{ getFormattedCurrency($item->balance_amount) }}
+                                            </div>
+
                                             <div class="text-warning">
-                                                Credit Age :
+                                                Credit Since :
                                                 {{
-                                                    \Carbon\Carbon::parse(
-                                                        $item->credit_delivered_at
-                                                    )
+                                                    \Carbon\Carbon::parse($item->credit_delivered_at)
                                                     ->startOfDay()
-                                                    ->diffInDays(
-                                                        today()->startOfDay()
-                                                    )
+                                                    ->diffInDays(today()->startOfDay())
                                                 }}
                                                 Days
                                             </div>
@@ -192,7 +194,7 @@
                                             </li>
                                             <li class="d-flex align-items-center gap-1 tw-justify-between">
                                                 <span class="text-md fw-semibold text-primary-light"> {{ $lang->data['balance'] ?? 'Balance' }} :</span>
-                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($order->total - $current_paid_amount) }}</span>
+                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($balance) }}</span>
                                             </li>
                                         </ul>
                                     </div>

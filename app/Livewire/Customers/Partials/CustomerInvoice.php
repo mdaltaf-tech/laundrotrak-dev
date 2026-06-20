@@ -14,6 +14,10 @@ use App\Models\Translation;
 
 class CustomerInvoice extends Component
 {
+    protected $listeners = [
+        'refreshCustomerInvoices' => 'reloadOrders'
+    ];
+
     public $nextCursor;
     protected $currentCursor;
     public $hasMorePages;
@@ -42,8 +46,26 @@ class CustomerInvoice extends Component
         }
     }
 
-    public function filterdata(){
-        $orders = Order::where('customer_id',$this->customer->id)->latest()->cursorPaginate(10, ['*'], 'cursor', Cursor::fromEncoded($this->nextCursor));
+    public function filterdata() {
+        $orders = Order::withSum(
+        [
+            'payments as paid_amount' => function ($q) {
+                $q->active();
+            }
+        ],
+        'received_amount'
+        )
+        ->where(
+            'customer_id',
+            $this->customer->id
+        )
+        ->latest()
+        ->cursorPaginate(
+            10,
+            ['*'],
+            'cursor',
+            Cursor::fromEncoded($this->nextCursor)
+        );
         return $orders;
     }
 
@@ -59,6 +81,7 @@ class CustomerInvoice extends Component
         }
         $this->currentCursor = $myorder->cursor();
     }
+
     public function reloadOrders()
     {
         $this->orders = new EloquentCollection();
@@ -82,17 +105,13 @@ class CustomerInvoice extends Component
         $this->order = Order::where('id', $id)->first();
         $this->customer = Customer::where('id', $this->order->customer_id)->first();
         $this->customer_name = $this->customer->name ?? null;
+        $this->order->refresh();
+
         $this->current_paid_amount =
-            Payment::active()
-                ->where(
-                    'order_id',
-                    $this->order->id
-                )
-                ->sum('received_amount');
+            $this->order->paid_amount;
 
         $this->balance =
-            $this->order->total -
-            $this->current_paid_amount;
+            $this->order->balance_amount;
 
         $this->paid_amount =
             $this->balance;
@@ -177,7 +196,9 @@ class CustomerInvoice extends Component
             ]);
 
             $this->order->refreshPaymentStatus();
-            $this->reloadOrders();
+            $this->order->refresh();
+            $this->dispatch('refreshCustomerInvoices');
+            $this->dispatch('refreshCustomerPayments');
             $this->resetInputFields();
             $this->dispatch('closemodal');
             $this->dispatch(

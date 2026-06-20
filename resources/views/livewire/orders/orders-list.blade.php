@@ -152,8 +152,19 @@
                                         @if($item->was_delivered_on_credit && $item->balance_amount > 0)
                                             <div class="text-danger fw-semibold">
                                                 Credit Outstanding :
-                                                ₹{{ number_format($item->balance_amount,2) }}
+                                                {{ getFormattedCurrency($item->balance_amount) }}
                                             </div>
+                                            @if($item->credit_delivered_at)
+                                                <div class="text-warning fw-medium">
+                                                    Credit Since :
+                                                    {{
+                                                        \Carbon\Carbon::parse($item->credit_delivered_at)
+                                                        ->startOfDay()
+                                                        ->diffInDays(today()->startOfDay())
+                                                    }}
+                                                    Days
+                                                </div>
+                                            @endif
                                             <span class="badge bg-danger-100 text-danger-600">
                                                 CREDIT
                                             </span>

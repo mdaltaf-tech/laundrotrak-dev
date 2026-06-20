@@ -673,7 +673,7 @@
                                         </a>
                                     </div>
                                 @endforeach
-                                @if($overduePickupList->count() == 0)
+                                @if($creditDeliveredList->count() == 0)
                                     <x-empty-item/>
                                 @endif
                             </div>

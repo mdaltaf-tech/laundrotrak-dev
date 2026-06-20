@@ -134,7 +134,9 @@
                             </td>
                             <td>
                                 @php
-                                $paidamount = \App\Models\Payment::where('order_id', $item->id)->sum('received_amount');
+                                    $paidamount = \App\Models\Payment::active()
+                                        ->where('order_id', $item->id)
+                                        ->sum('received_amount');
                                 @endphp
                                 <div class="tw-flex tw-flex-col">
                                     <div class="text-neutral-600">
@@ -142,9 +144,20 @@
                                     </div>
                                     <div class="text-neutral-600">
                                         @php
-                                        $current_paid_amount = \App\Models\Payment::where('order_id',$item->id)->sum('received_amount');
+                                            $current_paid_amount = \App\Models\Payment::active()
+                                                ->where('order_id', $item->id)
+                                                ->sum('received_amount');
                                         @endphp
                                         {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} : <span class="tw-font-medium text-primary-light"> {{ getFormattedCurrency($current_paid_amount) }}</span>
+                                        @if($item->was_delivered_on_credit && $item->balance_amount > 0)
+                                            <div class="text-danger fw-semibold">
+                                                Credit Outstanding :
+                                                ₹{{ number_format($item->balance_amount,2) }}
+                                            </div>
+                                            <span class="badge bg-danger-100 text-danger-600">
+                                                CREDIT
+                                            </span>
+                                        @endif
                                     </div>
                                     @if ($paidamount < $item->total)
                                         @if($item->status != 4)

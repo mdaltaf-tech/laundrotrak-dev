@@ -159,11 +159,11 @@
                                             </li>
                                             <li class="d-flex align-items-center gap-1 mb-12 tw-justify-between">
                                                 <span class="text-md fw-semibold text-primary-light"> {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} :</span>
-                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($paid_amount) }}</span>
+                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($current_paid_amount) }}</span>
                                             </li>
                                             <li class="d-flex align-items-center gap-1 tw-justify-between">
                                                 <span class="text-md fw-semibold text-primary-light"> {{ $lang->data['balance'] ?? 'Balance' }} :</span>
-                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($order->total - $paid_amount) }}</span>
+                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($order->total - $current_paid_amount) }}</span>
                                             </li>
                                         </ul>
                                     </div>
@@ -173,7 +173,7 @@
                                 </div>
                                 <div class="col-12 mb-20 ">
                                     <label for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['paid_amount'] ?? 'Paid Amount' }} <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control radius-8" placeholder="{{ $lang->data['enter_amount'] ?? 'Enter Amount' }}" wire:model="balance" >
+                                    <input type="text" class="form-control radius-8" placeholder="{{ $lang->data['enter_amount'] ?? 'Enter Amount' }}" wire:model="paid_amount" >
                                     @error('balance')
                                         <span class="error text-danger">{{ $message }}</span>
                                     @enderror

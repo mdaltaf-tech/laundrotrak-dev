@@ -139,7 +139,10 @@ class ViewOrder extends Component
         /* if paid amount > balance */
         if($this->paid_amount > $this->balance)
         {
-            $this->addError('payment_type','Amount cannot be greater than balance');
+            $this->addError(
+                'paid_amount',
+                'Amount cannot be greater than balance'
+            );
             return 0;
         }
 
@@ -279,6 +282,15 @@ class ViewOrder extends Component
             $this->dispatch(
                 'alert', ['type' => 'success',  'message' => 'Delivery date Updated!']);
         }
+    }
 
+    public function openPaymentModal()
+    {
+        $this->resetErrorBag();
+        $this->resetValidation();
+        $this->payment_date = now()->format('Y-m-d');
+        $this->paid_amount = $this->balance;
+        $this->notes = '';
+        $this->payment_type = '';
     }
 }

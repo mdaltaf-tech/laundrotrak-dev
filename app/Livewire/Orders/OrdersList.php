@@ -19,7 +19,7 @@ use Livewire\Component;
 class OrdersList extends Component
 {
     public $orders;
-    public $paid_amount, $customer, $customer_name, $search_query;
+    public $paid_amount, $current_paid_amount, $customer, $customer_name, $search_query;
     public $order, $amount_to_pay, $note, $balance, $payment_mode, $payment_date, $order_filter, $lang;
     public $nextCursor;
     protected $currentCursor;
@@ -78,19 +78,28 @@ class OrdersList extends Component
     /* get paid informatiion */
     public function payment($id)
     {
+        $this->resetErrorBag();
         $this->order = Order::where('id', $id)->first();
         $this->customer = Customer::where('id', $this->order->customer_id)->first();
         $this->customer_name = $this->customer->name ?? null;
-        $this->paid_amount =
+
+        $this->current_paid_amount =
             Payment::active()
                 ->where(
                     'order_id',
                     $this->order->id
                 )
                 ->sum('received_amount');
+
         $this->balance =
             $this->order->total -
-            $this->paid_amount;
+            $this->current_paid_amount;
+
+        $this->paid_amount =
+            $this->balance;
+
+        $this->payment_date =
+            now()->format('Y-m-d');
     }
     /* reset input fields */
     private function resetInputFields()
@@ -125,7 +134,10 @@ class OrdersList extends Component
         /* if paid amount > balance */
         if($this->paid_amount > $this->balance)
         {
-            $this->addError('payment_type','Amount cannot be greater than balance');
+            $this->addError(
+                'paid_amount',
+                'Amount cannot be greater than balance'
+            );
             return 0;
         }
 

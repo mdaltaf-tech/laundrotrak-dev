@@ -784,12 +784,12 @@
         <link href="https://fonts.googleapis.com/css?family=Calibri:400,700,400italic,700italic">
         <style>
             @page {
-                size: auto;
-                margin: 0mm 0 0mm 0;
+                size: 80mm auto;
+                margin: 0;
             }
-            body {
-                margin: 0px;
-                font-family: Calibri;
+            body{
+                font-family: monospace;
+                font-size:12px;
             }
             @media screen {
                 .header,
@@ -901,13 +901,9 @@
                 background-color: transparent;
                 border-color: #fff;
             }
-            .invoice-card {
-                display: flex;
-                flex-direction: column;
-                width: 80mm;
-                background-color: #fff;
-                border-radius: 5px;
-                margin: 15px auto;
+            .invoice-card{
+                width:80mm;
+                margin:0 auto;
             }
             .invoice-head,
             .invoice-card .invoice-title {
@@ -1112,6 +1108,13 @@
             .text-bold {
                 font-weight: bold !important;
             }
+            small {
+                font-size: 10px;
+            }
+            table{
+                width:100%;
+                border-collapse:collapse;
+            }
         </style>
     </head>
     <body>
@@ -1173,36 +1176,89 @@
                             </div>
                             <h5 class="my-5">
                                 <b>{{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}</b>
-                                <b>( {{ getOrderStatus($order->status, 1) }} )</b>
                             </h5>
-                        </div>
-
-                        <div class="text-black" style="text-align: right">
-                            <h6 class="heading1" style="font-weight:bold; font-size:14px;">{{ $lang->data['service_name'] ?? 'Service Name' }}</h6>
-                            <h6 class="heading1 heading-child" style="font-weight:bold; font-size:14px;">{{ $lang->data['rate'] ?? 'Rate' }}</h6>
-                            <h6 class="heading1 heading-child" style="font-weight:bold; font-size:14px;">{{ $lang->data['qty'] ?? 'QTY' }}</h6>
-                            <h6 class="heading1 heading-child" style="font-weight:bold; font-size:14px;">{{ $lang->data['total'] ?? 'Total' }}</h6>
                         </div>
                         @php
                         $qty = 0;
                         @endphp
-                        @foreach ($orderdetails as $item)
                         @php
-                        $service = \App\Models\Service::where('id', $item->service_id)->first();
-                        @endphp
-                        <div class="row-data" style="text-align: center;margin-top: 5px; padding-bottom: 8px; align-items: center">
-                            <div class="item-info" style="width: 82px;text-align: initial;">
+                        $current_paid_amount = \App\Models\Payment::where('order_id', $order->id)
+                            ->sum('received_amount');
 
-                                <h5 class="item-title"><b>{{ $service->service_name }}</b></h5>
-                                <h5 class="item-title"><b>[{{ $item->service_name }}]</b></h5>
-                            </div>
-                            {{-- <h5 class="my-5"><b><img src="{{asset('assets/img/service-icons/'.$service->icon)}}" class="avatar avatar-sm me-3 d-flex px-3 py-1" height="25" width="35"></b></h5> --}}
-                            <h5 class="my-5"><b>{{ getFormattedCurrency($item->service_price) }}</b></h5>
-                            <h5 class="my-5"><b>{{ $item->service_quantity }}</b></h5>
-                            <h5 class="my-5"><b>{{ getFormattedCurrency($item->service_detail_total) }}</b>
-                            </h5>
-                        </div>
-                        @endforeach
+                        $received_amount = $current_paid_amount;
+                        $inline_payment_balance = $order->total - $received_amount;
+
+                        $inline_balance = null;
+
+                        if ($customer) {
+                            $inline_invoice_amount = \App\Models\Order::where(
+                                'customer_id',
+                                $customer->id
+                            )->sum('total');
+
+                            $inline_payment = \App\Models\Payment::where(
+                                'customer_id',
+                                $customer->id
+                            )->sum('received_amount');
+
+                            $inline_balance = $inline_invoice_amount - $inline_payment;
+                        }
+                        @endphp
+                        <table width="100%" border="0" cellspacing="0" cellpadding="2">
+                            <thead>
+                                <tr>
+                                    <th align="left" width="50%">Service</th>
+                                    <th align="right" width="20%">Rate</th>
+                                    <th align="center" width="10%">Qty</th>
+                                    <th align="right" width="20%">Total</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach ($orderdetails as $item)
+                                    @php
+                                        $service = \App\Models\Service::find($item->service_id);
+                                    @endphp
+
+                                    <div style="padding:4px 0;border-bottom:1px dashed #999;font-size:12px;">
+
+                                        <div>
+                                            <strong>{{ $service->service_name }}</strong>
+                                        </div>
+
+                                        <div style="font-size:11px;">
+                                            [{{ $item->service_name }}]
+                                        </div>
+
+                                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:3px;font-size:12px;">
+                                            <tr>
+                                                <td>Rate</td>
+                                                <td align="right">
+                                                    Rs. {{ number_format($item->service_price, 2) }}
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>Qty</td>
+                                                <td align="right">
+                                                    {{ $item->service_quantity }}
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td><strong>Total</strong></td>
+                                                <td align="right">
+                                                    <strong>
+                                                        Rs. {{ number_format($item->service_detail_total, 2) }}
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                    </div>
+                                @endforeach
+                            </tbody>
+                        </table>
                         @php
                         $addons = \App\Models\OrderAddonDetail::active()
                             ->where(
@@ -1211,118 +1267,126 @@
                             )
                             ->get();
                         @endphp
-                        @endphp
                         @if ($addons)
-                        @if (count($addons) > 0)
-                        <h4 style="padding-top: 5px;">{{ $lang->data['addons'] ?? 'Addons' }}</h4>
-                        @foreach ($addons as $row)
-                        <div class="row-data" style="text-align: center;margin-top: 5px; padding-bottom: 8px;">
-                            <h5 class="my-5" style="   text-align: initial; width: 82px;">
-                                <b>{{ $row->addon_name }}</b>
-                            </h5>
-                            <h5 class="my-5 "><b>-</b></h5>
-                            <h5 class="my-5"><b>-</b></h5>
-                            <h5 class="my-5"><b>{{ getFormattedCurrency($row->addon_price) }}</b>
-                            </h5>
-                        </div>
-                        @endforeach
-                        @endif
+                            @if(count($addons) > 0)
+
+                                <h4 style="margin-top:10px;margin-bottom:5px;">
+                                    {{ $lang->data['addons'] ?? 'Addons' }}
+                                </h4>
+
+                                @foreach($addons as $row)
+
+                                <table width="100%" cellpadding="0" cellspacing="0"
+                                    style="font-size:12px;border-bottom:1px dashed #999;">
+                                    <tr>
+                                        <td>{{ $row->addon_name }}</td>
+                                        <td align="right">
+                                            Rs. {{ number_format($row->addon_price,2) }}
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                @endforeach
+
+                                @endif
                         @endif
                     </div>
                     <div class="invoice-footer mb-15">
-                        <div class="row-data">
-                            <div class="item-info">
-                                <h5 class="item-title">{{ $lang->data['sub_total'] ?? 'Sub Total' }}:</h5>
-                            </div>
-                            <h5 class="my-5">{{ getFormattedCurrency($order->sub_total) }}</h5>
-                        </div>
-                        <div class="row-data">
-                            <div class="item-info">
-                                <h5 class="item-title">{{ $lang->data['addon'] ?? 'Addon' }}:</h5>
-                            </div>
-                            <h5 class="my-5">
-                                {{ getFormattedCurrency($order->addon_total) }}
-                            </h5>
-                        </div>
-                        <div class="row-data">
-                            <div class="item-info">
-                                <h5 class="item-title">{{ $lang->data['discount'] ?? 'Discount' }}:</h5>
-                            </div>
-                            <h5 class="my-5">{{ getFormattedCurrency($order->discount) }}</h5>
-                        </div>
-                        @if($order->tax_type==2)
-                        <div class="row-data">
-                            <div class="item-info">
-                                <h5 class="item-title">{{ $lang->data['before_tax'] ?? 'Before Tax' }}
-                                    :</h5>
-                            </div>
-                            <h5 class="my-5">{{ getFormattedCurrency($order->sub_total) }}</h5>
-                        </div>
-                        @endif
-                        <div class="row-data">
-                            <div class="item-info">
-                                <h5 class="item-title">{{ $lang->data['tax'] ?? 'Tax' }}
-                                    ({{ $order->tax_percentage }}%):</h5>
-                            </div>
-                            <h5 class="my-5">{{ getFormattedCurrency($order->tax_amount) }}</h5>
-                        </div>
-                        <div class="row-data">
-                            <div class="item-info">
-                                <h5 class="item-title">{{ $lang->data['gross_total'] ?? 'Gross Total' }}:
-                                </h5>
-                            </div>
-                            <h5 class="my-5">{{ getFormattedCurrency($order->total) }}
-                            </h5>
-                        </div>
-                        <div class="row-data">
-                            <div class="item-info">
-                                @php
-                                $current_paid_amount = \App\Models\Payment::where('order_id', $order->id)->sum('received_amount');
-                                @endphp
-                                <h5 class="item-title">{{ $lang->data['paid_amount'] ?? 'Paid Amount' }}:
-                                </h5>
-                            </div>
-                            <h5 class="my-5">{{ getFormattedCurrency($current_paid_amount) }}
-                            </h5>
-                        </div>
+
                         @php
-                        $received_payment_row = \App\Models\Payment::where('order_id', $order->id)->sum('received_amount');
-                        $received_amount = 0;
-                        $inline_payment_balance = 0;
-                        if($received_payment_row ) {
-                        $received_amount = $received_payment_row;
-                        $inline_payment_balance = $order->total - $received_amount;
-                        }
+                            $current_paid_amount = \App\Models\Payment::where('order_id', $order->id)
+                                ->sum('received_amount');
+
+                            $received_payment_row = $current_paid_amount;
+                            $received_amount = 0;
+                            $inline_payment_balance = 0;
+
+                            if ($received_payment_row) {
+                                $received_amount = $received_payment_row;
+                                $inline_payment_balance = $order->total - $received_amount;
+                            }
                         @endphp
-                        @if($inline_payment_balance!=0)
-                        <div class="row-data">
-                            <div class="item-info">
-                                <h5 class="item-title">{{ $lang->data['invoice_balance'] ?? 'Invoice Balance' }}:
-                                </h5>
-                            </div>
-                            <h5 class="my-5">
-                                {{ getFormattedCurrency($order->total - $received_amount)}}
-                            </h5>
-                        </div>
-                        @endif
-                        @if($customer)
-                        @php
-                        $inline_invoice_amount = \App\Models\Order::where('customer_id', $customer->id)->sum('total');
-                        $inline_payment = \App\Models\Payment::where('customer_id', $customer->id)->sum('received_amount');
-                        $inline_balance = $inline_invoice_amount- $inline_payment;
-                        @endphp
-                        @if ($inline_balance != 0)
-                        <div class="row-data">
-                            <div class="item-info">
-                                <h5 class="item-title">{{ $lang->data['customer_balance'] ?? 'Customer Balance' }}:
-                                </h5>
-                            </div>
-                            <h5 class="my-5">
-                                @if ($inline_balance < 0) {{ getFormattedCurrency($inline_balance * -1) }} {{ 'Cr' }} @else {{ getFormattedCurrency($inline_balance) }} {{ 'Dr' }} @endif </h5>
-                        </div>
-                        @endif
-                        @endif
+
+                        <table width="100%" cellpadding="2" cellspacing="0"
+                            style="font-size:12px;margin-top:8px;">
+
+                            <tr>
+                                <td>Sub Total</td>
+                                <td align="right">
+                                    Rs. {{ number_format($order->sub_total,2) }}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Addon</td>
+                                <td align="right">
+                                    Rs. {{ number_format($order->addon_total,2) }}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Discount</td>
+                                <td align="right">
+                                    Rs. {{ number_format($order->discount,2) }}
+                                </td>
+                            </tr>
+
+                            @if($order->tax_type==2)
+                            <tr>
+                                <td>Before Tax</td>
+                                <td align="right">
+                                    Rs. {{ number_format($order->sub_total,2) }}
+                                </td>
+                            </tr>
+                            @endif
+
+                            <tr>
+                                <td>Tax ({{ $order->tax_percentage }}%)</td>
+                                <td align="right">
+                                    Rs. {{ number_format($order->tax_amount,2) }}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td><strong>Gross Total</strong></td>
+                                <td align="right">
+                                    <strong>Rs. {{ number_format($order->total,2) }}</strong>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Paid Amount</td>
+                                <td align="right">
+                                    Rs. {{ number_format($current_paid_amount,2) }}
+                                </td>
+                            </tr>
+
+                            @if($inline_payment_balance!=0)
+                            <tr>
+                                <td>Invoice Balance</td>
+                                <td align="right">
+                                    Rs. {{ number_format($order->total - $received_amount,2) }}
+                                </td>
+                            </tr>
+                            @endif
+
+                            @if($customer && isset($inline_balance) && $inline_balance != 0)
+<tr>
+    <td>Customer Balance</td>
+    <td align="right">
+        @if($inline_balance < 0)
+            Rs. {{ number_format(abs($inline_balance),2) }} Cr
+        @else
+            Rs. {{ number_format($inline_balance,2) }} Dr
+        @endif
+    </td>
+</tr>
+@endif
+
+                        </table>
+
                         <hr>
+
                     </div>
                     <div class="invoice_address">
                         <div class="text-center">

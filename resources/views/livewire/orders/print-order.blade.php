@@ -787,17 +787,44 @@
                 size: 80mm auto;
                 margin: 0;
             }
+
             body{
                 font-family: monospace;
                 font-size:12px;
+                width:80mm;
+                margin:0 auto;
             }
+
+            .receipt-center{
+                text-align:center;
+            }
+
+            .receipt-line{
+                border-top:1px dashed #000;
+                margin:5px 0;
+            }
+
+            .receipt-table{
+                width:100%;
+                border-collapse:collapse;
+                font-size:12px;
+            }
+
+            .receipt-table td{
+                padding:2px 0;
+            }
+
+            .text-right{
+                text-align:right;
+            }
+
             @media screen {
                 .header,
                 .footer {
                     display: none;
                 }
             }
-        </style>
+            </style>
         <style>
             .mb-0 {
                 margin-bottom: 0;
@@ -1119,6 +1146,32 @@
     </head>
     <body>
         <div class="page-wrapper" style="padding:5px">
+            @php
+                $current_paid_amount = \App\Models\Payment::where('order_id', $order->id)
+                    ->sum('received_amount');
+
+                $received_amount = $current_paid_amount;
+                $inline_payment_balance = $order->total - $received_amount;
+
+                $inline_balance = null;
+
+                if ($customer) {
+                    $inline_invoice_amount = \App\Models\Order::where(
+                        'customer_id',
+                        $customer->id
+                    )->sum('total');
+
+                    $inline_payment = \App\Models\Payment::where(
+                        'customer_id',
+                        $customer->id
+                    )->sum('received_amount');
+
+                    $inline_balance = $inline_invoice_amount - $inline_payment;
+                }
+
+                $totalPieces = $orderdetails->sum('service_quantity');
+
+                @endphp
             <div class="invoice-card">
                 <div class="invoice-head">
                     <img src="{{ getSiteLogo() }}" style="height:34px;max-width:80%;" alt="">
@@ -1134,269 +1187,208 @@
                             <h4 class="heading font-bold" style="font-size: 25px">{{ $lang->data['tax_invoice'] ?? 'Tax Invoice' }}</h4>
                             <h4 class="heading heading-child"></h4>
                         </div> <br />
-
-                        <div class="row-data" style="border:none; margin-bottom: 1px">
-                            <div class="item-info">
-                                <h5 class="item-title"><b>{{ $lang->data['invoice_to'] ?? 'Invoice To' }}:</b></h5>
-                            </div>
-                            <h5 class="my-5"><b>
-                                    {{ $customer->name ?? ($lang->data['walk_in_customer'] ?? 'Walk-In Customer') }}<br />
-                                    @if($customer && $customer->phone)
-                                    {{ getCountryCode()}} {{ $customer->phone }}<br />
-                                    @endif
-                                    @if($customer && $customer->email )
-                                    {{$customer->email }}<br />
-                                    @endif
-                                    @if($customer && $customer->address)
-                                    {{ $customer->address }}<br />
-                                    @endif
-                                    @if ($customer && $customer->tax_number )
-                                    {{ $lang->data['vat'] ?? 'VAT' }}: {{ $customer->tax_number }}
-                                    @endif
-                                </b></h5>
-                        </div>
-                        <div class="row-data" style="border:none; margin-bottom: 1px">
-                            <div class="item-info">
-                                <h5 class="item-title"><b>{{ $lang->data['order_no'] ?? 'Order No' }}:</b></h5>
-                            </div>
-                            <h5 class="my-5"><b>{{ $order->order_number }}</b></h5>
-                        </div>
-                        <div class="row-data" style="border:none;">
-                            <div class="item-info">
-                                <h5 class="item-title"><b>{{ $lang->data['order_date'] ?? 'Order Date' }}:</b></h5>
-                            </div>
-                            <h5 class="my-5">
-                                <b>{{ \Carbon\Carbon::parse($order->order_date)->format('d/m/Y') }}</b>
-                            </h5>
-                        </div>
-                        <div class="row-data" style="border:none;">
-                            <div class="item-info">
-                                <h5 class="item-title"><b>{{ $lang->data['delivery_date'] ?? 'Delivery Date' }}:</b>
-                                </h5>
-                            </div>
-                            <h5 class="my-5">
-                                <b>{{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}</b>
-                            </h5>
-                        </div>
-                        @php
-                        $qty = 0;
-                        @endphp
-                        @php
-                        $current_paid_amount = \App\Models\Payment::where('order_id', $order->id)
-                            ->sum('received_amount');
-
-                        $received_amount = $current_paid_amount;
-                        $inline_payment_balance = $order->total - $received_amount;
-
-                        $inline_balance = null;
-
-                        if ($customer) {
-                            $inline_invoice_amount = \App\Models\Order::where(
-                                'customer_id',
-                                $customer->id
-                            )->sum('total');
-
-                            $inline_payment = \App\Models\Payment::where(
-                                'customer_id',
-                                $customer->id
-                            )->sum('received_amount');
-
-                            $inline_balance = $inline_invoice_amount - $inline_payment;
-                        }
-                        @endphp
-                        <table width="100%" border="0" cellspacing="0" cellpadding="2">
-                            <thead>
-                                <tr>
-                                    <th align="left" width="50%">Service</th>
-                                    <th align="right" width="20%">Rate</th>
-                                    <th align="center" width="10%">Qty</th>
-                                    <th align="right" width="20%">Total</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                @foreach ($orderdetails as $item)
-                                    @php
-                                        $service = \App\Models\Service::find($item->service_id);
-                                    @endphp
-
-                                    <div style="padding:4px 0;border-bottom:1px dashed #999;font-size:12px;">
-
-                                        <div>
-                                            <strong>{{ $service->service_name }}</strong>
-                                        </div>
-
-                                        <div style="font-size:11px;">
-                                            [{{ $item->service_name }}]
-                                        </div>
-
-                                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:3px;font-size:12px;">
-                                            <tr>
-                                                <td>Rate</td>
-                                                <td align="right">
-                                                    Rs. {{ number_format($item->service_price, 2) }}
-                                                </td>
-                                            </tr>
-
-                                            <tr>
-                                                <td>Qty</td>
-                                                <td align="right">
-                                                    {{ $item->service_quantity }}
-                                                </td>
-                                            </tr>
-
-                                            <tr>
-                                                <td><strong>Total</strong></td>
-                                                <td align="right">
-                                                    <strong>
-                                                        Rs. {{ number_format($item->service_detail_total, 2) }}
-                                                    </strong>
-                                                </td>
-                                            </tr>
-                                        </table>
-
-                                    </div>
-                                @endforeach
-                            </tbody>
-                        </table>
-                        @php
-                        $addons = \App\Models\OrderAddonDetail::active()
-                            ->where(
-                                'order_id',
-                                $order->id
-                            )
-                            ->get();
-                        @endphp
-                        @if ($addons)
-                            @if(count($addons) > 0)
-
-                                <h4 style="margin-top:10px;margin-bottom:5px;">
-                                    {{ $lang->data['addons'] ?? 'Addons' }}
-                                </h4>
-
-                                @foreach($addons as $row)
-
-                                <table width="100%" cellpadding="0" cellspacing="0"
-                                    style="font-size:12px;border-bottom:1px dashed #999;">
+                        <div style="border-top:1px dashed #000;border-bottom:1px dashed #000;padding:5px 0;">
+                                <table width="100%">
                                     <tr>
-                                        <td>{{ $row->addon_name }}</td>
+                                        <td>Customer</td>
                                         <td align="right">
-                                            Rs. {{ number_format($row->addon_price,2) }}
+                                            {{ $customer->name ?? 'Walk-In Customer' }}
+                                        </td>
+                                    </tr>
+
+                                    @if($customer && $customer->phone)
+                                    <tr>
+                                        <td>Phone</td>
+                                        <td align="right">
+                                            {{ getCountryCode() }} {{ $customer->phone }}
+                                        </td>
+                                    </tr>
+                                    @endif
+
+                                    <tr>
+                                        <td>Order No</td>
+                                        <td align="right">
+                                            {{ $order->order_number }}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Order Date</td>
+                                        <td align="right">
+                                            {{ \Carbon\Carbon::parse($order->order_date)->format('d/m/Y') }}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Delivery</td>
+                                        <td align="right">
+                                            {{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Total Garments</td>
+                                        <td align="right">
+                                            {{ $totalPieces }}
                                         </td>
                                     </tr>
                                 </table>
 
-                                @endforeach
+                                </div>
+                        @php
+                        $qty = 0;
+                        @endphp
+                        <div style="margin-top:5px;">
+                            @foreach ($orderdetails as $item)
 
-                                @endif
-                        @endif
+                            @php
+                            $service = \App\Models\Service::find($item->service_id);
+                            @endphp
+
+                            <div style="padding:4px 0;border-bottom:1px dashed #999;">
+
+                                <strong>{{ $service->service_name }}</strong><br>
+
+                                <small>{{ $item->service_name }}</small>
+
+                                <table width="100%" style="margin-top:2px;">
+                                    <tr>
+                                        <td>
+                                            {{ $item->service_quantity }}
+                                            x
+                                            {{ number_format($item->service_price,2) }}
+                                        </td>
+
+                                        <td align="right">
+                                            {{ number_format($item->service_detail_total,2) }}
+                                        </td>
+                                    </tr>
+                                </table>
+
+                            </div>
+
+                            @endforeach
+
+                            </div>
+                            @php
+$addons = \App\Models\OrderAddonDetail::active()
+    ->where('order_id',$order->id)
+    ->get();
+@endphp
+
+@if($addons->count())
+
+<br>
+<b>ADDONS</b>
+
+@foreach($addons as $row)
+
+<table width="100%">
+    <tr>
+        <td>{{ $row->addon_name }}</td>
+        <td align="right">
+            {{ number_format($row->addon_price,2) }}
+        </td>
+    </tr>
+</table>
+
+@endforeach
+
+@endif
                     </div>
                     <div class="invoice-footer mb-15">
+                        <div style="border-top:1px dashed #000;margin-top:5px;padding-top:5px;">
 
-                        @php
-                            $current_paid_amount = \App\Models\Payment::where('order_id', $order->id)
-                                ->sum('received_amount');
+<table width="100%">
 
-                            $received_payment_row = $current_paid_amount;
-                            $received_amount = 0;
-                            $inline_payment_balance = 0;
-
-                            if ($received_payment_row) {
-                                $received_amount = $received_payment_row;
-                                $inline_payment_balance = $order->total - $received_amount;
-                            }
-                        @endphp
-
-                        <table width="100%" cellpadding="2" cellspacing="0"
-                            style="font-size:12px;margin-top:8px;">
-
-                            <tr>
-                                <td>Sub Total</td>
-                                <td align="right">
-                                    Rs. {{ number_format($order->sub_total,2) }}
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>Addon</td>
-                                <td align="right">
-                                    Rs. {{ number_format($order->addon_total,2) }}
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>Discount</td>
-                                <td align="right">
-                                    Rs. {{ number_format($order->discount,2) }}
-                                </td>
-                            </tr>
-
-                            @if($order->tax_type==2)
-                            <tr>
-                                <td>Before Tax</td>
-                                <td align="right">
-                                    Rs. {{ number_format($order->sub_total,2) }}
-                                </td>
-                            </tr>
-                            @endif
-
-                            <tr>
-                                <td>Tax ({{ $order->tax_percentage }}%)</td>
-                                <td align="right">
-                                    Rs. {{ number_format($order->tax_amount,2) }}
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td><strong>Gross Total</strong></td>
-                                <td align="right">
-                                    <strong>Rs. {{ number_format($order->total,2) }}</strong>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>Paid Amount</td>
-                                <td align="right">
-                                    Rs. {{ number_format($current_paid_amount,2) }}
-                                </td>
-                            </tr>
-
-                            @if($inline_payment_balance!=0)
-                            <tr>
-                                <td>Invoice Balance</td>
-                                <td align="right">
-                                    Rs. {{ number_format($order->total - $received_amount,2) }}
-                                </td>
-                            </tr>
-                            @endif
-
-                            @if($customer && isset($inline_balance) && $inline_balance != 0)
 <tr>
-    <td>Customer Balance</td>
+    <td>Sub Total</td>
+    <td align="right">{{ number_format($order->sub_total,2) }}</td>
+</tr>
+
+<tr>
+    <td>Addon</td>
+    <td align="right">{{ number_format($order->addon_total,2) }}</td>
+</tr>
+
+<tr>
+    <td>Discount</td>
+    <td align="right">{{ number_format($order->discount,2) }}</td>
+</tr>
+
+@if($order->tax_type == 2)
+<tr>
+    <td>Before Tax</td>
+    <td align="right">{{ number_format($order->sub_total,2) }}</td>
+</tr>
+@endif
+
+<tr>
+    <td>Tax ({{ $order->tax_percentage }}%)</td>
+    <td align="right">{{ number_format($order->tax_amount,2) }}</td>
+</tr>
+
+<tr>
+    <td colspan="2">
+        <hr style="border-top:1px dashed #000;">
+    </td>
+</tr>
+
+<tr>
+    <td><strong>TOTAL</strong></td>
+    <td align="right">
+        <strong>{{ number_format($order->total,2) }}</strong>
+    </td>
+</tr>
+
+<tr>
+    <td>Paid</td>
+    <td align="right">
+        {{ number_format($current_paid_amount,2) }}
+    </td>
+</tr>
+
+@if($inline_payment_balance != 0)
+<tr>
+    <td>Balance</td>
+    <td align="right">
+        {{ number_format($inline_payment_balance,2) }}
+    </td>
+</tr>
+@endif
+
+@if($customer && $inline_balance != 0)
+<tr>
+    <td>Cust Balance</td>
     <td align="right">
         @if($inline_balance < 0)
-            Rs. {{ number_format(abs($inline_balance),2) }} Cr
+            {{ number_format(abs($inline_balance),2) }} Cr
         @else
-            Rs. {{ number_format($inline_balance,2) }} Dr
+            {{ number_format($inline_balance,2) }} Dr
         @endif
     </td>
 </tr>
 @endif
 
-                        </table>
+</table>
 
-                        <hr>
+</div>
 
                     </div>
                     <div class="invoice_address">
-                        <div class="text-center">
-                            <h3 class="mt-10">
-                                {{ isset($site['default_thanks_message']) && !empty($site['default_thanks_message']) ? $site['default_thanks_message'] : '' }}
-                            </h3>
-                            <p class="b_top">{{ $lang->data['powered_by'] ?? 'Powered By   ' }}
-                                <b>{{ getApplicationName() }}</b>
-                            </p>
-                        </div>
+                        <div style="text-align:center;margin-top:10px;">
+
+    <div style="border-top:1px dashed #000;margin-bottom:5px;"></div>
+
+    <strong>Thank You For Choosing Faeblo</strong>
+
+    <br><br>
+
+    <small>
+        Powered By {{ getApplicationName() }}
+    </small>
+
+</div>
                     </div>
                 </div>
             </div>

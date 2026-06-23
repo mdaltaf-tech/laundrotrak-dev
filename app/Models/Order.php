@@ -114,17 +114,27 @@ class Order extends Model
             $this->total - $paidAmount
         );
 
-        if ($paidAmount <= 0) {
+        if ($balanceAmount <= 0) {
 
-            $paymentStatus = self::PAYMENT_UNPAID;
+            $paymentStatus = self::PAYMENT_PAID;
 
-        } elseif ($balanceAmount > 0) {
+        } elseif (
+            $balanceAmount > 0
+            &&
+            $this->was_delivered_on_credit
+            &&
+            $this->status == self::STATUS_DELIVERED
+        ) {
+
+            $paymentStatus = self::PAYMENT_CREDIT;
+
+        } elseif ($paidAmount > 0) {
 
             $paymentStatus = self::PAYMENT_PARTIAL;
 
         } else {
 
-            $paymentStatus = self::PAYMENT_PAID;
+            $paymentStatus = self::PAYMENT_UNPAID;
         }
 
         $this->update([

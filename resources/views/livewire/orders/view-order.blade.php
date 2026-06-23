@@ -258,7 +258,14 @@
                 @endforeach
                 @if ($balance > 0)
                     @if($order->status != 4)
-                        <button data-bs-toggle="modal" data-bs-target="#exampleModal"  type="button" class="btn btn-outline-success-600 radius-8 px-20 py-11 tw-mt-6 tw-w-full" >{{ $lang->data['add_payment'] ?? 'Add Payment' }}</button>
+                        <button
+                            wire:click="openPaymentModal"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModal"
+                            type="button"
+                            class="btn btn-outline-success-600 radius-8 px-20 py-11 tw-mt-6 tw-w-full">
+                            {{ $lang->data['add_payment'] ?? 'Add Payment' }}
+                        </button>
                     @endif
                 @else
                 <button type="button" class="btn btn-outline-neutral-600 radius-8 px-20 py-11 tw-mt-6 tw-w-full" disabled>{{ $lang->data['fully_paid'] ?? 'Fully Paid' }}</button>
@@ -332,7 +339,7 @@
                                 <div class="col-12 mb-20 ">
                                     <label for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['paid_amount'] ?? 'Paid Amount' }} <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control radius-8" placeholder="{{ $lang->data['enter_amount'] ?? 'Enter Amount' }}" wire:model="paid_amount" >
-                                    @error('balance')
+                                    @error('paid_amount')
                                         <span class="error text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
@@ -362,7 +369,27 @@
                                     <span class="error text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
+                                <div class="col-12 mb-20">
+                                    <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                        {{ $lang->data['payment_date'] ?? 'Payment Date' }}
+                                        <span class="text-danger">*</span>
+                                    </label>
 
+                                    <input
+                                        type="date"
+                                        class="form-control radius-8"
+                                        wire:model="payment_date">
+
+                                    @error('payment_date')
+                                        <span class="error text-danger d-block">
+                                            {{ $message }}
+                                        </span>
+                                    @enderror
+
+                                    <small class="text-muted d-block mt-1">
+                                        Use actual payment receipt date.
+                                    </small>
+                                </div>
                                 <div class="col-12 mb-20">
                                     <label for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['notes'] ?? 'Notes' }} </label>
                                     <textarea class="form-control radius-8" placeholder="{{ $lang->data['enter_notes'] ?? 'Enter Notes' }}"  wire:model="notes"></textarea>

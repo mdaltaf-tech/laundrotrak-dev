@@ -134,7 +134,9 @@
                             </td>
                             <td>
                                 @php
-                                $paidamount = \App\Models\Payment::where('order_id', $item->id)->sum('received_amount');
+                                    $paidamount = \App\Models\Payment::active()
+                                        ->where('order_id', $item->id)
+                                        ->sum('received_amount');
                                 @endphp
                                 <div class="tw-flex tw-flex-col">
                                     <div class="text-neutral-600">
@@ -142,9 +144,31 @@
                                     </div>
                                     <div class="text-neutral-600">
                                         @php
-                                        $current_paid_amount = \App\Models\Payment::where('order_id',$item->id)->sum('received_amount');
+                                            $current_paid_amount = \App\Models\Payment::active()
+                                                ->where('order_id', $item->id)
+                                                ->sum('received_amount');
                                         @endphp
                                         {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} : <span class="tw-font-medium text-primary-light"> {{ getFormattedCurrency($current_paid_amount) }}</span>
+                                        @if($item->was_delivered_on_credit && $item->balance_amount > 0)
+                                            <div class="text-danger fw-semibold">
+                                                Credit Outstanding :
+                                                {{ getFormattedCurrency($item->balance_amount) }}
+                                            </div>
+                                            @if($item->credit_delivered_at)
+                                                <div class="text-warning fw-medium">
+                                                    Credit Since :
+                                                    {{
+                                                        \Carbon\Carbon::parse($item->credit_delivered_at)
+                                                        ->startOfDay()
+                                                        ->diffInDays(today()->startOfDay())
+                                                    }}
+                                                    Days
+                                                </div>
+                                            @endif
+                                            <span class="badge bg-danger-100 text-danger-600">
+                                                CREDIT
+                                            </span>
+                                        @endif
                                     </div>
                                     @if ($paidamount < $item->total)
                                         @if($item->status != 4)
@@ -263,11 +287,13 @@
                                             </li>
                                             <li class="d-flex align-items-center gap-1 mb-12 tw-justify-between">
                                                 <span class="text-md fw-semibold text-primary-light"> {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} :</span>
-                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($paid_amount) }}</span>
+                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($current_paid_amount) }}</span>
                                             </li>
                                             <li class="d-flex align-items-center gap-1 tw-justify-between">
                                                 <span class="text-md fw-semibold text-primary-light"> {{ $lang->data['balance'] ?? 'Balance' }} :</span>
-                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($order->total - $paid_amount) }}</span>
+                                                <span class="text-secondary-light fw-medium">
+                                                    {{ getFormattedCurrency($balance) }}
+                                                </span>
                                             </li>
                                         </ul>
                                     </div>
@@ -277,8 +303,8 @@
                                 </div>
                                 <div class="col-12 mb-20 ">
                                     <label for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['paid_amount'] ?? 'Paid Amount' }} <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control radius-8" placeholder="{{ $lang->data['enter_amount'] ?? 'Enter Amount' }}" wire:model="balance" >
-                                    @error('balance')
+                                    <input type="text" class="form-control radius-8" placeholder="{{ $lang->data['enter_amount'] ?? 'Enter Amount' }}" wire:model="paid_amount" >
+                                    @error('paid_amount')
                                         <span class="error text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
@@ -308,7 +334,27 @@
                                     <span class="error text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
+                                <div class="col-12 mb-20">
+                                    <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                        {{ $lang->data['payment_date'] ?? 'Payment Date' }}
+                                        <span class="text-danger">*</span>
+                                    </label>
 
+                                    <input
+                                        type="date"
+                                        class="form-control radius-8"
+                                        wire:model="payment_date">
+
+                                    @error('payment_date')
+                                        <span class="error text-danger d-block">
+                                            {{ $message }}
+                                        </span>
+                                    @enderror
+
+                                    <small class="text-muted d-block mt-1">
+                                        Use actual payment receipt date.
+                                    </small>
+                                </div>
                                 <div class="col-12 mb-20">
                                     <label for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['notes'] ?? 'Notes' }} </label>
                                     <textarea class="form-control radius-8" placeholder="{{ $lang->data['enter_notes'] ?? 'Enter Notes' }}"  wire:model="note"></textarea>

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Orders;
 
+use Carbon\Carbon;
 use Livewire\Attributes\Title;
 use App\Models\Order;
 use App\Models\Payment;
@@ -18,8 +19,8 @@ use Livewire\Component;
 class OrdersList extends Component
 {
     public $orders;
-    public $paid_amount, $customer, $customer_name, $search_query;
-    public $order, $amount_to_pay, $note, $balance, $payment_mode, $order_filter, $lang;
+    public $paid_amount, $current_paid_amount, $customer, $customer_name, $search_query;
+    public $order, $amount_to_pay, $note, $balance, $payment_mode, $payment_date, $order_filter, $lang;
     public $nextCursor;
     protected $currentCursor;
     public $hasMorePages;
@@ -47,6 +48,8 @@ class OrdersList extends Component
         $this->orders = new EloquentCollection();
 
         $this->loadOrders();
+        $this->payment_date = now()->format('Y-m-d');
+
         if (session()->has('selected_language')) {   /* if session has selected language */
             $this->lang = Translation::where('id', session()->get('selected_language'))->first();
         } else {
@@ -75,19 +78,28 @@ class OrdersList extends Component
     /* get paid informatiion */
     public function payment($id)
     {
+        $this->resetErrorBag();
         $this->order = Order::where('id', $id)->first();
         $this->customer = Customer::where('id', $this->order->customer_id)->first();
         $this->customer_name = $this->customer->name ?? null;
-        $this->paid_amount =
+
+        $this->current_paid_amount =
             Payment::active()
                 ->where(
                     'order_id',
                     $this->order->id
                 )
                 ->sum('received_amount');
+
         $this->balance =
             $this->order->total -
-            $this->paid_amount;
+            $this->current_paid_amount;
+
+        $this->paid_amount =
+            $this->balance;
+
+        $this->payment_date =
+            now()->format('Y-m-d');
     }
     /* reset input fields */
     private function resetInputFields()
@@ -97,37 +109,67 @@ class OrdersList extends Component
         $this->customer = '';
         $this->note = '';
         $this->payment_mode = "";
+        $this->payment_date = now()->format('Y-m-d');
     }
     /* add paymentinformation */
     public function addPayment()
     {
+        if($this->order->status == 4)
+        {
+            return 0;
+        }
+
+        $this->validate([
+            'paid_amount'   => 'required',
+            'payment_mode'  => 'required',
+            'payment_date' => 'required|date',
+        ]);
+
         /* if balance is < 0 */
         if ($this->balance < 0) {
             $this->addError('balance', 'Pls Provide Valid Amount.');
             return 0;
         }
-        /* if the balance is > order total */
-        if ($this->balance > $this->order->total) {
-            $this->addError('balance', 'Paid Amount cannot be greater than total.');
+
+        /* if paid amount > balance */
+        if($this->paid_amount > $this->balance)
+        {
+            $this->addError(
+                'paid_amount',
+                'Amount cannot be greater than balance'
+            );
             return 0;
         }
-        if ($this->order->status == 4) {
-            return 0;
+
+        $orderDate = Carbon::parse(
+            $this->order->order_date
+        )->startOfDay();
+
+        $paymentDate = Carbon::parse(
+            $this->payment_date
+        )->startOfDay();
+
+        if ($paymentDate->lt($orderDate)) {
+
+            $this->addError(
+                'payment_date',
+                'Payment date cannot be earlier than order booking date.'
+            );
+
+            return;
         }
-        $this->validate([
-            'payment_mode' => 'required',
-        ]);
+
         /* if any balance */
         if ($this->balance) {
             \App\Models\Payment::create([
-                'payment_date'  => \Carbon\Carbon::today()->toDateString(),
+                'payment_date' => Carbon::parse($this->payment_date),
                 'customer_id'   => $this->customer->id ?? null,
                 'customer_name' => $this->customer->name ?? null,
                 'order_id'  => $this->order->id,
                 'payment_type'  => $this->payment_mode,
                 'payment_note'  => $this->note,
                 'financial_year_id' => getFinancialYearId(),
-                'received_amount' => (float)$this->balance,
+                'received_amount' => (float)$this->paid_amount,
                 'created_by'    => Auth::user()->id,
             ]);
 
@@ -215,10 +257,28 @@ class OrdersList extends Component
             $this->paid_filter !== ''
         ) {
 
-            $orders->where(
-                'payment_status',
-                $this->paid_filter
-            );
+            if (
+                $this->paid_filter ==
+                Order::PAYMENT_CREDIT
+            ) {
+
+                $orders->where(
+                    'was_delivered_on_credit',
+                    1
+                )
+                ->where(
+                    'balance_amount',
+                    '>',
+                    0
+                );
+
+            } else {
+
+                $orders->where(
+                    'payment_status',
+                    $this->paid_filter
+                );
+            }
         }
 
         if ($this->overdue_filter) {

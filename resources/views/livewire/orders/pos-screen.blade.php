@@ -449,7 +449,7 @@
         </div>
     </div>
 
-    <div class="modal fade " id="servicetype" tabindex="-1" role="dialog" aria-labelledby="servicetype"
+    <div class="modal fade" id="servicetype" tabindex="-1" role="dialog" aria-labelledby="servicetype"
         aria-hidden="true" wire:ignore.self>
         <div class="modal-dialog modal-md modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content radius-16 bg-base">
@@ -521,7 +521,7 @@
         </div>
     </div>
 
-    <div class="modal fade " id="discount" tabindex="-1" role="dialog" aria-labelledby="discount"
+    <div class="modal fade" id="discount" tabindex="-1" role="dialog" aria-labelledby="discount"
         aria-hidden="true" wire:ignore.self>
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content radius-16 bg-base">
@@ -549,7 +549,7 @@
         </div>
     </div>
 
-    <div class="modal fade " id="addons" tabindex="-1" role="dialog" aria-labelledby="discount"
+    <div class="modal fade" id="addons" tabindex="-1" role="dialog" aria-labelledby="discount"
         aria-hidden="true" wire:ignore.self>
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content radius-16 bg-base">
@@ -589,7 +589,7 @@
         </div>
     </div>
     @if(!$order)
-        <div class="modal fade " id="payment" tabindex="-1" role="dialog" aria-labelledby="payment"
+        <div class="modal fade" id="payment" tabindex="-1" role="dialog" aria-labelledby="payment"
             aria-hidden="true" wire:ignore.self>
             <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                 <div class="modal-content modal-content-lg radius-16 bg-base">

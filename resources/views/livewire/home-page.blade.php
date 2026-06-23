@@ -609,7 +609,7 @@
                                 <div class="fw-medium text-dark mt-1">
                                     {{ $creditDeliveredOrders }} Orders • ₹{{ number_format($creditDeliveredAmount,2) }}
                                 </div>
-                                @if($creditDeliveredOrders > 4)
+                                @if($creditDeliveredOrders > 1)
                                     <a href="{{ url('admin/orders?paid_filter=3') }}"
                                     class="text-primary small fw-semibold">
                                         View All
@@ -673,7 +673,7 @@
                                         </a>
                                     </div>
                                 @endforeach
-                                @if($overduePickupList->count() == 0)
+                                @if($creditDeliveredList->count() == 0)
                                     <x-empty-item/>
                                 @endif
                             </div>

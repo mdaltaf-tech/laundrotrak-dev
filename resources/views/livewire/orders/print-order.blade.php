@@ -2,7 +2,7 @@
     @php
     $printer_type = getPrinterType();
     @endphp
-    @if ($printer_type == 1)
+    @if ($printer_type == 3)
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
@@ -22,7 +22,7 @@
                     <div class="tw-flex tw-flex-col tw-mt-2">
                         <div class="">{{$phone ? getCountryCode() : ''}}{{ (int)$phone }}</div>
                         <div class="">{{ $store_email }}</div>
-                        <div class="">{{ $address }} - {{ $zipcode }}</div>
+                        <div style="width:60%" class="">{{ $address }} - {{ $zipcode }}</div>
                         <div class="tw-mt-2">{{ $lang->data['tax'] ?? 'TAX' }}: {{ $tax_number }}</div>
                     </div>
                 </div>
@@ -39,15 +39,6 @@
                         <div class="text-neutral-600">
                             {{ $lang->data['delivery_date'] ?? 'Delivery Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}</span>
                         </div>
-
-                        <div class="tw-mt-2 tw-flex tw-items-center tw-gap-2">
-                            <div class="">
-                                {{ $lang->data['order_status'] ?? 'Order Status' }} :
-                            </div>
-                            <div class="dropdown">
-                                <button class="" type="button" data-bs-toggle="dropdown" aria-expanded="false"> {{ getOrderStatus($order->status) }} </button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -58,7 +49,6 @@
                         <tr>
                           <th scope="col" class="">#</th>
                           <th scope="col" class="">{{ $lang->data['service_name'] ?? 'Service Name' }}</th>
-                          <th scope="col" class=""> {{ $lang->data['color'] ?? 'Color' }}</th>
                           <th scope="col" class="">{{ $lang->data['rate'] ?? 'Rate' }}</th>
                           <th scope="col" class=""> {{ $lang->data['qty'] ?? 'QTY' }}</th>
                           <th scope="col" class=""> {{ $lang->data['total'] ?? 'Total' }}</th>
@@ -83,16 +73,6 @@
                                             <p class="text-info">[{{$item->service_name}}]</p>
                                         </div>
                                     </div>
-                                </td>
-                                <td class="text-primary">
-                                    @if($item->color_code!="")
-                                    <div class="tw-size-6 tw-rounded-lg" style="background-color: {{$item->color_code}}">
-                                    </div>
-
-                                    @else
-                                    <div class="tw-size-6 tw-rounded-lg tw-bg-white" >
-                                    </div>
-                                    @endif
                                 </td>
                                 <td class="text-primary">
                                     {{ getFormattedCurrency($item->service_price) }}
@@ -775,377 +755,75 @@
     </body>
     </html>
     @endif
-    @if ($printer_type == 3)
+    @if ($printer_type == 3.5)
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>{{ $lang->data['print_invoice'] ?? 'Print Invoice' }}</title>
-        <link href="https://fonts.googleapis.com/css?family=Calibri:400,700,400italic,700italic">
         <style>
-            @page {
+           @page {
                 size: 80mm auto;
                 margin: 0;
             }
 
-            body{
-                font-family: monospace;
-                font-size:12px;
-                width:80mm;
-                margin:0 auto;
+            html,
+            body {
+                width: 80mm;
+                margin: 0;
+                padding: 0;
             }
 
-            .receipt-center{
+            body {
+                font-family: 'Tahoma', sans-serif;
+                font-size: 13px;
+                font-weight: 600;
+                color: #000;
+                -webkit-font-smoothing: none;
+                text-rendering: optimizeSpeed;
+            }
+
+            .page-wrapper {
+                width: 72mm;
+                margin: 0 auto;
+                padding: 0;
+            }
+
+            .invoice-card {
+                width: 72mm;
+                margin: 0;
+            }
+            .invoice-head{
                 text-align:center;
-            }
-
-            .receipt-line{
-                border-top:1px dashed #000;
-                margin:5px 0;
-            }
-
-            .receipt-table{
-                width:100%;
-                border-collapse:collapse;
                 font-size:12px;
             }
 
-            .receipt-table td{
-                padding:2px 0;
+            small{
+                font-size:11px;
             }
 
-            .text-right{
-                text-align:right;
+            td.customer-row-label {
+                font-weight: 600;
+                font-size: 12px;
             }
 
-            @media screen {
+            td.customer-row-value {
+                font-weight: 600;
+                font-size: 12px;
+                text-align: right;
+            }
+
+            @media screen{
                 .header,
-                .footer {
-                    display: none;
+                .footer{
+                    display:none;
                 }
             }
+
             </style>
-        <style>
-            .mb-0 {
-                margin-bottom: 0;
-            }
-            .my-50 {
-                margin-top: 50px;
-                margin-bottom: 50px;
-            }
-            .my-0 {
-                margin-top: 0;
-                margin-bottom: 0;
-            }
-            .my-5 {
-                margin-top: 5px;
-                margin-bottom: 5px;
-            }
-            .mt-10 {
-                margin-top: 10px;
-            }
-            .mb-15 {
-                margin-bottom: 15px;
-            }
-            .mr-18 {
-                margin-right: 18px;
-            }
-            .mr-25 {
-                margin-right: 25px;
-            }
-            .mb-25 {
-                margin-bottom: 25px;
-            }
-            .h4,
-            .h5,
-            .h6,
-            h4,
-            h5,
-            h6 {
-                margin-top: 10px;
-                margin-bottom: 10px;
-            }
-            .login-wrapper {
-                background-size: 100% 100%;
-                height: 100vh;
-                position: relative;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-            }
-            .login-wrapper:before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                display: block;
-                background: rgba(0, 0, 0, 0.5);
-            }
-            .login_box {
-                text-align: center;
-                position: relative;
-                max-width: 80mm;
-                background: #343434;
-                padding: 10px 10px;
-                border-radius: 10px;
-            }
-            .text-black {
-                color: #000000 !important;
-                display: -webkit-flex;
-                display: -moz-flex;
-                display: -ms-flex;
-                display: -o-flex;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 10px;
-                -webkit-print-color-adjust: exact;
-                margin: 15px 0;
-                font-size: 16px !important;
-                font-weight: bold !important;
-                border-bottom: 1px dashed #858080;
-                border-top: 1px dashed #858080;
-            }
-            .login_box .form-control {
-                height: 60px;
-                margin-bottom: 25px;
-                padding: 12px 25px;
-            }
-            .btn-login {
-                color: #fff;
-                background-color: #45C203;
-                border-color: #45C203;
-                width: 100%;
-                line-height: 45px;
-                font-size: 17px;
-            }
-            .btn-login:hover,
-            .btn-login:focus {
-                color: #fff;
-                background-color: transparent;
-                border-color: #fff;
-            }
-            .invoice-card{
-                width:80mm;
-                margin:0 auto;
-            }
-            .invoice-head,
-            .invoice-card .invoice-title {
-                display: -webkit-flex;
-                display: -moz-flex;
-                display: -ms-flex;
-                display: -o-flex;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .invoice-title {
-                background-color: #000000 !important;
-                color: #ffffff !important;
-                padding: 10px;
-                -webkit-print-color-adjust: exact;
-            }
-            .invoice-head {
-                flex-direction: column;
-                margin-bottom: 4px;
-            }
-            .invoice-card .invoice-title {
-                margin: 15px 0;
-            }
-            .invoice-details {
-                border-top: 0.5px dashed #747272;
-                border-bottom: 0.5px dashed #747272;
-            }
-            .invoice-list {
-                width: 100%;
-                border-collapse: collapse;
-                border-bottom: 1px dashed #858080;
-            }
-            .invoice-list .row-data {
-                border-bottom: 1px dashed #858080;
-            }
-            .invoice-list .row-data:last-child {
-                border-bottom: 0;
-                margin-bottom: 0;
-            }
-            .invoice-list .heading {
-                font-size: 16px;
-                font-weight: 600;
-                margin: 0;
-            }
-            .invoice-list .heading1 {
-                font-size: 14px;
-                font-weight: 500;
-                margin: 0;
-            }
-            .invoice-list thead tr td {
-                font-size: 15px;
-                font-weight: 600;
-                padding: 5px 0;
-            }
-            .invoice-list tbody tr td {
-                line-height: 25px;
-            }
-            .row-data {
-                display: flex;
-                align-items: flex-start;
-                justify-content: space-between;
-                width: 100%;
-            }
-            .middle-data {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .item-info {
-                max-width: 200px;
-            }
-            .item-title {
-                font-size: 14px;
-                margin: 0;
-                line-height: 19px;
-                font-weight: 500;
-            }
-            .item-size {
-                line-height: 19px;
-            }
-            .item-size,
-            .item-number {
-                margin: 5px 0;
-            }
-            .invoice-footer {
-                margin-top: 20px;
-            }
-            .gap_right {
-                border-right: 1px solid #ddd;
-                padding-right: 15px;
-                margin-right: 15px;
-            }
-            .b_top {
-                border-top: 1px solid #ddd;
-                padding-top: 12px;
-            }
-            .food_item {
-                display: -webkit-flex;
-                display: -moz-flex;
-                display: -ms-flex;
-                display: -o-flex;
-                display: flex;
-                align-items: center;
-                border: 1px solid #ddd;
-                border-top: 5px solid #1DB20B;
-                padding: 15px;
-                margin-bottom: 25px;
-                transition-duration: 0.4s;
-            }
-            .bhojon_title {
-                margin-top: 6px;
-                margin-bottom: 6px;
-                font-size: 14px;
-            }
-            .food_item .img_wrapper {
-                padding: 15px 5px;
-                background-color: #ececec;
-                border-radius: 6px;
-                position: relative;
-                transition-duration: 0.4s;
-            }
-            .food_item .table_info {
-                font-size: 11px;
-                background: #1db20b;
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                padding: 4px 8px;
-                color: #fff;
-                border-radius: 15px;
-                text-align: center;
-            }
-            .food_item:focus,
-            .food_item:hover {
-                background-color: #383838;
-            }
-            .food_item:focus .bhojon_title,
-            .food_item:hover .bhojon_title {
-                color: #fff;
-            }
-            .food_item:hover .img_wrapper,
-            .food_item:focus .img_wrapper {
-                background-color: #383838;
-            }
-            .btn-4 {
-                border-radius: 0;
-                padding: 15px 22px;
-                font-size: 16px;
-                font-weight: 500;
-                color: #fff;
-                min-width: 130px;
-            }
-            .btn-4.btn-green {
-                background-color: #1DB20B;
-            }
-            .btn-4.btn-green:focus,
-            .btn-4.btn-green:hover {
-                background-color: #3aa02d;
-                color: #fff;
-            }
-            .btn-4.btn-blue {
-                background-color: #115fc9;
-            }
-            .btn-4.btn-blue:focus,
-            .btn-4.btn-blue:hover {
-                background-color: #305992;
-                color: #fff;
-            }
-            .btn-4.btn-sky {
-                background-color: #1ba392;
-            }
-            .btn-4.btn-sky:focus,
-            .btn-4.btn-sky:hover {
-                background-color: #0dceb6;
-                color: #fff;
-            }
-            .btn-4.btn-paste {
-                background-color: #0b6240;
-            }
-            .btn-4.btn-paste:hover,
-            .btn-4.btn-paste:focus {
-                background-color: #209c6c;
-                color: #fff;
-            }
-            .btn-4.btn-red {
-                background-color: #eb0202;
-            }
-            .btn-4.btn-red:focus,
-            .btn-4.btn-red:hover {
-                background-color: #ff3b3b;
-                color: #fff;
-            }
-            .text-center {
-                text-align: center;
-            }
-            .border-top {
-                border-top: 2px dashed #858080;
-                background: #ececec;
-            }
-            .text-bold {
-                font-weight: bold !important;
-            }
-            small {
-                font-size: 10px;
-            }
-            table{
-                width:100%;
-                border-collapse:collapse;
-            }
-        </style>
     </head>
     <body>
-        <div class="page-wrapper" style="padding:5px">
+        <div class="page-wrapper">
             @php
                 $current_paid_amount = \App\Models\Payment::where('order_id', $order->id)
                     ->sum('received_amount');
@@ -1174,70 +852,76 @@
                 @endphp
             <div class="invoice-card">
                 <div class="invoice-head">
-                    <img src="{{ getSiteLogo() }}" style="height:34px;max-width:80%;" alt="">
-                    <h4>{{ $sitename }}</h4>
-                    <p class="my-0">{{ $address }} - {{ $zipcode }}</p>
-                    <p class="my-0">{{$phone ? getCountryCode() : ''}}{{ $phone }}</p><br>
+                    {{-- <img src="{{ getSiteLogo() }}" style="width:50px;" alt=""> --}}
+                    <h4 style="margin:12px 0;font-size:15px;font-weight:600;">
+                        {{ $sitename }}
+                    </h4>
+                    <p class="my-1" style="font-size:11px;"">{{ $address }} - {{ $zipcode }}</p>
+                    <p class="my-1">{{$phone ? getCountryCode() : ''}}{{ $phone }}</p>
                     <b>{{ $store_email }}</b>
                 </div>
                 <div class="invoice-details" style="border-top:none;">
                     <div class="invoice-list">
                         <br />
-                        <div class="text-center">
-                            <h4 class="heading font-bold" style="font-size: 25px">{{ $lang->data['tax_invoice'] ?? 'Tax Invoice' }}</h4>
-                            <h4 class="heading heading-child"></h4>
-                        </div> <br />
+                        <div style="text-align:center;width:100%;">
+                            <h4 style="
+                                font-size:16px;
+                                font-weight:700;
+                                margin:1px 0;
+                                text-align:center;
+                            ">
+                                {{ $lang->data['tax_invoice'] ?? 'Invoice' }}
+                            </h4>
+                        </div>
+                        <br />
                         <div style="border-top:1px dashed #000;border-bottom:1px dashed #000;padding:5px 0;">
                                 <table width="100%">
                                     <tr>
-                                        <td>Customer</td>
-                                        <td align="right">
-                                            {{ $customer->name ?? 'Walk-In Customer' }}
+                                        <td class="customer-row-label">Customer:</td>
+                                        <td class="customer-row-value">
+                                            {{ $customer->name }}
                                         </td>
                                     </tr>
 
                                     @if($customer && $customer->phone)
                                     <tr>
-                                        <td>Phone</td>
-                                        <td align="right">
+                                        <td class="customer-row-label">Phone:</td>
+                                        <td class="customer-row-value">
                                             {{ getCountryCode() }} {{ $customer->phone }}
                                         </td>
                                     </tr>
                                     @endif
 
                                     <tr>
-                                        <td>Order No</td>
-                                        <td align="right">
+                                        <td class="customer-row-label">Order No:</td>
+                                        <td class="customer-row-value">
                                             {{ $order->order_number }}
                                         </td>
                                     </tr>
 
                                     <tr>
-                                        <td>Order Date</td>
-                                        <td align="right">
+                                        <td class="customer-row-label">Order Date:</td>
+                                        <td class="customer-row-value">
                                             {{ \Carbon\Carbon::parse($order->order_date)->format('d/m/Y') }}
                                         </td>
                                     </tr>
 
                                     <tr>
-                                        <td>Delivery</td>
-                                        <td align="right">
+                                        <td class="customer-row-label">Delivery Date:</td>
+                                        <td class="customer-row-value">
                                             {{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}
                                         </td>
                                     </tr>
 
                                     <tr>
-                                        <td>Total Garments</td>
-                                        <td align="right">
+                                        <td class="customer-row-label">Total Garments:</td>
+                                        <td class="customer-row-value">
                                             {{ $totalPieces }}
                                         </td>
                                     </tr>
                                 </table>
 
                                 </div>
-                        @php
-                        $qty = 0;
-                        @endphp
                         <div style="margin-top:5px;">
                             @foreach ($orderdetails as $item)
 
@@ -1249,18 +933,20 @@
 
                                 <strong>{{ $service->service_name }}</strong><br>
 
-                                <small>{{ $item->service_name }}</small>
+                                <div style="font-size:10px;">
+                                    {{ $item->service_name }}
+                                </div>
 
                                 <table width="100%" style="margin-top:2px;">
                                     <tr>
                                         <td>
                                             {{ $item->service_quantity }}
                                             x
-                                            {{ number_format($item->service_price,2) }}
+                                            {{ getFormattedCurrency($item->service_price) }}
                                         </td>
 
                                         <td align="right">
-                                            {{ number_format($item->service_detail_total,2) }}
+                                            {{ getFormattedCurrency($item->service_detail_total) }}
                                         </td>
                                     </tr>
                                 </table>
@@ -1271,124 +957,125 @@
 
                             </div>
                             @php
-$addons = \App\Models\OrderAddonDetail::active()
-    ->where('order_id',$order->id)
-    ->get();
-@endphp
+                            $addons = \App\Models\OrderAddonDetail::active()
+                                ->where('order_id',$order->id)
+                                ->get();
+                            @endphp
 
-@if($addons->count())
+                            @if($addons->count())
 
-<br>
-<b>ADDONS</b>
+                            <br>
+                            <b>ADDONS</b>
 
-@foreach($addons as $row)
+                            @foreach($addons as $row)
 
-<table width="100%">
-    <tr>
-        <td>{{ $row->addon_name }}</td>
-        <td align="right">
-            {{ number_format($row->addon_price,2) }}
-        </td>
-    </tr>
-</table>
+                            <table width="100%">
+                                <tr>
+                                    <td>{{ $row->addon_name }}</td>
+                                    <td align="right">
+                                        {{ getFormattedCurrency($row->addon_price) }}
+                                    </td>
+                                </tr>
+                            </table>
 
-@endforeach
+                            @endforeach
 
-@endif
-                    </div>
+                            @endif
+                                                </div>
                     <div class="invoice-footer mb-15">
-                        <div style="border-top:1px dashed #000;margin-top:5px;padding-top:5px;">
+                        <div style="margin-top:5px;padding-top:5px;">
 
-<table width="100%">
+                            <table width="100%">
 
-<tr>
-    <td>Sub Total</td>
-    <td align="right">{{ number_format($order->sub_total,2) }}</td>
-</tr>
+                            <tr>
+                                <td>Sub Total</td>
+                                <td align="right">{{ getFormattedCurrency($order->sub_total) }}</td>
+                            </tr>
 
-<tr>
-    <td>Addon</td>
-    <td align="right">{{ number_format($order->addon_total,2) }}</td>
-</tr>
+                            <tr>
+                                <td>Addon</td>
+                                <td align="right">{{ getFormattedCurrency($order->addon_total) }}</td>
+                            </tr>
 
-<tr>
-    <td>Discount</td>
-    <td align="right">{{ number_format($order->discount,2) }}</td>
-</tr>
+                            <tr>
+                                <td>Discount</td>
+                                <td align="right">{{ getFormattedCurrency($order->discount) }}</td>
+                            </tr>
 
-@if($order->tax_type == 2)
-<tr>
-    <td>Before Tax</td>
-    <td align="right">{{ number_format($order->sub_total,2) }}</td>
-</tr>
-@endif
+                            @if($order->tax_type == 2)
+                            <tr>
+                                <td>Before Tax</td>
+                                <td align="right">{{ getFormattedCurrency($order->sub_total) }}</td>
+                            </tr>
+                            @endif
 
-<tr>
-    <td>Tax ({{ $order->tax_percentage }}%)</td>
-    <td align="right">{{ number_format($order->tax_amount,2) }}</td>
-</tr>
+                            <tr>
+                                <td>Tax ({{ $order->tax_percentage }}%)</td>
+                                <td align="right">{{ getFormattedCurrency($order->tax_amount) }}</td>
+                            </tr>
 
-<tr>
-    <td colspan="2">
-        <hr style="border-top:1px dashed #000;">
-    </td>
-</tr>
+                            <tr>
+                                <td colspan="2">
+                                    <hr style="border-top:1px dashed #000;">
+                                </td>
+                            </tr>
 
-<tr>
-    <td><strong>TOTAL</strong></td>
-    <td align="right">
-        <strong>{{ number_format($order->total,2) }}</strong>
-    </td>
-</tr>
+                            <tr>
+                                <td style="font-size:16px;font-weight:700;">
+                                    <strong>TOTAL</strong>
+                                </td>
 
-<tr>
-    <td>Paid</td>
-    <td align="right">
-        {{ number_format($current_paid_amount,2) }}
-    </td>
-</tr>
+                                <td align="right" style="font-size:16px;font-weight:700;">
+                                    <strong>
+                                        {{ getFormattedCurrency($order->total) }}
+                                    </strong>
+                                </td>
+                            </tr>
 
-@if($inline_payment_balance != 0)
-<tr>
-    <td>Balance</td>
-    <td align="right">
-        {{ number_format($inline_payment_balance,2) }}
-    </td>
-</tr>
-@endif
+                            <tr>
+                                <td>Paid</td>
+                                <td align="right">
+                                    {{ getFormattedCurrency($current_paid_amount) }}
+                                </td>
+                            </tr>
 
-@if($customer && $inline_balance != 0)
-<tr>
-    <td>Cust Balance</td>
-    <td align="right">
-        @if($inline_balance < 0)
-            {{ number_format(abs($inline_balance),2) }} Cr
-        @else
-            {{ number_format($inline_balance,2) }} Dr
-        @endif
-    </td>
-</tr>
-@endif
+                            @if($inline_payment_balance != 0)
+                            <tr>
+                                <td>Balance</td>
+                                <td align="right">
+                                    {{ getFormattedCurrency($inline_payment_balance) }}
+                                </td>
+                            </tr>
+                            @endif
 
-</table>
+                            @if($customer && $inline_balance != 0)
+                            <tr>
+                                <td>Customer Balance</td>
+                                <td align="right">
+                                    @if($inline_balance < 0)
+                                        {{ getFormattedCurrency(abs($inline_balance)) }} Cr
+                                    @else
+                                        {{ getFormattedCurrency($inline_balance) }} Dr
+                                    @endif
+                                </td>
+                            </tr>
+                            @endif
 
-</div>
+                            </table>
+
+                        </div>
 
                     </div>
                     <div class="invoice_address">
                         <div style="text-align:center;margin-top:10px;">
 
     <div style="border-top:1px dashed #000;margin-bottom:5px;"></div>
-
     <strong>Thank You For Choosing Faeblo</strong>
-
     <br><br>
-
-    <small>
-        Powered By {{ getApplicationName() }}
-    </small>
-
-</div>
+        <small>
+            Powered By {{ getDevelopedByCompanyName() }}
+        </small>
+    </div>
                     </div>
                 </div>
             </div>

@@ -217,6 +217,18 @@ function getApplicationName()
     return 'Laundry Box';
 }
 
+/* get Developer Name */
+function getDevelopedByCompanyName()
+{
+    $settings = new App\Models\MasterSettings();
+    $site = $settings->siteData();
+    if (isset($site['developed_by_company_name'])) {
+        $developed_by_company_name = (($site['developed_by_company_name']) && ($site['developed_by_company_name'] != "")) ? $site['developed_by_company_name'] : 'Armem Infotech';
+        return $developed_by_company_name;
+    }
+    return 'ARMEM Infotech';
+}
+
 
 /* get site logo */
 function getSiteLogo()

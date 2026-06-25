@@ -31,6 +31,7 @@
                             <div class="">
                                 {{ $lang->data['order_status'] ?? 'Order Status' }} :
                             </div>
+
                             <div class="dropdown">
                                 @can('order_status_change')
                                 @if($order->status != 3 && $order->status != 4)
@@ -77,6 +78,20 @@
                                 @endcannot
 
                             </div>
+                             @if($order->tags_printed_at)
+                                <div class="mt-2">
+                                    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                                        Tags Printed:
+                                        {{ $order->tags_printed_at->format('d/m/Y h:i A') }}
+                                    </span>
+                                </div>
+                            @else
+                                <div class="mt-2">
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                        Tags Not Printed
+                                    </span>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -272,7 +287,21 @@
                 @endif
                 @endcan
                 @can('order_print')
-                <a href="{{url('admin/orders/print/'.$order->id)}}" target="_blank" type="button" class="btn btn-outline-warning-600 radius-8 px-20 py-11 tw-mt-3 tw-w-full">{{ $lang->data['print_invoice'] ?? 'Print Invoice' }}</a>
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary w-100 tw-mt-3"
+                        onclick="confirmPrintAllTags('{{ route('orders.print-all-tags', ['order' => $order->id]) }}', '{{ $order->order_number }}', {{ $order->articles?->count() ?? 0 }})"
+                    >
+                        Print All Tags
+                    </button>
+
+                    <a
+                        href="{{ url('admin/orders/print/' . $order->id) }}"
+                        target="_blank"
+                        class="btn btn-outline-warning-600 radius-8 px-20 py-11 tw-mt-3 tw-w-full"
+                    >
+                        {{ $lang->data['print_invoice'] ?? 'Print Invoice' }}
+                    </a>
                 @endcan()
             </div>
         </div>
@@ -412,4 +441,16 @@
             </div>
         </div>
     </div>
+    <script>
+        function confirmPrintAllTags(url, orderNumber, tagCount) {
+            const confirmed = confirm(
+                `Print all ${tagCount} garment tag(s) for ${orderNumber}?\n\n` +
+                `Use this only when tags need to be printed or reprinted.`
+            );
+
+            if (confirmed) {
+                window.open(url, '_blank');
+            }
+        }
+    </script>
 </div>

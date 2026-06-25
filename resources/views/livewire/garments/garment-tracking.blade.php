@@ -9,6 +9,33 @@
             </div>
         </div>
         <div class="tw-p-0">
+            @php
+                $orderIds = collect($articles)
+                    ->map(function ($article) {
+                        return is_array($article)
+                            ? ($article['order_id'] ?? null)
+                            : ($article->order_id ?? null);
+                    })
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                $orderId = $orderIds->count() === 1
+                    ? $orderIds->first()
+                    : null;
+            @endphp
+            @if($orderId)
+                <div class="tw-px-3 tw-py-2 tw-flex tw-justify-end">
+                    <a
+                        href="{{ route('orders.print-all-tags', ['order' => $orderId]) }}"
+                        target="_blank"
+                        onclick="return confirm('Print all garment tags for this order?');"
+                        class="btn rounded-pill btn-info-100 text-info-600 radius-8 tw-inline-flex tw-items-center tw-gap-1 tw-whitespace-nowrap tw-text-xs tw-py-1.5 tw-px-3"
+                    >
+                        <span>Print All Tags</span>
+                    </a>
+                </div>
+            @endif
             @if(count($articles)>0)
                 @foreach($articles as $article)
                     <div class="card garment-card garment-status-{{ $article->status }} mb-3">
@@ -31,6 +58,11 @@
                                             Delivered
                                         </span>
 
+                                    @endif
+                                    @if($article->order?->tags_printed_at)
+                                        <span class="badge bg-success-subtle text-success-emphasis ms-1 tw-text-xs">
+                                            Printed
+                                        </span>
                                     @endif
                                 </div>
                                 <div class="text-neutral-600 tw-text-xs">
@@ -93,6 +125,17 @@
                                         {{ $article->status >=3 ? '✓' : '○' }} Delivered
                                     </span>
                                 </div>
+                                <a
+                                href="{{ route('orders.articles.print-tag', [
+                                    'order' => $article->order_id,
+                                    'article' => $article->id,
+                                ]) }}"
+                                target="_blank"
+                                class="btn rounded-pill btn-info-100 text-info-600 radius-8 tw-inline-flex tw-items-center tw-gap-1 tw-whitespace-nowrap tw-text-xs tw-py-1 tw-px-2 garment-action-btn"
+                                title="Print tag: {{ $article->tag_number }}"
+                            >
+                                <span class="tw-whitespace-nowrap">Print Tag</span>
+                            </a>
                                 @if($article->status==0)
 
                                     <button

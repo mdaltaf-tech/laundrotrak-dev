@@ -198,6 +198,14 @@
                                         <iconify-icon icon="lucide:eye" class="menu-icon"></iconify-icon>
                                     </a>
                                     @endcan
+                                    <a
+                                        href="{{ route('orders.print-all-tags', ['order' => $item->id]) }}"
+                                        target="_blank"
+                                        class="w-36-px h-36s-px bg-warning-focus text-warning-main rounded-circle d-inline-flex align-items-center justify-content-center"
+                                        title="Print All Garment Tags"
+                                    >
+                                        <iconify-icon icon="solar:tag-horizontal-bold"></iconify-icon>
+                                    </a>
                                     @can('order_print')
                                     <a href="{{route('order.print',$item->id)}}" target="_blank" class="bg-warning-100 text-warning-600 bg-hover-warning-200 fw-medium tw-size-8 d-flex justify-content-center align-items-center rounded-circle" >
                                         <iconify-icon icon="material-symbols-light:print-outline" class="menu-icon tw-text-xl"></iconify-icon>
@@ -378,3 +386,19 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('open-tag-print', (event) => {
+            const url = event.url;
+
+            if (!url) {
+                console.error('Tag print URL was not received.', event);
+                return;
+            }
+
+            window.open(url, '_blank');
+        });
+    });
+</script>
+@endpush

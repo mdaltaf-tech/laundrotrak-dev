@@ -30,6 +30,13 @@ class Order extends Model
         'payment_status',
         'paid_amount',
         'balance_amount',
+        'tags_printed_at'
+    ];
+
+    protected $casts = [
+        'order_date' => 'datetime',
+        'delivery_date' => 'datetime',
+        'tags_printed_at' => 'datetime',
     ];
 
     const PAYMENT_UNPAID = 0;

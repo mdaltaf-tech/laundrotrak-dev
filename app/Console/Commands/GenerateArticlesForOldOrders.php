@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Order;
 use App\Models\OrderArticle;
+use App\Models\Service;
 
 class GenerateArticlesForOldOrders extends Command
 {
@@ -40,6 +41,10 @@ class GenerateArticlesForOldOrders extends Command
                 $order->details as $detail
             )
             {
+                $service = Service::find(
+                    $detail->service_id
+                );
+
                 for(
                     $i=1;
                     $i<=$detail->service_quantity;
@@ -60,7 +65,8 @@ class GenerateArticlesForOldOrders extends Command
                         ),
 
                         'article_name'=>
-                        $detail->service_name,
+                        $service?->service_name
+                        ?? 'Unknown Garment',
 
                         'service_name'=>
                         $detail->service_name,

@@ -217,6 +217,18 @@ function getApplicationName()
     return 'Laundry Box';
 }
 
+/* get Developer Name */
+function getDevelopedByCompanyName()
+{
+    $settings = new App\Models\MasterSettings();
+    $site = $settings->siteData();
+    if (isset($site['developed_by_company_name'])) {
+        $developed_by_company_name = (($site['developed_by_company_name']) && ($site['developed_by_company_name'] != "")) ? $site['developed_by_company_name'] : 'Armem Infotech';
+        return $developed_by_company_name;
+    }
+    return 'ARMEM Infotech';
+}
+
 
 /* get site logo */
 function getSiteLogo()
@@ -425,7 +437,12 @@ function getFormatedTextSMS($order, $type)
         '<order_number>'    => 'Order Number',
         '<current_time>'    => 'Current Time'
     ];
-    $count = \App\Models\OrderDetail::where('order_id', $order)->count();
+    $count = \App\Models\OrderDetail::active()
+                                            ->where(
+                                                'order_id',
+                                                $order
+                                            )
+                                            ->count();
     $paid = \App\Models\Payment::where('order_id', $order)->sum('received_amount');
     $replacement = [
         $myorder->customer_name,

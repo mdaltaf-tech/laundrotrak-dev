@@ -1,199 +1,688 @@
 <div class="dashboard-main-body">
-    <div class="tw-grid 2xl:tw-grid-cols-4 tw-gap-4 lg:tw-grid-cols-2 tw-grid-cols-1 gy-4">
-        <div class="col">
-            <div class="card shadow-none border bg-gradient-start-1 h-100">
-                <div class="card-body p-20">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                        <div>
-                            <p class="fw-medium text-primary-light mb-1">
-                                {{ $lang->data['pending_order'] ?? 'Pending Orders' }}</p>
-                            <h6 class="mb-0">{{ $pending_count }}</h6>
+    <div class="card shadow-none">
+        <div class="card-body p-20">
+            <div class="row g-3">
+                <div class="col-xl-3 col-lg-3 col-md-6">
+                    <a href="{{ url('admin/orders') }}?status=0" class="text-decoration-none d-block h-100">
+                        <div class="card shadow-none border h-100 dashboard-kpi-card">
+                            <div class="card-body p-20">
+                                <div class="d-flex align-items-center h-100">
+                                    <div class="flex-grow-1">
+                                        <p class="fw-medium text-primary-light mb-1">
+                                            {{ $lang->data['pending_order'] ?? 'Pending Orders' }}</p>
+                                        <h6 class="mb-0">{{ $pending_count }}</h6>
+                                        <small class="text-secondary-light">
+                                            Click to view
+                                        </small>
+                                    </div>
+                                    <div
+                                        class="w-50-px h-50-px bg-cyan rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon icon="game-icons:basket" class="text-white text-2xl mb-0"></iconify-icon>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div
-                            class="w-50-px h-50-px bg-cyan rounded-circle d-flex justify-content-center align-items-center">
-                            <iconify-icon icon="game-icons:basket" class="text-white text-2xl mb-0"></iconify-icon>
-                        </div>
-                    </div>
+                    </a>
                 </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="card shadow-none border bg-gradient-start-2 h-100">
-                <div class="card-body p-20">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                        <div>
-                            <p class="fw-medium text-primary-light mb-1">
-                                {{ $lang->data['processing_order'] ?? 'Processing Order' }}</p>
-                            <h6 class="mb-0"> {{ $processing_count }}</h6>
+                <div class="col-xl-3 col-lg-3 col-md-6">
+                    <a href="{{ url('admin/orders') }}?status=1" class="text-decoration-none d-block h-100">
+                        <div class="card shadow-none border h-100 dashboard-kpi-card">
+                            <div class="card-body p-20">
+                                <div class="d-flex align-items-center h-100">
+                                    <div class="flex-grow-1">
+                                        <p class="fw-medium text-primary-light mb-1">
+                                            {{ $lang->data['processing_order'] ?? 'Processing Order' }}</p>
+                                        <h6 class="mb-0"> {{ $processing_count }}</h6>
+                                    </div>
+                                    <div
+                                        class="w-50-px h-50-px bg-purple rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon icon="material-symbols:hub-outline"
+                                            class="text-white text-2xl mb-0"></iconify-icon>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div
-                            class="w-50-px h-50-px bg-purple rounded-circle d-flex justify-content-center align-items-center">
-                            <iconify-icon icon="material-symbols:hub-outline"
-                                class="text-white text-2xl mb-0"></iconify-icon>
+                    </a>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-6">
+                    <a href="{{ url('admin/orders') }}?status=2" class="text-decoration-none d-block h-100">
+                        <div class="card shadow-none border h-100 dashboard-kpi-card">
+                            <div class="card-body p-20">
+                                <div class="d-flex align-items-center h-100">
+                                    <div class="flex-grow-1">
+                                        <p class="fw-medium text-primary-light mb-1">
+                                            {{ $lang->data['ready_to_deliver'] ?? 'Ready To Deliver' }}</p>
+                                        <h6 class="mb-0">{{ $ready_count }}</h6>
+                                    </div>
+                                    <div
+                                        class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon icon="ion:thumbs-up" class="text-white text-2xl mb-0"></iconify-icon>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-6">
+                    <a href="{{ url('admin/orders') }}?quick_filter=delayed" class="text-decoration-none d-block h-100">
+                        <div class="card shadow-none border h-100 dashboard-kpi-card">
+                            <div class="card-body p-20">
+                                <div class="d-flex align-items-center h-100">
+                                    <div class="flex-grow-1">
+                                        <p class="fw-medium text-primary-light mb-1">
+                                            {{ $lang->data['monthly_orders'] ?? 'Monthly Orders' }}
+                                        </p>
+                                        <h6 class="mb-0">
+                                            {{ $monthlyOrders }}
+                                        </h6>
+                                        <small class="text-primary">
+                                            {{ now()->format('F Y') }}
+                                        </small>
+                                    </div>
+                                    <div class="w-50-px h-50-px bg-success rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon
+                                            icon="mdi:calendar-month"
+                                            class="text-white text-2xl">
+                                        </iconify-icon>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-6">
+                    <a href="javascript:void(0)" class="text-decoration-none d-block h-100">
+                        <div class="card shadow-none border h-100 dashboard-kpi-card">
+                            <div class="card-body p-20">
+                                <div class="d-flex align-items-center h-100">
+                                    <div class="flex-grow-1">
+                                        <p class="fw-medium mb-1">
+                                            Today's Collection
+                                        </p>
+                                        <h6 class="mb-0">
+                                            ₹{{ number_format($today_collection,2) }}
+                                        </h6>
+                                        <div class="d-flex flex-wrap gap-2 mt-1">
+                                            <span class="badge bg-success-subtle text-success">
+                                                Cash ₹{{ number_format($todayCash, 0) }}
+                                            </span>
 
+                                            <span class="badge bg-primary-subtle text-primary">
+                                                UPI ₹{{ number_format($todayUpi, 0) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon
+                                            icon="mdi:cash"
+                                            class="text-white text-2xl">
+                                        </iconify-icon>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-6">
+                    <a href="{{ url('admin/orders') }}?paid_filter=0" class="text-decoration-none d-block h-100">
+                        <div class="card shadow-none border h-100 dashboard-kpi-card">
+                            <div class="card-body p-20">
+                                <div class="d-flex align-items-center h-100">
+                                    <div class="flex-grow-1">
+                                        <p class="fw-medium mb-1">
+                                            Pending Collection
+                                        </p>
+
+                                        <h6 class="mb-1">
+                                            ₹{{ number_format($pendingCollection,2) }}
+                                        </h6>
+
+                                        <small class="text-muted">
+                                            {{ $unpaidOrderCount }} Orders
+                                        </small>
+                                    </div>
+                                    <div class="w-50-px h-50-px bg-danger rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon
+                                            icon="mdi:cash-remove"
+                                            class="text-white text-2xl">
+                                        </iconify-icon>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-6">
+                    <a href="{{ url('admin/orders') }}?quick_filter=pickup_overdue" class="text-decoration-none d-block h-100">
+                        <div class="card shadow-none border h-100 dashboard-kpi-card">
+                            <div class="card-body p-20">
+                                <div class="d-flex align-items-center h-100">
+                                    <div class="flex-grow-1">
+                                        <p class="fw-medium text-primary-light mb-1">
+                                            {{ $lang->data['overdue_pickups'] ?? 'Overdue Pickup' }}
+                                        </p>
+                                        <h6 class="mb-0">{{ $overduePickups }}</h6>
+                                    </div>
+                                    <div
+                                        class="w-50-px h-50-px bg-warning rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon icon="mdi:clock-alert" class="text-white text-2xl mb-0"></iconify-icon>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-6">
+                    <a href="{{ url('admin/orders') }}?status=3" class="text-decoration-none d-block h-100">
+                        <div class="card shadow-none border h-100 dashboard-kpi-card">
+                            <div class="card-body p-20">
+                                <div class="d-flex align-items-center h-100">
+                                    <div class="flex-grow-1">
+                                        <p class="fw-medium mb-1">
+                                            Delivered Orders
+                                        </p>
+                                        <h6 class="mb-0">
+                                            {{ $delivered_count }}
+                                        </h6>
+                                        <small class="text-success">
+                                            {{ $todayDelivered }} delivered today
+                                        </small>
+                                    </div>
+                                    <div class="w-50-px h-50-px bg-success rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon
+                                            icon="mdi:check-circle"
+                                            class="text-white text-2xl">
+                                        </iconify-icon>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="col">
-            <div class="card shadow-none border bg-gradient-start-3 h-100">
-                <div class="card-body p-20">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                        <div>
-                            <p class="fw-medium text-primary-light mb-1">
-                                {{ $lang->data['ready_to_deliver'] ?? 'Ready To Deliver' }}</p>
-                            <h6 class="mb-0">{{ $ready_count }}</h6>
-                        </div>
-                        <div
-                            class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
-                            <iconify-icon icon="ion:thumbs-up" class="text-white text-2xl mb-0"></iconify-icon>
+    </div>
+    <div class="row gy-4 mt-1">
+        <div class="col-12">
+            <div class="row gy-4">
+                <div class="col-12 h-auto">
+                    <div class="card h-auto">
+                        <div class="card-body">
+                            <div>
+                                <h6 class="mb-0 d-flex align-items-center gap-2">
+                                    <iconify-icon
+                                        icon="mdi:calendar-today"
+                                        class="text-primary">
+                                    </iconify-icon>
+                                    Today's Delivery
+                                </h6>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <div class="fw-medium text-dark mt-1">
+                                        {{ $totalTodayOrders  }} Orders • {{ $todayGarments  }} Garments
+                                    </div>
+                                    @if($totalTodayOrders  > 4)
+                                        <a href="{{ url('admin/orders?quick_filter=today') }}"
+                                        class="text-primary small fw-semibold">
+                                            View All
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="row g-2 mt-1">
+                                @foreach($todayOrders as $order)
+                                    <div class="col-md-6 col-xl-3">
+                                        <a href="{{ url('admin/orders/view/'.$order->id) }}" class="text-decoration-none d-block h-100">
+                                            <div class="bg-neutral-50 p-16 radius-8 border dashboard-order-card" style="cursor:pointer;">
+                                                <div class="tw-flex tw-justify-between tw-items-start">
+                                                    <div class="tw-font-bold text-primary-light">
+                                                        {{ $order->order_number }}
+                                                    </div>
+                                                    @if($order->status == 0)
+                                                        <span class="badge bg-secondary-subtle text-secondary">
+                                                            Pending
+                                                        </span>
+
+                                                    @elseif($order->status == 1)
+                                                        <span class="badge bg-warning-subtle text-warning">
+                                                            Processing
+                                                        </span>
+
+                                                    @elseif($order->status == 2)
+                                                        <span class="badge bg-success-subtle text-success">
+                                                            Ready
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div class="tw-mt-2 text-sm">
+                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div class="d-flex align-items-center justify-content-between gap-10">
+                                                            <iconify-icon icon="mdi:user-outline"
+                                                                class="text-primary-light"></iconify-icon>
+                                                            <span class="tw-font-bold text-truncate d-inline-block"
+                                                                style="max-width:180px;">
+                                                                {{ $order->customer_name }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-sm text-secondary-light">
+                                                        Garments :
+                                                        <span class="tw-font-bold">
+                                                            {{ $order->garment_count }}
+                                                        </span>
+                                                    </div>
+                                                    @if($order->balance_amount > 0)
+                                                        <div class="text-sm text-danger small">
+                                                            Balance :
+                                                            ₹{{ number_format($order->balance_amount,2) }}
+                                                        </div>
+                                                    @else
+                                                        <div class="text-success text-sm fw-semibold">
+                                                            Fully Paid
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                                <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                    <div class="d-flex text-sm align-items-center justify-content-between gap-10">
+                                                        <iconify-icon icon="solar:calendar-outline"
+                                                            class="text-primary-light"></iconify-icon>
+                                                        <span
+                                                            class="start-date text-secondary-light">{{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                @endforeach
+                            </div>
+                            @if(count($orders) <= 0)
+                            <x-empty-item/>
+                            @endif
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="card shadow-none border bg-gradient-start-4 h-100">
-                <div class="card-body p-20">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                        <div>
-                            <p class="fw-medium text-primary-light mb-1">
-                                {{ $lang->data['delivered_orders'] ?? 'Delivered Orders' }}</p>
-                            <h6 class="mb-0">{{ $delivered_count }}</h6>
+                <div class="col-12">
+                    <div class="card h-auto">
+                        <div class="card-body">
+                            <div>
+                                <h6 class="mb-0 d-flex align-items-center gap-2">
+                                    <iconify-icon
+                                        icon="mdi:calendar-arrow-right"
+                                        class="text-success">
+                                    </iconify-icon>
+                                    Tomorrow's Delivery
+                                </h6>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <div class="fw-medium text-dark mt-1">
+                                        {{ $totalTomorrowOrders }} Orders • {{ $tomorrowGarments }} Garments
+                                    </div>
+                                    @if($totalTomorrowOrders > 4)
+                                        <a href="{{ url('admin/orders?quick_filter=tomorrow') }}"
+                                        class="text-primary small fw-semibold">
+                                            View All
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="row g-2 mt-1">
+                                @foreach ($orders as $item)
+                                    <div class="col-md-6 col-xl-3">
+                                        <a href="{{ url('admin/orders/view/'.$item->id) }}" class="text-decoration-none d-block h-100">
+                                            <div class="bg-neutral-50 p-16 radius-8 border dashboard-order-card" style="cursor:pointer;">
+                                                <div class="tw-flex tw-justify-between tw-items-start">
+                                                    <div class="tw-font-bold text-primary-light">
+                                                        {{ $item->order_number }}
+                                                    </div>
+                                                    @if($item->status == 0)
+                                                        <span class="badge bg-secondary-subtle text-secondary">
+                                                            Pending
+                                                        </span>
+
+                                                    @elseif($item->status == 1)
+                                                        <span class="badge bg-warning-subtle text-warning">
+                                                            Processing
+                                                        </span>
+
+                                                    @elseif($item->status == 2)
+                                                        <span class="badge bg-success-subtle text-success">
+                                                            Ready
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div class="tw-mt-2 text-sm">
+                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div class="d-flex align-items-center justify-content-between gap-10">
+                                                            <iconify-icon icon="mdi:user-outline"
+                                                                class="text-primary-light"></iconify-icon>
+                                                            <span class="tw-font-bold text-truncate d-inline-block"
+                                                                style="max-width:180px;">
+                                                                {{ $item->customer_name }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-sm text-secondary-light">
+                                                        Garments :
+                                                        <span class="tw-font-bold">
+                                                            {{ $item->garment_count }}
+                                                        </span>
+                                                    </div>
+                                                    @if($item->balance_amount > 0)
+                                                        <div class="text-sm text-danger small">
+                                                            Balance :
+                                                            ₹{{ number_format($item->balance_amount,2) }}
+                                                        </div>
+                                                    @else
+                                                        <div class="text-success text-sm fw-semibold">
+                                                            Fully Paid
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                                <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                    <div class="d-flex text-sm align-items-center justify-content-between gap-10">
+                                                        <iconify-icon icon="solar:calendar-outline"
+                                                            class="text-primary-light"></iconify-icon>
+                                                        <span
+                                                            class="start-date text-secondary-light">{{ \Carbon\Carbon::parse($item->delivery_date)->format('d/m/Y') }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                @endforeach
+                            </div>
+                            @if(count($orders) <= 0)
+                            <x-empty-item/>
+                            @endif
                         </div>
-                        <div
-                            class="w-50-px h-50-px bg-success-main rounded-circle d-flex justify-content-center align-items-center">
-                            <iconify-icon icon="mdi:check-bold" class="text-white text-2xl mb-0"></iconify-icon>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="card h-auto">
+                        <div class="card-body">
+                            <h6 class="mb-0 d-flex align-items-center gap-2">
+                                <iconify-icon
+                                    icon="mdi:clock-alert-outline"
+                                    class="text-warning">
+                                </iconify-icon>
+                                Delayed Orders
+                            </h6>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <div class="fw-medium text-dark mt-1">
+                                    {{ $totalDelayedOrders }} Orders • {{ $delayedGarments }} Garments
+                                </div>
+                                @if($totalDelayedOrders > 4)
+                                    <a href="{{ url('admin/orders?quick_filter=delayed') }}"
+                                    class="text-primary small fw-semibold">
+                                        View All
+                                    </a>
+                                @endif
+                            </div>
+                            <div class="row g-2 mt-1">
+                                @foreach($delayedOrderList as $order)
+                                    <div class="col-md-6 col-xl-3">
+                                        <a href="{{ url('admin/orders/view/'.$order->id) }}" class="text-decoration-none d-block h-100">
+                                            <div class="bg-neutral-50 p-16 radius-8 border dashboard-order-card">
+                                                <div class="tw-flex tw-justify-between tw-items-start">
+                                                    <div class="tw-font-bold text-primary-light">
+                                                        {{ $order->order_number }}
+                                                    </div>
+                                                    @if($order->status == 0)
+                                                        <span class="badge bg-secondary-subtle text-secondary">
+                                                            Pending
+                                                        </span>
+
+                                                    @elseif($order->status == 1)
+                                                        <span class="badge bg-warning-subtle text-warning">
+                                                            Processing
+                                                        </span>
+
+                                                    @elseif($order->status == 2)
+                                                        <span class="badge bg-success-subtle text-success">
+                                                            Ready
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div class="tw-mt-2 text-sm">
+                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div class="d-flex align-items-center justify-content-between gap-10">
+                                                            <iconify-icon icon="mdi:user-outline"
+                                                                class="text-primary-light"></iconify-icon>
+                                                            <span class="tw-font-bold text-truncate d-inline-block"
+                                                                style="max-width:180px;">
+                                                                {{ $order->customer_name }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        Garments :
+                                                        <span class="tw-font-bold">
+                                                            {{ $order->garment_count }}
+                                                        </span>
+                                                    </div>
+                                                    @if($order->balance_amount > 0)
+                                                        <div class="text-danger">
+                                                            Balance :
+                                                            ₹{{ number_format($order->balance_amount,2) }}
+                                                        </div>
+                                                    @endif
+                                                    <div class="text-danger">
+                                                        {{ \Carbon\Carbon::parse($order->delivery_date)->diffInDays(today()) }} day{{ \Carbon\Carbon::parse($order->delivery_date)->diffInDays(today()) > 1 ? 's' : '' }} delayed
+                                                    </div>
+                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div class="d-flex text-sm align-items-center justify-content-between gap-10">
+                                                            <iconify-icon icon="solar:calendar-outline"
+                                                                class="text-primary-light"></iconify-icon>
+                                                            <span
+                                                                class="start-date text-secondary-light">{{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                @endforeach
+                                @if($delayedOrderList->count() == 0)
+                                    <x-empty-item/>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 mt-3">
+                    <div class="card h-auto">
+                        <div class="card-body">
+                            <h6 class="mb-0 d-flex align-items-center gap-2">
+                                <iconify-icon
+                                    icon="mdi:package-variant-closed"
+                                    class="text-danger">
+                                </iconify-icon>
+                                Overdue Pickups
+                            </h6>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <div class="fw-medium text-dark mt-1">
+                                    {{ $totalOverdueOrders }} Orders • {{ $overdueGarments }} Garments
+                                </div>
+                                @if($totalOverdueOrders > 4)
+                                    <a href="{{ url('admin/orders?quick_filter=pickup_overdue') }}"
+                                    class="text-primary small fw-semibold">
+                                        View All
+                                    </a>
+                                @endif
+                            </div>
+                            <div class="row g-2 mt-1">
+                                @foreach($overduePickupList as $order)
+                                    <div class="col-md-6 col-xl-3">
+                                        <a href="{{ url('admin/orders/view/'.$order->id) }}" class="text-decoration-none d-block h-100">
+                                            <div class="bg-neutral-50 p-16 radius-8 border dashboard-order-card">
+                                                <div class="tw-flex tw-justify-between tw-items-start">
+                                                    <div class="tw-font-bold text-primary-light">
+                                                        {{ $order->order_number }}
+                                                    </div>
+                                                    @if($order->status == 0)
+                                                        <span class="badge bg-secondary-subtle text-secondary">
+                                                            Pending
+                                                        </span>
+
+                                                    @elseif($order->status == 1)
+                                                        <span class="badge bg-warning-subtle text-warning">
+                                                            Processing
+                                                        </span>
+
+                                                    @elseif($order->status == 2)
+                                                        <span class="badge bg-success-subtle text-success">
+                                                            Ready
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div class="tw-mt-2 text-sm">
+                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div class="d-flex align-items-center justify-content-between gap-10">
+                                                            <iconify-icon icon="mdi:user-outline"
+                                                                class="text-primary-light"></iconify-icon>
+                                                            <span class="tw-font-bold text-truncate d-inline-block"
+                                                                style="max-width:180px;">
+                                                                {{ $order->customer_name }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        Garments :
+                                                        <span class="tw-font-bold">
+                                                            {{ $order->garment_count }}
+                                                        </span>
+                                                    </div>
+                                                    @if($order->balance_amount > 0)
+                                                        <div class="text-danger">
+                                                            Balance :
+                                                            ₹{{ number_format($order->balance_amount,2) }}
+                                                        </div>
+                                                    @endif
+                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div class="d-flex text-sm align-items-center justify-content-between gap-10">
+                                                            <iconify-icon icon="solar:calendar-outline"
+                                                                class="text-primary-light"></iconify-icon>
+                                                            <span
+                                                                class="start-date text-secondary-light">{{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}</span>
+                                                        </div>
+                                                    </div>
+                                                    @php
+                                                        $daysReady = \Carbon\Carbon::parse($order->delivery_date)
+                                                            ->startOfDay()
+                                                            ->diffInDays(today());
+                                                    @endphp
+
+                                                    <p class="
+                                                        mb-0
+                                                        @if($daysReady > 30)
+                                                            text-danger fw-bold
+                                                        @elseif($daysReady > 7)
+                                                            text-warning fw-semibold
+                                                        @else
+                                                            text-info
+                                                        @endif
+                                                    ">
+                                                        {{ $daysReady }} day{{ $daysReady > 1 ? 's' : '' }} overdue
+                                                    </p>
+
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                @endforeach
+                                @if($overduePickupList->count() == 0)
+                                    <x-empty-item/>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 mt-3">
+                    <div class="card h-auto">
+                        <div class="card-body">
+                            <h6 class="mb-0 d-flex align-items-center gap-2">
+                                <iconify-icon
+                                    icon="mdi:cash-clock"
+                                    class="text-info">
+                                </iconify-icon>
+                                Credit Delivered Orders
+                            </h6>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <div class="fw-medium text-dark mt-1">
+                                    {{ $creditDeliveredOrders }} Orders • ₹{{ number_format($creditDeliveredAmount,2) }}
+                                </div>
+                                @if($creditDeliveredOrders > 1)
+                                    <a href="{{ url('admin/orders?paid_filter=3') }}"
+                                    class="text-primary small fw-semibold">
+                                        View All
+                                    </a>
+                                @endif
+                            </div>
+                            <div class="row g-2 mt-1">
+                                @foreach($creditDeliveredList as $order)
+                                    <div class="col-md-6 col-xl-3">
+                                        <a href="{{ url('admin/orders/view/'.$order->id) }}" class="text-decoration-none d-block h-100">
+                                            <div class="bg-neutral-50 p-16 radius-8 border dashboard-order-card">
+                                                <div class="tw-flex tw-justify-between tw-items-start">
+                                                    <div class="tw-font-bold text-primary-light">
+                                                        {{ $order->order_number }}
+                                                    </div>
+                                                    <span class="badge bg-danger">
+                                                        Credit
+                                                    </span>
+                                                </div>
+                                                <div class="tw-mt-2 text-sm">
+                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div class="d-flex align-items-center justify-content-between gap-10">
+                                                            <iconify-icon icon="mdi:user-outline"
+                                                                class="text-primary-light"></iconify-icon>
+                                                            <span class="tw-font-bold text-truncate d-inline-block"
+                                                                style="max-width:180px;">
+                                                                {{ $order->customer_name }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        Garments :
+                                                        <span class="tw-font-bold">
+                                                            {{ $order->garment_count }}
+                                                        </span>
+                                                    </div>
+                                                    @if($order->balance_amount > 0)
+                                                        <div class="text-danger">
+                                                            Balance :
+                                                            ₹{{ number_format($order->balance_amount,2) }}
+                                                        </div>
+                                                    @endif
+                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div class="d-flex text-sm align-items-center justify-content-between gap-10">
+                                                            <iconify-icon icon="solar:calendar-outline"
+                                                                class="text-primary-light"></iconify-icon>
+                                                            <span
+                                                                class="start-date text-secondary-light">{{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="small text-muted">
+                                                        Delivered :
+                                                        {{ \Carbon\Carbon::parse($order->updated_at)->format('d/m/Y') }}
+                                                    </div>
+
+                                                    <div class="text-danger fw-semibold">
+                                                        {{ $order->credit_days }} days outstanding
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                @endforeach
+                                @if($creditDeliveredList->count() == 0)
+                                    <x-empty-item/>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row gy-4 mt-1">
-        <div class="col-xxl-9 col-xl-12">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between">
-                        <h6 class="text-lg mb-0">{{ $lang->data['todays_delivery'] ?? "Today's Delivery" }}</h6>
-                        <div class="tw-flex tw-items-center tw-gap-4">
-                            <input type="text" class="form-control"
-                                placeholder="{{ $lang->data['search_here'] ?? 'Search Here...' }}"
-                                wire:model.live="search_query">
-
-                            <select class="form-select" wire:model.live="order_filter">
-                                <option class="select-box" value="">
-                                    {{ $lang->data['all_orders'] ?? 'All Orders' }}</option>
-                                <option class="select-box" value="0">{{ $lang->data['pending'] ?? 'Pending' }}
-                                </option>
-                                <option class="select-box" value="1">
-                                    {{ $lang->data['processing'] ?? 'Processing' }}</option>
-                                <option class="select-box" value="2">
-                                    {{ $lang->data['ready_to_deliver'] ?? 'Ready To Deliver' }}</option>
-                                <option class="select-box" value="3">{{ $lang->data['delivered'] ?? 'Delivered' }}
-                                </option>
-                                <option class="select-box" value="4">{{ $lang->data['returned'] ?? 'Returned' }}
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="tw-grid tw-mt-4 tw-grid-cols-1 lg:tw-grid-cols-2 xl:tw-grid-cols-3  align-items-center tw-gap-2">
-                        @foreach ($orders as $item)
-                            <div class=" bg-neutral-50 p-16 radius-8 ">
-                                <div class="tw-flex tw-justify-between tw-items-center">
-                                    <div class="tw-flex tw-flex-col">
-                                        <div class="tw-font-bold text-primary-light">{{ $item->order_number }}</div>
-
-                                        <div
-                                            class="text-sm text-secondary-light fw-normal tw-flex tw-items-center tw-gap-2 tw-mt-1">
-                                            <iconify-icon icon="mdi:user-outline"
-                                                class="text-primary-light"></iconify-icon>
-                                            {{ $lang->data['customer'] ?? 'Customer' }}:
-                                            <span
-                                                class="tw-font-bold">{{ $item->customer_name ?? ($lang->data['walk_in_customer'] ?? 'Walk In Customer') }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="tw-flex tw-gap-2 tw-items-center tw-my-2">
-                                    @php
-                                        $services = \App\Models\OrderDetail::where('order_id', $item->id)
-                                            ->limit(4)
-                                            ->get();
-                                    @endphp
-                                    <div class="tw-size-8 tw-rounded-lg tw-overflow-clip">
-                                        @foreach ($services as $row)
-                                            @php
-                                                $service = \App\Models\Service::where('id', $row->service_id)->first();
-                                            @endphp
-                                            <img src="{{ asset('assets/img/service-icons/' . $service->icon) }}"
-                                                alt="">
-                                        @endforeach
-                                    </div>
-                                </div>
-                                <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
-                                    <div class="d-flex align-items-center justify-content-between gap-10">
-                                        <iconify-icon icon="solar:calendar-outline"
-                                            class="text-primary-light"></iconify-icon>
-                                        <span
-                                            class="start-date text-secondary-light">{{ \Carbon\Carbon::parse($item->order_date)->format('d/m/Y') }}</span>
-                                    </div>
-
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                    @if(count($orders) <= 0)
-                    <x-empty-item/>
-                    @endif
-                </div>
-            </div>
-        </div>
-        <div class="col-xxl-3 col-xl-6" wire:ignore>
-            <div class="card h-100 radius-8 border-0 overflow-hidden">
-                <div class="card-body p-24">
-                    <div class="d-flex align-items-center flex-wrap gap-2 justify-content-between">
-                        <h6 class="mb-2 fw-bold text-lg">{{$lang->data['overview'] ?? 'Overview'}}</h6>
-                    </div>
-                    <div id="userOverviewDonutChart"></div>
-                    <ul class="d-flex flex-wrap align-items-center justify-content-between mt-3 gap-3">
-                        <li class="d-flex align-items-center gap-2">
-                            <span class="w-12-px h-12-px radius-2 tw-bg-[#8392ab]"></span>
-                            <span class="text-secondary-light text-sm fw-normal">{{$lang->data['pending'] ?? 'Pending'}}
-                            </span>
-                        </li>
-                        <li class="d-flex align-items-center gap-2">
-                            <span class="w-12-px h-12-px radius-2 tw-bg-[#faae42]"></span>
-                            <span class="text-secondary-light text-sm fw-normal">{{$lang->data['processing'] ?? 'Processing'}}
-                            </span>
-                        </li>
-                        <li class="d-flex align-items-center gap-2">
-                            <span class="w-12-px h-12-px radius-2 tw-bg-[#2dce89]"></span>
-                            <span class="text-secondary-light text-sm fw-normal">{{$lang->data['ready_to_deliver'] ?? 'Ready To Deliver'}}
-                            </span>
-                        </li>
-                        <li class="d-flex align-items-center gap-2">
-                            <span class="w-12-px h-12-px radius-2 tw-bg-[#0083ff]"></span>
-                            <span class="text-secondary-light text-sm fw-normal">{{$lang->data['delivered'] ?? 'Delivered'}}
-                            </span>
-                        </li>
-                        <li class="d-flex align-items-center gap-2  tw-opacity-0">
-                            <span class="w-12-px h-12-px radius-2 bg-primary-600"></span>
-                            <span class="text-secondary-light text-sm fw-normal">{{$lang->data['ready_to_deliver'] ?? 'Ready To Deliver'}}
-                            </span>
-                        </li>
-                        <li class="d-flex align-items-center gap-2">
-                            <span class="w-12-px h-12-px radius-2 tw-bg-[#f5365c]"></span>
-                            <span class="text-secondary-light text-sm fw-normal">{{$lang->data['returned'] ?? 'Returned'}}
-                            </span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-<input type="hidden" name="" id="chartdata" value="{{$array}}">
-</div>
 
     @push('js')
         <script>

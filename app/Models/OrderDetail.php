@@ -11,6 +11,7 @@ class OrderDetail extends Model
     protected $fillable = [
         'order_id',
         'service_id',
+        'service_type_id',
         'service_name',
         'service_price',
         'service_quantity',
@@ -33,6 +34,14 @@ class OrderDetail extends Model
         return $query->where(
             'is_deleted',
             0
+        );
+    }
+
+    public function serviceType()
+    {
+        return $this->belongsTo(
+            ServiceType::class,
+            'service_type_id'
         );
     }
 }

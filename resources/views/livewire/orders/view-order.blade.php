@@ -10,7 +10,7 @@
                         <div class="">{{$phone ? getCountryCode() : ''}}{{ (int)$phone }}</div>
                         <div class="">{{ $store_email }}</div>
                         <div class="">{{ $address }} - {{ $zipcode }}</div>
-    
+
                         <div class="tw-mt-2">{{ $lang->data['tax'] ?? 'TAX' }}: {{ $tax_number }}</div>
                     </div>
                 </div>
@@ -19,18 +19,19 @@
                     </div>
                     <div class="tw-flex tw-flex-col tw-mt-2 tw-items-end">
                         <div class="text-neutral-600">
-                            {{ $lang->data['order_id'] ?? 'Order ID' }} : <span class="tw-font-medium text-primary-light">#{{ $order->order_number }}</span> 
+                            {{ $lang->data['order_id'] ?? 'Order ID' }} : <span class="tw-font-medium text-primary-light">#{{ $order->order_number }}</span>
                         </div>
                         <div class="text-neutral-600">
-                            {{ $lang->data['order_date'] ?? 'Order Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($order->order_date)->format('d/m/Y') }}</span> 
+                            {{ $lang->data['order_date'] ?? 'Order Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($order->order_date)->format('d/m/Y') }}</span>
                         </div>
                         <div class="text-neutral-600">
-                            {{ $lang->data['delivery_date'] ?? 'Delivery Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}</span> 
+                            {{ $lang->data['delivery_date'] ?? 'Delivery Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}</span>
                         </div>
                         <div class="tw-mt-2 tw-flex tw-items-center tw-gap-2">
                             <div class="">
-                                {{ $lang->data['order_status'] ?? 'Order Status' }} : 
+                                {{ $lang->data['order_status'] ?? 'Order Status' }} :
                             </div>
+
                             <div class="dropdown">
                                 @can('order_status_change')
                                 @if($order->status != 3 && $order->status != 4)
@@ -39,13 +40,20 @@
                                   <li><a class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900" href="#" wire:click.prevent="changeStatus(1)">{{ $lang->data['processing'] ?? 'Processing' }}</a></li>
                                   <li><a class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900" href="#" wire:click.prevent="changeStatus(2)">{{ $lang->data['ready_to_deliver'] ?? 'Ready To Deliver' }}</a></li>
                                   <li>
-                                        @if($balance > 0)
+                                        @if(
+                                            $balance > 0 &&
+                                            (
+                                                !$customer ||
+                                                $customer->billing_type !=
+                                                \App\Models\Customer::BILLING_CREDIT
+                                            )
+                                        )
                                         <button disabled class="dropdown-item px-16 py-8 rounded tw-text-neutral-400  disabled:tw-bg-transparent" href="#" >
                                             {{ $lang->data['delivered'] ?? 'Delivered' }} <span class="text-danger text-xs">({{ $lang->data['payment_incomplete'] ?? 'Payment Incomplete' }})</span>
                                         </button>
                                         @else
                                         <button  class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900" href="#" wire:click.prevent="changeStatus(3)">
-                                            {{ $lang->data['delivered'] ?? 'Delivered' }} 
+                                            {{ $lang->data['delivered'] ?? 'Delivered' }}
                                         </button>
                                         @endif
                                     </li>
@@ -67,9 +75,23 @@
                                 <div class="">
                                     {{ getOrderStatus($order->status) }}
                                 </div>
-                                @endcannot 
-                                
+                                @endcannot
+
                             </div>
+                             @if($order->tags_printed_at)
+                                <div class="mt-2">
+                                    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                                        Tags Printed:
+                                        {{ $order->tags_printed_at->format('d/m/Y h:i A') }}
+                                    </span>
+                                </div>
+                            @else
+                                <div class="mt-2">
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                        Tags Not Printed
+                                    </span>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -126,7 +148,7 @@
                                 <td class="text-primary">
                                     {{ getFormattedCurrency($item->service_detail_total) }}
                                 </td>
-                               
+
                             </tr>
                             @endforeach
                       </tbody>
@@ -149,12 +171,12 @@
                             <div class=" tw-text-sm">
                                 {{ $customer->address ?? '' }}
                             </div>
-    
+
                             <div class="tw-text-sm tw-mt-2">
                                 {{ $lang->data['vat'] ?? 'VAT' }} : {{ $customer->tax_number ?? 'TAX' }}
                             </div>
                         </div>
-    
+
                         <div class="tw-flex tw-flex-col ">
                             <div class="pb-2">{{ $lang->data['payment_details'] ?? 'Payment Details' }}</div>
                             <div class="tw-flex tw-justify-between tw-items-center tw-w-[17rem] tw-mt-2">
@@ -198,12 +220,12 @@
                                     {{ getFormattedCurrency($order->total) }}
                                 </div>
                             </div>
-                           
+
                         </div>
                     </div>
                     <hr class="tw-mt-4">
                     <div class="tw-flex tw-justify-between tw-text-sm tw-mt-4 ">
-                        <div class=""><span class="tw-font-medium">{{ $lang->data['notes'] ?? 'Notes' }} :</span> {{ $order->note }}</div>                        
+                        <div class=""><span class="tw-font-medium">{{ $lang->data['notes'] ?? 'Notes' }} :</span> {{ $order->note }}</div>
                     </div>
                     <div class="tw-flex tw-items-center tw-justify-center tw-gap-2 tw-mt-4">
                         <div class="tw-w-full tw-h-[1px]  tw-from-transparent tw-to-neutral-300 tw-bg-gradient-to-r"></div>
@@ -251,19 +273,40 @@
                 @endforeach
                 @if ($balance > 0)
                     @if($order->status != 4)
-                        <button data-bs-toggle="modal" data-bs-target="#exampleModal"  type="button" class="btn btn-outline-success-600 radius-8 px-20 py-11 tw-mt-6 tw-w-full" >{{ $lang->data['add_payment'] ?? 'Add Payment' }}</button>
+                        <button
+                            wire:click="openPaymentModal"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModal"
+                            type="button"
+                            class="btn btn-outline-success-600 radius-8 px-20 py-11 tw-mt-6 tw-w-full">
+                            {{ $lang->data['add_payment'] ?? 'Add Payment' }}
+                        </button>
                     @endif
                 @else
                 <button type="button" class="btn btn-outline-neutral-600 radius-8 px-20 py-11 tw-mt-6 tw-w-full" disabled>{{ $lang->data['fully_paid'] ?? 'Fully Paid' }}</button>
                 @endif
                 @endcan
                 @can('order_print')
-                <a href="{{url('admin/orders/print/'.$order->id)}}" target="_blank" type="button" class="btn btn-outline-warning-600 radius-8 px-20 py-11 tw-mt-3 tw-w-full">{{ $lang->data['print_invoice'] ?? 'Print Invoice' }}</a>
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary w-100 tw-mt-3"
+                        onclick="confirmPrintAllTags('{{ route('orders.print-all-tags', ['order' => $order->id]) }}', '{{ $order->order_number }}', {{ $order->articles?->count() ?? 0 }})"
+                    >
+                        Print All Tags
+                    </button>
+
+                    <a
+                        href="{{ url('admin/orders/print/' . $order->id) }}"
+                        target="_blank"
+                        class="btn btn-outline-warning-600 radius-8 px-20 py-11 tw-mt-3 tw-w-full"
+                    >
+                        {{ $lang->data['print_invoice'] ?? 'Print Invoice' }}
+                    </a>
                 @endcan()
             </div>
         </div>
     </div>
-  
+
 
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" wire:ignore.self>
         <div class="modal-dialog modal-md modal-dialog modal-dialog-centered">
@@ -275,7 +318,7 @@
                 @if ($order)
                     <div class="modal-body p-24">
                         <form action="#">
-                            <div class="row">   
+                            <div class="row">
                                 <div class="col-12">
                                     <div class="">
                                         <ul>
@@ -300,12 +343,21 @@
                                                 <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($order->total) }}</span>
                                             </li>
                                             <li class="d-flex align-items-center gap-1 mb-12 tw-justify-between">
-                                                <span class="text-md fw-semibold text-primary-light"> {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} :</span>
-                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($paid_amount) }}</span>
+                                                <span class="text-md fw-semibold text-primary-light">
+                                                    {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} :
+                                                </span>
+                                                <span class="text-secondary-light fw-medium">
+                                                    {{ getFormattedCurrency($order->paid_amount) }}
+                                                </span>
                                             </li>
+
                                             <li class="d-flex align-items-center gap-1 tw-justify-between">
-                                                <span class="text-md fw-semibold text-primary-light"> {{ $lang->data['balance'] ?? 'Balance' }} :</span>
-                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($order->total - $paid_amount) }}</span>
+                                                <span class="text-md fw-semibold text-primary-light">
+                                                    {{ $lang->data['balance'] ?? 'Balance' }} :
+                                                </span>
+                                                <span class="text-secondary-light fw-medium">
+                                                    {{ getFormattedCurrency($order->balance_amount) }}
+                                                </span>
                                             </li>
                                         </ul>
                                     </div>
@@ -316,7 +368,7 @@
                                 <div class="col-12 mb-20 ">
                                     <label for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['paid_amount'] ?? 'Paid Amount' }} <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control radius-8" placeholder="{{ $lang->data['enter_amount'] ?? 'Enter Amount' }}" wire:model="paid_amount" >
-                                    @error('balance')
+                                    @error('paid_amount')
                                         <span class="error text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
@@ -346,7 +398,27 @@
                                     <span class="error text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
+                                <div class="col-12 mb-20">
+                                    <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                        {{ $lang->data['payment_date'] ?? 'Payment Date' }}
+                                        <span class="text-danger">*</span>
+                                    </label>
 
+                                    <input
+                                        type="date"
+                                        class="form-control radius-8"
+                                        wire:model="payment_date">
+
+                                    @error('payment_date')
+                                        <span class="error text-danger d-block">
+                                            {{ $message }}
+                                        </span>
+                                    @enderror
+
+                                    <small class="text-muted d-block mt-1">
+                                        Use actual payment receipt date.
+                                    </small>
+                                </div>
                                 <div class="col-12 mb-20">
                                     <label for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['notes'] ?? 'Notes' }} </label>
                                     <textarea class="form-control radius-8" placeholder="{{ $lang->data['enter_notes'] ?? 'Enter Notes' }}"  wire:model="notes"></textarea>
@@ -355,10 +427,10 @@
                                     @enderror
                                 </div>
                                 <div class="d-flex align-items-start justify-content-end gap-3 mt-24">
-                                    <button data-bs-dismiss="modal" type="button" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8"> 
+                                    <button data-bs-dismiss="modal" type="button" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8">
                                     {{ $lang->data['cancel'] ?? 'Cancel' }}
                                     </button>
-                                    <button wire:click.prevent="addPayment" class="btn btn-primary border border-primary-600 text-md px-24 py-12 radius-8"> 
+                                    <button wire:click.prevent="addPayment" class="btn btn-primary border border-primary-600 text-md px-24 py-12 radius-8">
                                     {{ $lang->data['save'] ?? 'Save' }}
                                     </button>
                                 </div>
@@ -369,4 +441,16 @@
             </div>
         </div>
     </div>
+    <script>
+        function confirmPrintAllTags(url, orderNumber, tagCount) {
+            const confirmed = confirm(
+                `Print all ${tagCount} garment tag(s) for ${orderNumber}?\n\n` +
+                `Use this only when tags need to be printed or reprinted.`
+            );
+
+            if (confirmed) {
+                window.open(url, '_blank');
+            }
+        }
+    </script>
 </div>

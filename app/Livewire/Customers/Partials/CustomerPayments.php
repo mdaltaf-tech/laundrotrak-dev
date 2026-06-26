@@ -11,9 +11,13 @@ use App\Models\Translation;
 
 class CustomerPayments extends Component
 {
+    protected $listeners = [
+        'refreshCustomerPayments' => 'reloadPayments'
+    ];
+
     public $nextCursor;
     protected $currentCursor;
-    public $hasMorePages;   
+    public $hasMorePages;
     public $payments;
     public $customer, $lang;
 
@@ -47,11 +51,18 @@ class CustomerPayments extends Component
     }
 
     public function filterdata(){
-        $orders = Payment::where('customer_id',$this->customer->id)->latest()->cursorPaginate(10, ['*'], 'cursor', Cursor::fromEncoded($this->nextCursor));
+        $orders = Payment::active()
+            ->where(
+                'customer_id',
+                $this->customer->id
+            )
+            ->orderByDesc('payment_date')
+            ->orderByDesc('id')
+            ->cursorPaginate(10, ['*'], 'cursor', Cursor::fromEncoded($this->nextCursor));
         return $orders;
     }
 
-    public function reloadOrders()
+    public function reloadPayments()
     {
         $this->payments = new EloquentCollection();
         $this->nextCursor = null;

@@ -4,7 +4,7 @@ namespace App\Livewire\Orders;
 
 use App\Livewire\Installer\InstallController;
 use Livewire\Component;
-
+use Illuminate\Support\Facades\DB;
 use App\Models\Addon;
 use App\Models\Customer;
 use App\Models\Order;
@@ -25,12 +25,12 @@ use Livewire\Attributes\Title;
 
 class PosScreen extends Component
 {
-    public $services, $search_query, $order_id, $inputs = [], $selservices = [], $customer, $date, $delivery_date, $discount, $paid_amount, $payment_type = 1;
-    public $payment_notes, $service_types, $service, $inputi, $prices = [], $selling_price = [], $quantity = [], $selected_type = [], $addons, $selected_addons = [], $colors = [];
+    public $services, $search_query, $order_id, $inputs = [], $selservices = [], $customer, $date, $delivery_date, $discount, $note, $paid_amount, $payment_type = 1;
+    public $service_types, $service, $inputi, $prices = [], $selling_price = [], $quantity = [], $selected_type = [], $addons, $selected_addons = [], $colors = [];
     public $customer_name, $customer_phone, $email, $tax_no, $address, $selected_customer, $customers, $customer_query, $is_active = 1;
     public $total, $sub_total, $addon_total, $tax_percent, $tax, $balance, $flag = 0, $lang,$taxamount;
     public $taxable,$order;
-    public $payments = [],$payment_amount,$notes;
+    public $payments = [],$payment_amount,$payment_note;
     public $selectedCategory;
     public $serviceLookup = [];
     public $serviceTypeLookup = [];
@@ -92,25 +92,17 @@ class PosScreen extends Component
         }
         $this->date = Carbon::today()->toDateString();
         $this->addons = Addon::where('is_active', 1)->latest()->get();
-        $this->delivery_date = Carbon::today()->toDateString();
+        $this->delivery_date = Carbon::today()
+            ->addDays(4)
+            ->toDateString();
         $this->tax_percent = getTaxPercentage();
         $this->generateOrderID();
 
         if ($id) {
             $this->order = Order::whereId($id)->firstOrFail();
-            $payments = Payment::active()
-                ->where(
-                    'order_id',
-                    $this->order->id
-                )
-                ->get();
-            foreach ($payments as $payment) {
-                array_push($this->payments, [
-                    'payment_type' => $payment->payment_type,
-                    'amount' => $payment->received_amount,
-                    'notes' => $payment->notes
-                ]);
-            }
+            // Payments are managed from View Order / Orders List.
+            // Do not load payments into Edit Order.
+            $this->payments = [];
             if ($this->order->customer_id && $this->order->customer_id != NULL) {
                 $this->selectCustomer($this->order->customer_id);
             }
@@ -120,7 +112,7 @@ class PosScreen extends Component
             $this->delivery_date = Carbon::parse($this->order->delivery_date)->toDateString();
             $this->date = Carbon::parse($this->order->order_date)->toDateString();
             $this->order_id = $this->order->order_number;
-            $this->payment_notes = $this->order->notes;
+            $this->note = $this->order->note;
             $this->discount = $this->order->discount;
             foreach ($this->order->addons as $row) {
                 $this->selected_addons[$row->addon_id] = true;
@@ -477,12 +469,12 @@ class PosScreen extends Component
 
         $payment = [
             'amount' => (float)$this->payment_amount,
-            'notes' => $this->notes,
+            'payment_note' => $this->payment_note,
             'payment_type' => $this->payment_type,
             'payment_id' => null
         ];
         $this->payment_amount = '';
-        $this->notes = '';
+        $this->payment_note = '';
         $this->payment_type = 1;
         array_push($this->payments, $payment);
         $this->dispatch(
@@ -500,49 +492,116 @@ class PosScreen extends Component
     /* save the order */
     public function save($type = null)
     {
-        $amount = 0;
-        if ($type === 'cash') {
-            $this->payments = [];
-            array_push($this->payments, [
-                'amount' => $this->total,
-                'notes' => $this->payment_notes,
-                'payment_type' => $this->payment_type,
-                'payment_id' => null
-            ]);
+        if ($this->flag == 1) {
+            return;
         }
-        $this->calculateTotal();
+        $this->flag = 1;
+        DB::beginTransaction();
 
-        $this->validate([
-            'payment_type'  => 'required'
-        ]);
-        /* if selected services > 0  send error alert*/
-        if (count($this->selservices) <= 0) {
-            $this->dispatch(
-                'alert',
-                ['type' => 'error',  'message' => ' You have not added any service to the cart']
+        try {
+            $amount = 0;
+            if ($type === 'cash') {
+                $this->payments = [];
+                array_push($this->payments, [
+                    'amount' => $this->total,
+                    'payment_note' => $this->payment_note,
+                    'payment_type' => $this->payment_type,
+                    'payment_id' => null
+                ]);
+            }
+            $this->calculateTotal();
+
+            $this->validate([
+                'payment_type'  => 'required'
+            ]);
+            /* if selected services > 0  send error alert*/
+            if (count($this->selservices) <= 0) {
+                $this->dispatch(
+                    'alert',
+                    ['type' => 'error',  'message' => ' You have not added any service to the cart']
+                );
+                $this->addError('error', 'Select a service');
+
+                $this->flag = 0;
+                DB::rollBack();
+                return 0;
+            }
+            $balance = $this->getPaymentBalance();
+            /* if balance is <0 send error alert*/
+            if ($balance < 0) {
+                $this->dispatch(
+                    'alert',
+                    ['type' => 'error',  'message' => 'Paid Amount cannot be greater than total.']
+                );
+                $this->addError('paid_amount', 'Paid Amount cannot be greater than total.');
+
+                $this->flag = 0;
+                DB::rollBack();
+                return 0;
+            }
+            /* if customer not exist and has any balance to pay send the error alert */
+            if ($balance != 0 && $this->selected_customer == null) {
+                $this->addError('paid_amount_customer', 'The customer must be registered to use ledger.');
+
+                $this->flag = 0;
+                DB::rollBack();
+                return 0;
+            }
+            $this->generateOrderID();
+
+            if ($this->order) {
+                $paidAmount = Payment::active()
+                    ->where('order_id', $this->order->id)
+                    ->sum('received_amount');
+            } else {
+                $paidAmount = collect($this->payments)
+                    ->sum('amount');
+            }
+
+            $balanceAmount = max(
+                0,
+                $this->total - $paidAmount
             );
-            $this->addError('error', 'Select a service');
-            return 0;
-        }
-        $balance = $this->getPaymentBalance();
-        /* if balance is <0 send error alert*/
-        if ($balance < 0) {
-            $this->dispatch(
-                'alert',
-                ['type' => 'error',  'message' => ' Paid Amount cannot be greater than total.']
-            );
-            $this->addError('paid_amount', 'Paid Amount cannot be greater than total.');
-            return 0;
-        }
-        /* if customer not exist and has any balance to pay send the error alert */
-        if ($balance != 0 && $this->selected_customer == null) {
-            $this->addError('paid_amount_customer', 'The customer must be registered to use ledger.');
-            return 0;
-        }
-        $this->generateOrderID();
-        if ($this->flag == 0) {
+
+            if ($paidAmount <= 0) {
+
+                $paymentStatus = Order::PAYMENT_UNPAID;
+            } elseif ($balanceAmount > 0) {
+
+                $paymentStatus = Order::PAYMENT_PARTIAL;
+            } else {
+
+                $paymentStatus = Order::PAYMENT_PAID;
+            }
+
+            $garmentsChanged = false;
+            $addonsChanged = false;
+
             $order = $this->order;
             if ($this->order) {
+                $garmentsChanged = $this->garmentsChanged();
+                $addonsChanged = $this->addonsChanged();
+
+                if (
+                    $this->hasProcessedArticles()
+                    &&
+                    $garmentsChanged
+                ) {
+                    $this->dispatch(
+                        'alert',
+                        [
+                            'type' => 'error',
+                            'message' =>
+                            'Garments cannot be modified after processing has started. You may update delivery date, notes and customer information.'
+                        ]
+                    );
+
+                    $this->flag = 0;
+                    DB::rollBack();
+
+                    return;
+                }
+
                 Order::whereId($this->order->id)->update([
                     'customer_id'   => $this->selected_customer->id ?? null,
                     'customer_name' => $this->selected_customer->name ?? null,
@@ -557,38 +616,35 @@ class PosScreen extends Component
                     'tax_type'  => getTaxType(),
                     'taxable_amount'    => $this->taxable,
                     'total' => $this->total,
-                    'note'  => $this->payment_notes,
-                    'status'    => 0,
+                    'note'  => $this->note,
+                    'paid_amount' => $paidAmount,
+                    'balance_amount' => $balanceAmount,
+                    'payment_status' => $paymentStatus,
                     'order_type'    => 1,
-                ], $this->order->id);
-
-                OrderDetail::whereOrderId(
-                    $this->order->id
-                )->update([
-                    'is_deleted'=>1
                 ]);
 
-                OrderAddonDetail::whereOrderId(
-                    $this->order->id
-                )->update([
-                    'is_deleted'=>1
-                ]);
+                if ($garmentsChanged)
+                {
+                    OrderDetail::whereOrderId(
+                        $this->order->id
+                    )->update([
+                        'is_deleted' => 1
+                    ]);
 
-                Payment::whereOrderId(
-                    $this->order->id
-                )->update([
-                    'is_deleted'=>1
-                ]);
+                    OrderArticle::where(
+                        'order_id',
+                        $this->order->id
+                    )->delete();
+                }
 
-                OrderArticle::where(
-                    'order_id',
-                    $this->order->id
-                )
-                ->active()
-                ->update([
-                    'status'=>OrderArticle::STATUS_CANCELLED
-                ]);
-
+                if ($addonsChanged)
+                {
+                    OrderAddonDetail::whereOrderId(
+                        $this->order->id
+                    )->update([
+                        'is_deleted' => 1
+                    ]);
+                }
             } else {
                 $order = Order::create([
                     'order_number'  => $this->order_id,
@@ -605,14 +661,22 @@ class PosScreen extends Component
                     'tax_type'  => getTaxType(),
                     'taxable_amount'    => $this->taxable,
                     'total' => $this->total,
-                    'note'  => $this->payment_notes,
+                    'note'  => $this->note,
                     'status'    => 0,
                     'order_type'    => 1,
+                    'paid_amount' => $paidAmount,
+                    'balance_amount' => $balanceAmount,
+                    'payment_status' => $paymentStatus,
                     'created_by'    => Auth::user()->id,
                     'financial_year_id' => getFinancialYearId()
                 ]);
             }
 
+        if (
+            !$this->order
+            || $garmentsChanged
+        )
+        {
             foreach ($this->selservices as $key => $value) {
                 $serviceId = $value['service'];
                 $serviceTypeId = $value['service_type'];
@@ -630,22 +694,39 @@ class PosScreen extends Component
                     'color_code' => $this->colors[$key],
                 ]);
 
-                for ($i = 1; $i <= $this->quantity[$key]; $i++) {
-                    OrderArticle::create([
+                    $orderDetail = OrderDetail::create([
                         'order_id' => $order->id,
-                        'order_detail_id' => $orderDetail->id,
-                        'tag_number'=>
-                            $this->generateTag(
-                            $order->order_number
-                        ),
-                        'article_name' => $service->service_name,
+                        'service_id' => $service->id,
+                        'service_type_id' => $service_type->id,
                         'service_name' => $service_type->service_type_name,
+                        'service_quantity' => $this->quantity[$key],
+                        'service_detail_total' => $this->selling_price[$key] * $this->quantity[$key],
+                        'service_price' => $this->selling_price[$key],
                         'color_code' => $this->colors[$key],
-                        'status' => 0,
-                        'created_by' => Auth::id()
                     ]);
+
+                    for ($i = 1; $i <= $this->quantity[$key]; $i++) {
+                        OrderArticle::create([
+                            'order_id' => $order->id,
+                            'order_detail_id' => $orderDetail->id,
+                            'tag_number' =>
+                            $this->generateTag(
+                                $order->order_number
+                            ),
+                            'article_name' => $service->service_name,
+                            'service_name' => $service_type->service_type_name,
+                            'color_code' => $this->colors[$key],
+                            'created_by' => Auth::id()
+                        ]);
+                    }
                 }
             }
+        }
+        if (
+              !$this->order
+              || $addonsChanged
+          )
+        {
             if ($this->selected_addons) {
                 foreach ($this->selected_addons as $key => $value) {
                     if ($value === true) {
@@ -667,7 +748,8 @@ class PosScreen extends Component
                     }
                 }
             }
-            if (count($this->payments) > 0) {
+        }
+            if (!$this->order && !empty($this->payments)) {
                 foreach ($this->payments as $payment) {
                     $payment = \App\Models\Payment::create([
                         'payment_date'  => $this->date,
@@ -676,13 +758,14 @@ class PosScreen extends Component
                         'order_id'  => $order->id,
                         'payment_type'  => $payment['payment_type'],
                         'received_amount'    => $payment['amount'],
-                        'notes'  =>  $payment['notes'] ?? "Notes",
+                        'payment_note' => $payment['payment_note'] ?? null,
                         'financial_year_id' => getFinancialYearId(),
                         'created_by'    => Auth::user()->id,
                     ]);
+
+                    $order->refreshPaymentStatus();
                 }
             }
-            $this->flag = 1;
             if ($this->selected_customer) {
                 $message = sendOrderCreateSMS($order->id, $this->selected_customer->id);
                 if ($message) {
@@ -692,22 +775,36 @@ class PosScreen extends Component
                     );
                 }
             }
+
+            DB::commit();
+            $this->flag = 0;
+
+            $message = $this->order
+                ? 'Order Updated Successfully!'
+                : $order->order_number . ' Was Successfully Created!';
+
             $this->dispatch(
                 'alert',
-                ['type' => 'success',  'message' => $order->order_number . ' Was Successfully Created!']
+                ['type' => 'success',  'message' => $message]
             );
-        }
-        if (\Illuminate\Support\Facades\Gate::allows('order_print')) {
-            if ($this->order) {
-                $this->dispatch('printPageOrder', $order->id);
-            } else {
-                $this->dispatch('printPage', $order->id);
+            if (\Illuminate\Support\Facades\Gate::allows('order_print')) {
+                if ($this->order) {
+                    $this->dispatch(
+                        'printPageOrder',
+                        $this->order->id
+                    );
+                } else {
+                    $this->dispatch('printPage', $order->id);
+                    $this->clearAll();
+                }
+            }
+            if (!$this->order) {
                 $this->clearAll();
             }
-        }
-        if ($this->order) {
-        } else {
-            $this->clearAll();
+        } catch (\Exception $e) {
+            $this->flag = 0;
+            DB::rollBack();
+            throw $e;
         }
     }
 
@@ -761,31 +858,30 @@ class PosScreen extends Component
         );
 
         $lastTag =
-        OrderArticle::where(
-            'tag_number',
-            'like',
-            'FBL'.$orderNo.'-%'
-        )
-        ->latest('id')
-        ->first();
+            OrderArticle::where(
+                'tag_number',
+                'like',
+                'FBL' . $orderNo . '-%'
+            )
+            ->latest('id')
+            ->first();
 
-        $next=1;
+        $next = 1;
 
-        if($lastTag)
-        {
+        if ($lastTag) {
             preg_match(
                 '/(\d+)$/',
                 $lastTag->tag_number,
                 $match
             );
 
-            $next=((int)$match[1])+1;
+            $next = ((int)$match[1]) + 1;
         }
 
         return 'FBL'
-            .$orderNo
-            .'-'
-            .str_pad(
+            . $orderNo
+            . '-'
+            . str_pad(
                 $next,
                 3,
                 '0',
@@ -821,5 +917,86 @@ class PosScreen extends Component
         ->where('is_active', 1)
         ->orderBy('sort_order')
         ->get();
+    private function hasProcessedArticles(): bool
+    {
+        if (!$this->order) {
+            return false;
+        }
+
+        return OrderArticle::where(
+            'order_id',
+            $this->order->id
+        )
+        ->where(
+            'status',
+            '>',
+            OrderArticle::STATUS_RECEIVED
+        )
+        ->exists();
+    }
+
+    private function garmentsChanged(): bool
+    {
+        if (!$this->order) {
+            return false;
+        }
+
+        $existing = [];
+
+        foreach ($this->order->details as $detail) {
+
+            $existing[] = [
+                'service_id' => $detail->service_id,
+                'service_name' => $detail->service_name,
+                'qty' => (int)$detail->service_quantity,
+                'color' => $detail->color_code,
+            ];
+        }
+
+        $current = [];
+
+        foreach ($this->selservices as $key => $value) {
+
+            $serviceType = ServiceType::find(
+                $value['service_type']
+            );
+
+            $current[] = [
+                'service_id' => $value['service'],
+                'service_name' => $serviceType?->service_type_name,
+                'qty' => (int)$this->quantity[$key],
+                'color' => $this->colors[$key] ?? '',
+            ];
+        }
+
+        sort($existing);
+        sort($current);
+
+        return $existing != $current;
+    }
+
+    private function addonsChanged(): bool
+    {
+        if (!$this->order) {
+            return false;
+        }
+
+        $existing = $this->order->addons
+            ->pluck('addon_id')
+            ->sort()
+            ->values()
+            ->toArray();
+
+        $current = [];
+
+        foreach ($this->selected_addons as $id => $selected) {
+            if ($selected === true) {
+                $current[] = (int)$id;
+            }
+        }
+
+        sort($current);
+
+        return $existing != $current;
     }
 }

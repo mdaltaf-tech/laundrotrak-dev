@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Orders;
 
+use Carbon\Carbon;
 use Livewire\Attributes\Title;
 use App\Models\Order;
 use App\Models\Payment;
@@ -13,18 +14,19 @@ use Auth;
 use App\Models\Translation;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Pagination\Cursor;
-use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 
 class OrdersList extends Component
 {
     public $orders;
-    public $paid_amount, $customer, $customer_name, $search_query;
-    public $order, $amount_to_pay, $note, $balance, $payment_mode, $order_filter, $lang;
+    public $paid_amount, $current_paid_amount, $customer, $customer_name, $search_query;
+    public $order, $amount_to_pay, $note, $balance, $payment_mode, $payment_date, $order_filter, $lang;
     public $nextCursor;
     protected $currentCursor;
     public $hasMorePages;
-    public $paid_filter;
+    public $paid_filter = '';
+    public $overdue_filter;
+    public $quick_filter = '';
 
     #[Title('Orders')]
     public function render()
@@ -38,9 +40,16 @@ class OrdersList extends Component
         if (!\Illuminate\Support\Facades\Gate::allows('order_list')) {
             abort(404);
         }
+        $this->order_filter = request('status');
+        $this->overdue_filter = request('overdue');
+        $this->quick_filter = request('quick_filter');
+        $this->paid_filter = request('paid_filter');
+
         $this->orders = new EloquentCollection();
 
         $this->loadOrders();
+        $this->payment_date = now()->format('Y-m-d');
+
         if (session()->has('selected_language')) {   /* if session has selected language */
             $this->lang = Translation::where('id', session()->get('selected_language'))->first();
         } else {
@@ -48,170 +57,49 @@ class OrdersList extends Component
             $this->lang = Translation::where('default', 1)->first();
         }
     }
-    /* process while update the content */
+
     public function updated($name, $value)
     {
-
-        // $this->reloadOrders();
-        if (Auth::user()->user_type == 1) {
-            $ordersQuery =  Order::active()
-                ->orderBy('order_number', 'DESC');
-        } else {
-            $ordersQuery =  Order::active()->where('created_by', Auth::user()->id);
-        }
-
-        /* if the updated element is search_query */
-        if ($name == 'search_query') {
-            if ($value != '') {
-                $ordersQuery = $ordersQuery
-                    ->where(function ($q) use ($value) {
-                        $q->where('order_number', 'like', '%' . $value . '%')
-                            ->orwhere('customer_name', 'like', '%' . $value . '%')
-                            ->orwhere('phone_number', 'like', '%' . $value . '%');
-                    });
-            }
-            if ($this->order_filter != '') {
-                $ordersQuery = $ordersQuery->where('status', $this->order_filter);
-            }
-            if ($this->paid_filter == '') {
-                $this->orders = $ordersQuery->get();
-            } elseif ($this->paid_filter != '') {
-                $paymentStatus = $this->paid_filter;
-                // Fetch orders and calculate payment status
-                $this->orders = $ordersQuery->orderBy('order_number', 'DESC')->get()->map(function ($order) {
-                    $paidAmount = Payment::active()
-                    ->where(
-                        'order_id',
-                        $order->id
-                    )
-                    ->sum('received_amount');
-
-                    if ($paidAmount == 0) {
-                        $order->payment_status = 3;
-                    } elseif ($paidAmount < $order->total) {
-                        $order->payment_status = 2;
-                    } elseif ($paidAmount >= $order->total) {
-                        $order->payment_status = 1;
-                    }
-                    return $order;
-                })
-                    ->filter(function ($order) use ($paymentStatus) {
-                        return $order->payment_status == $paymentStatus;
-                    });
-            }
-        }
-
-
-        /* if the updated element is order_filter */
-        if ($name == 'order_filter') {
-            if ($value != '') {
-                $ordersQuery = $ordersQuery->where('status', $value);
-            }
-
-            if ($this->search_query != '') {
-                $ordersQuery = $ordersQuery
-                    ->where(function ($q) use ($value) {
-                        $q->where('order_number', 'like', '%' . $this->search_query . '%')
-                            ->orwhere('customer_name', 'like', '%' . $this->search_query . '%')
-                            ->orwhere('phone_number', 'like', '%' . $this->search_query . '%');
-                    });
-            }
-
-            if ($this->paid_filter == '') {
-                $this->orders = $ordersQuery->get();
-            } elseif ($this->paid_filter != '') {
-                $paymentStatus = $this->paid_filter;
-                // Fetch orders and calculate payment status
-                $this->orders = $ordersQuery->orderBy('order_number', 'DESC')->get()->map(function ($order) {
-                    $paidAmount = Payment::active()
-                    ->where(
-                        'order_id',
-                        $order->id
-                    )
-                    ->sum('received_amount');
-
-                    if ($paidAmount == 0) {
-                        $order->payment_status = 3;
-                    } elseif ($paidAmount < $order->total) {
-                        $order->payment_status = 2;
-                    } elseif ($paidAmount >= $order->total) {
-                        $order->payment_status = 1;
-                    }
-                    return $order;
-                })
-                    ->filter(function ($order) use ($paymentStatus) {
-                        return $order->payment_status == $paymentStatus;
-                    });
-            }
-        }
-
-        /* if the updated element is paid_filter */
-        if ($name == 'paid_filter') {
-            if ($value != '') {
-                if ($this->search_query != '') {
-                    $ordersQuery = $ordersQuery
-                        ->where(function ($q) use ($value) {
-                            $q->where('order_number', 'like', '%' . $this->search_query . '%')
-                                ->orwhere('customer_name', 'like', '%' . $this->search_query . '%')
-                                ->orwhere('phone_number', 'like', '%' . $this->search_query . '%');
-                        });
-                }
-                if ($this->order_filter != '') {
-                    $ordersQuery = $ordersQuery->where('status', $this->order_filter);
-                }
-
-                $paymentStatus = $value;
-                // Fetch orders and calculate payment status
-                $this->orders = $ordersQuery->orderBy('order_number', 'DESC')->get()->map(function ($order) {
-                    $paidAmount = Payment::active()
-                    ->where(
-                        'order_id',
-                        $order->id
-                    )
-                    ->sum('received_amount');
-
-                    if ($paidAmount == 0) {
-                        $order->payment_status = 3;
-                    } elseif ($paidAmount < $order->total) {
-                        $order->payment_status = 2;
-                    } elseif ($paidAmount >= $order->total) {
-                        $order->payment_status = 1;
-                    }
-                    return $order;
-                })
-                    ->filter(function ($order) use ($paymentStatus) {
-                        return $order->payment_status == $paymentStatus;
-                    });
-            } else {
-                if ($this->search_query != '') {
-                    $ordersQuery = $ordersQuery
-                        ->where(function ($q) use ($value) {
-                            $q->where('order_number', 'like', '%' . $this->search_query . '%')
-                                ->orwhere('customer_name', 'like', '%' . $this->search_query . '%')
-                                ->orwhere('phone_number', 'like', '%' . $this->search_query . '%');
-                        });
-                }
-                if ($this->order_filter != '') {
-                    $ordersQuery = $ordersQuery->where('status', $this->order_filter);
-                }
-                $this->orders = $ordersQuery->orderBy('order_number', 'DESC')->get();
-            }
+        if (
+            in_array(
+                $name,
+                [
+                    'search_query',
+                    'order_filter',
+                    'paid_filter',
+                    'quick_filter'
+                ]
+            )
+        ) {
+            $this->reloadOrders();
         }
     }
+
     /* get paid informatiion */
     public function payment($id)
     {
+        $this->resetErrorBag();
         $this->order = Order::where('id', $id)->first();
         $this->customer = Customer::where('id', $this->order->customer_id)->first();
         $this->customer_name = $this->customer->name ?? null;
-        $this->paid_amount =
+
+        $this->current_paid_amount =
             Payment::active()
                 ->where(
                     'order_id',
                     $this->order->id
                 )
                 ->sum('received_amount');
-        $this->balance = number_format($this->order->total - $this->paid_amount, 2);
+
+        $this->balance =
+            $this->order->total -
+            $this->current_paid_amount;
+
+        $this->paid_amount =
+            $this->balance;
+
+        $this->payment_date =
+            now()->format('Y-m-d');
     }
     /* reset input fields */
     private function resetInputFields()
@@ -221,81 +109,98 @@ class OrdersList extends Component
         $this->customer = '';
         $this->note = '';
         $this->payment_mode = "";
+        $this->payment_date = now()->format('Y-m-d');
     }
     /* add paymentinformation */
     public function addPayment()
     {
+        if($this->order->status == 4)
+        {
+            return 0;
+        }
+
+        $this->validate([
+            'paid_amount'   => 'required',
+            'payment_mode'  => 'required',
+            'payment_date' => 'required|date',
+        ]);
+
         /* if balance is < 0 */
         if ($this->balance < 0) {
             $this->addError('balance', 'Pls Provide Valid Amount.');
             return 0;
         }
-        /* if the balance is > order total */
-        if ($this->balance > $this->order->total) {
-            $this->addError('balance', 'Paid Amount cannot be greater than total.');
+
+        /* if paid amount > balance */
+        if($this->paid_amount > $this->balance)
+        {
+            $this->addError(
+                'paid_amount',
+                'Amount cannot be greater than balance'
+            );
             return 0;
         }
-        if ($this->order->status == 4) {
-            return 0;
+
+        $orderDate = Carbon::parse(
+            $this->order->order_date
+        )->startOfDay();
+
+        $paymentDate = Carbon::parse(
+            $this->payment_date
+        )->startOfDay();
+
+        if ($paymentDate->lt($orderDate)) {
+
+            $this->addError(
+                'payment_date',
+                'Payment date cannot be earlier than order booking date.'
+            );
+
+            return;
         }
-        $this->validate([
-            'payment_mode' => 'required',
-        ]);
+
         /* if any balance */
         if ($this->balance) {
             \App\Models\Payment::create([
-                'payment_date'  => \Carbon\Carbon::today()->toDateString(),
+                'payment_date' => Carbon::parse($this->payment_date),
                 'customer_id'   => $this->customer->id ?? null,
                 'customer_name' => $this->customer->name ?? null,
                 'order_id'  => $this->order->id,
                 'payment_type'  => $this->payment_mode,
                 'payment_note'  => $this->note,
                 'financial_year_id' => getFinancialYearId(),
-                'received_amount'   => $this->balance,
+                'received_amount' => (float)$this->paid_amount,
                 'created_by'    => Auth::user()->id,
             ]);
+
+            $this->order->refreshPaymentStatus();
             $this->resetInputFields();
             $this->dispatch('closemodal');
             $this->dispatch(
                 'alert',
-                ['type' => 'success',  'message' => 'Payment Updated has been updated!']
+                ['type' => 'success',  'message' => 'Payment recorded successfully!']
             );
         }
     }
-    /* refresh the page */
-    public function refresh()
-    {
-        /* if search query or order filter is empty */
-        if ($this->search_query == '' && $this->order_filter == '') {
-            $this->orders->fresh();
-        }
-    }
+
     public function loadOrders()
     {
         if ($this->hasMorePages !== null  && !$this->hasMorePages) {
             return;
         }
         $myorder = $this->filterdata();
+
         $this->orders->push(...$myorder->items());
         if ($this->hasMorePages = $myorder->hasMorePages()) {
             $this->nextCursor = $myorder->nextCursor()->encode();
         }
         $this->currentCursor = $myorder->cursor();
     }
+
     public function reloadOrders()
     {
-        $this->orders = new EloquentCollection();
-        $this->nextCursor = null;
-        $this->hasMorePages = null;
-        if ($this->hasMorePages !== null  && !$this->hasMorePages) {
-            return;
-        }
-        $orders = $this->filterdata();
-        $this->orders->push(...$orders->items());
-        if ($this->hasMorePages = $orders->hasMorePages()) {
-            $this->nextCursor = $orders->nextCursor()->encode();
-        }
-        $this->currentCursor = $orders->cursor();
+        $this->resetCursorPagination();
+        $this->loadOrders();
     }
 
     public function filterdata()
@@ -337,67 +242,116 @@ class OrdersList extends Component
         }
 
         // Order Status Filter
-        if (!empty($this->order_filter)) {
-
+        if (
+            $this->order_filter !== null &&
+            $this->order_filter !== ''
+        ) {
             $orders->where(
                 'status',
                 $this->order_filter
             );
         }
 
-        // Paid Filter
-        if (!empty($this->paid_filter)) {
+       if (
+            $this->paid_filter !== null &&
+            $this->paid_filter !== ''
+        ) {
 
-            $paymentStatus = $this->paid_filter;
+            if (
+                $this->paid_filter ==
+                Order::PAYMENT_CREDIT
+            ) {
 
-            $orders = $orders
-                ->orderBy('order_number', 'DESC')
-                ->get()
-                ->map(function ($order) {
+                $orders->where(
+                    'was_delivered_on_credit',
+                    1
+                )
+                ->where(
+                    'balance_amount',
+                    '>',
+                    0
+                );
 
-                    $paidAmount = Payment::active()
-                        ->where(
-                            'order_id',
-                            $order->id
-                        )
-                        ->sum(
-                            'received_amount'
-                        );
+            } else {
 
-                    if ($paidAmount == 0) {
+                $orders->where(
+                    'payment_status',
+                    $this->paid_filter
+                );
+            }
+        }
 
-                        $order->payment_status = 3;
+        if ($this->overdue_filter) {
+            $orders->whereDate(
+                'delivery_date',
+                '<',
+                now()->toDateString()
+            )
+            ->whereNotIn(
+                'status',
+                [3,4]
+            );
+        }
 
-                    } elseif (
-                        $paidAmount < $order->total
-                    ) {
+        // Quick Filters
+        if ($this->quick_filter == 'tomorrow') {
 
-                        $order->payment_status = 2;
+            $orders->whereDate(
+                'delivery_date',
+                \Carbon\Carbon::tomorrow()->toDateString()
+            )->whereNotIn(
+                'status',
+                [
+                    Order::STATUS_DELIVERED,
+                    Order::STATUS_RETURNED
+                ]
+            );
+        }
 
-                    } else {
+        elseif ($this->quick_filter == 'delayed') {
 
-                        $order->payment_status = 1;
-                    }
+            $orders->whereDate(
+                'delivery_date',
+                '<',
+                today()
+            )->whereIn(
+                'status',
+                [
+                    Order::STATUS_NEW,
+                    Order::STATUS_PROCESSING
+                ]
+            );
+        }
 
-                    return $order;
-                })
-                ->filter(function ($order) use ($paymentStatus) {
+        elseif ($this->quick_filter == 'pickup_overdue') {
 
-                    return $order->payment_status == $paymentStatus;
+            $orders->whereDate(
+                'delivery_date',
+                '<',
+                today()
+            )->where(
+                'status',
+                Order::STATUS_READY
+            );
+        }
 
-                });
+        elseif ($this->quick_filter == 'today') {
 
-            return new \Illuminate\Pagination\CursorPaginator(
-                $orders,
-                10
+            $orders->whereDate(
+                'delivery_date',
+                today()
+            )
+            ->whereNotIn(
+                'status',
+                [
+                    Order::STATUS_DELIVERED,
+                    Order::STATUS_RETURNED
+                ]
             );
         }
 
         return $orders
-            ->orderBy(
-                'order_number',
-                'DESC'
-            )
+            ->latest('id')
             ->cursorPaginate(
                 10,
                 ['*'],
@@ -456,5 +410,37 @@ class OrdersList extends Component
                 'message'=>'Order archived successfully'
             ]
         );
+    }
+
+    public function filterByPayment($status)
+    {
+        $this->quick_filter = '';
+        $this->paid_filter = $status;
+
+        $this->reloadOrders();
+    }
+
+    public function filterByQuick($filter)
+    {
+        $this->paid_filter = '';
+        $this->quick_filter = $filter;
+
+        $this->reloadOrders();
+    }
+
+    public function resetFilters()
+    {
+        $this->paid_filter = '';
+        $this->quick_filter = '';
+
+        $this->reloadOrders();
+    }
+
+    private function resetCursorPagination()
+    {
+        $this->orders = new EloquentCollection();
+        $this->nextCursor = null;
+        $this->currentCursor = null;
+        $this->hasMorePages = null;
     }
 }

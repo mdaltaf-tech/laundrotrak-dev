@@ -17,7 +17,17 @@ use Excel;
 class CustomersList extends Component
 {
     #[Title('Customers')]
-    public $customers, $name, $email, $tax_number, $is_active = 1, $phone, $address, $search, $lang, $customer;
+    public $customers,
+       $name,
+       $email,
+       $tax_number,
+       $billing_type = Customer::BILLING_STANDARD,
+       $is_active = 1,
+       $phone,
+       $address,
+       $search,
+       $lang,
+       $customer;
     public $editMode = false;
     public $nextCursor;
     protected $currentCursor;
@@ -53,6 +63,7 @@ class CustomersList extends Component
         $this->address = '';
         $this->name = '';
         $this->is_active = 1;
+        $this->billing_type = Customer::BILLING_STANDARD;
         $this->resetErrorBag();
     }
     /* store customer data */
@@ -75,6 +86,7 @@ class CustomersList extends Component
         $customer->address = ($this->address);
         $customer->created_by = Auth::user()->id;
         $customer->is_active = ($this->is_active) ? "1" : "0";
+        $customer->billing_type = $this->billing_type;
         $customer->save();
         $this->customers = Customer::latest()->get();
         $this->resetInputFields();
@@ -112,6 +124,7 @@ class CustomersList extends Component
         $this->address = $this->customer->address;
         $this->name = $this->customer->name;
         $this->is_active = $this->customer->is_active;
+        $this->billing_type = $this->customer->billing_type;
     }
     /* update customer details */
     public function update()
@@ -130,6 +143,7 @@ class CustomersList extends Component
         $this->customer->tax_number = $this->tax_number;
         $this->customer->address = $this->address;
         $this->customer->is_active = ($this->is_active) ? "1" : "0";
+        $this->customer->billing_type = $this->billing_type;
         $this->customer->save();
         $this->refresh();
         $this->resetInputFields();

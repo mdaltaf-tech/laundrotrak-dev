@@ -14,7 +14,11 @@ class Customer extends Model
         'phone',
         'tax_number',
         'address',
+        'billing_type',
         'is_active',
         'created_by'
     ];
+
+    const BILLING_STANDARD = 0;
+    const BILLING_CREDIT = 1;
 }

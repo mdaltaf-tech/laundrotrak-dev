@@ -280,3 +280,23 @@ input[type=number] {
     }
 
 }
+.dashboard-kpi-card {
+    height: 110px;
+    transition: all .2s ease;
+}
+
+.dashboard-kpi-card:hover {
+    transform: translateY(-2px);
+}
+
+.dashboard-kpi-card .card-body {
+    height: 100%;
+}
+
+.dashboard-order-card {
+    min-height: 190px;
+}
+
+.tomorrow-card {
+    min-height: 155px;
+}

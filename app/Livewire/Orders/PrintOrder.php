@@ -34,8 +34,19 @@ class PrintOrder extends Component
             abort(404);
         }
         $this->customer = Customer::where('id', $this->order->customer_id)->first();
-        $this->orderaddons = OrderAddonDetail::where('order_id', $this->order->id)->get();
-        $this->orderdetails = OrderDetail::where('order_id', $this->order->id)->get();
+        $this->orderaddons = OrderAddonDetail::active()
+            ->where(
+                'order_id',
+                $this->order->id
+            )
+            ->get();
+
+        $this->orderdetails = OrderDetail::active()
+            ->where(
+                'order_id',
+                $this->order->id
+            )
+            ->get();
         $this->payments = Payment::where('order_id', $this->order->id)->get();
         $settings = new MasterSettings();
         $site = $settings->siteData();

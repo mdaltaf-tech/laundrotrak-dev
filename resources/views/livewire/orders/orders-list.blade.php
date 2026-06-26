@@ -14,6 +14,58 @@
             </a>
             @endcan
         </div>
+        <div class="d-flex flex-wrap gap-2 mt-3 mb-3">
+            <div class="d-flex flex-wrap gap-2">
+                <button
+                    class="btn btn-sm rounded-pill {{ $quick_filter == '' ? 'btn-primary' : 'btn-outline-primary' }}"
+                    wire:click="resetFilters">
+                    All Orders
+                </button>
+                <button
+                    class="btn btn-sm rounded-pill {{ $quick_filter == 'today' ? 'btn-primary' : 'btn-outline-primary' }}"
+                    wire:click="filterByQuick('today')">
+                    Today's Delivery
+                </button>
+                <button
+                    class="btn btn-sm rounded-pill {{ $quick_filter == 'tomorrow' ? 'btn-primary' : 'btn-outline-primary' }}"
+                    wire:click="filterByQuick('tomorrow')">
+                    Tomorrow's Delivery
+                </button>
+                <button
+                    class="btn btn-sm rounded-pill {{ $quick_filter == 'delayed' ? 'btn-primary' : 'btn-outline-primary' }}"
+                    wire:click="filterByQuick('delayed')">
+                    Delayed Orders
+                </button>
+                <button
+                    class="btn btn-sm rounded-pill {{ $quick_filter == 'pickup_overdue' ? 'btn-primary' : 'btn-outline-primary' }}"
+                    wire:click="filterByQuick('pickup_overdue')">
+                    Overdue Pickup
+                </button>
+                <button
+                    class="btn btn-sm rounded-pill {{ $paid_filter === '0' || $paid_filter === 0 ? 'btn-danger' : 'btn-outline-danger' }}"
+                    wire:click="filterByPayment(0)">
+                    Unpaid
+                </button>
+
+                <button
+                    class="btn btn-sm rounded-pill {{ $paid_filter === '1' || $paid_filter === 1 ? 'btn-warning' : 'btn-outline-warning' }}"
+                   wire:click="filterByPayment(1)">
+                    Partial
+                </button>
+
+                <button
+                    class="btn btn-sm rounded-pill {{ $paid_filter === '2' || $paid_filter === 2 ? 'btn-success' : 'btn-outline-success' }}"
+                    wire:click="filterByPayment(2)">
+                    Paid
+                </button>
+
+                <button
+                    class="btn btn-sm rounded-pill {{ $paid_filter === '3' || $paid_filter === 3 ? 'btn-info' : 'btn-outline-info' }}"
+                    wire:click="filterByPayment(3)">
+                    Credit
+                </button>
+            </div>
+        </div>
         <div class="tw-p-0">
             <div class="table-responsive scroll-sm">
                 <table class="table bordered-table sm-table mb-0">
@@ -34,13 +86,13 @@
                             <td>
                                 <div class="tw-flex tw-flex-col">
                                     <div class="text-neutral-600">
-                                        {{ $lang->data['order_id'] ?? 'Order ID' }} : <span class="tw-font-medium text-primary-light">{{ $item->order_number }}</span> 
+                                        {{ $lang->data['order_id'] ?? 'Order ID' }} : <span class="tw-font-medium text-primary-light">{{ $item->order_number }}</span>
                                     </div>
                                     <div class="text-neutral-600">
-                                        {{ $lang->data['order_date'] ?? 'Order Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($item->order_date)->format('d/m/y') }}</span> 
+                                        {{ $lang->data['order_date'] ?? 'Order Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($item->order_date)->format('d/m/y') }}</span>
                                     </div>
                                     <div class="text-neutral-600">
-                                        {{ $lang->data['delivery_date'] ?? 'Delivery Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($item->delivery_date)->format('d/m/y') }}</span> 
+                                        {{ $lang->data['delivery_date'] ?? 'Delivery Date' }} : <span class="tw-font-medium text-primary-light">{{ \Carbon\Carbon::parse($item->delivery_date)->format('d/m/y') }}</span>
                                     </div>
                                     <div class="text-neutral-600">
                                         Total Items :
@@ -82,17 +134,41 @@
                             </td>
                             <td>
                                 @php
-                                $paidamount = \App\Models\Payment::where('order_id', $item->id)->sum('received_amount');
+                                    $paidamount = \App\Models\Payment::active()
+                                        ->where('order_id', $item->id)
+                                        ->sum('received_amount');
                                 @endphp
                                 <div class="tw-flex tw-flex-col">
                                     <div class="text-neutral-600">
-                                        {{ $lang->data['total_amount'] ?? 'Total Amount' }} : <span class="tw-font-medium text-primary-light">{{ getFormattedCurrency($item->total) }}</span> 
+                                        {{ $lang->data['total_amount'] ?? 'Total Amount' }} : <span class="tw-font-medium text-primary-light">{{ getFormattedCurrency($item->total) }}</span>
                                     </div>
                                     <div class="text-neutral-600">
                                         @php
-                                        $current_paid_amount = \App\Models\Payment::where('order_id',$item->id)->sum('received_amount');
+                                            $current_paid_amount = \App\Models\Payment::active()
+                                                ->where('order_id', $item->id)
+                                                ->sum('received_amount');
                                         @endphp
-                                        {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} : <span class="tw-font-medium text-primary-light"> {{ getFormattedCurrency($current_paid_amount) }}</span> 
+                                        {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} : <span class="tw-font-medium text-primary-light"> {{ getFormattedCurrency($current_paid_amount) }}</span>
+                                        @if($item->was_delivered_on_credit && $item->balance_amount > 0)
+                                            <div class="text-danger fw-semibold">
+                                                Credit Outstanding :
+                                                {{ getFormattedCurrency($item->balance_amount) }}
+                                            </div>
+                                            @if($item->credit_delivered_at)
+                                                <div class="text-warning fw-medium">
+                                                    Credit Since :
+                                                    {{
+                                                        \Carbon\Carbon::parse($item->credit_delivered_at)
+                                                        ->startOfDay()
+                                                        ->diffInDays(today()->startOfDay())
+                                                    }}
+                                                    Days
+                                                </div>
+                                            @endif
+                                            <span class="badge bg-danger-100 text-danger-600">
+                                                CREDIT
+                                            </span>
+                                        @endif
                                     </div>
                                     @if ($paidamount < $item->total)
                                         @if($item->status != 4)
@@ -115,13 +191,21 @@
                             <td class="">
                                 {{ $item->user->name ?? "" }}
                             </td>
-                            <td class="text-center"> 
+                            <td class="text-center">
                                 <div class="d-flex align-items-center gap-10 justify-content-center">
                                     @can('order_view')
                                     <a href="{{route('order.view',$item->id)}}" type="button" class="bg-success-100 text-success-600 bg-hover-success-200 fw-medium tw-size-8 d-flex justify-content-center align-items-center rounded-circle" >
                                         <iconify-icon icon="lucide:eye" class="menu-icon"></iconify-icon>
                                     </a>
                                     @endcan
+                                    <a
+                                        href="{{ route('orders.print-all-tags', ['order' => $item->id]) }}"
+                                        target="_blank"
+                                        class="w-36-px h-36s-px bg-warning-focus text-warning-main rounded-circle d-inline-flex align-items-center justify-content-center"
+                                        title="Print All Garment Tags"
+                                    >
+                                        <iconify-icon icon="solar:tag-horizontal-bold"></iconify-icon>
+                                    </a>
                                     @can('order_print')
                                     <a href="{{route('order.print',$item->id)}}" target="_blank" class="bg-warning-100 text-warning-600 bg-hover-warning-200 fw-medium tw-size-8 d-flex justify-content-center align-items-center rounded-circle" >
                                         <iconify-icon icon="material-symbols-light:print-outline" class="menu-icon tw-text-xl"></iconify-icon>
@@ -133,12 +217,12 @@
                                     </a>
                                     @endcan
                                     @can('order_delete')
-                                    <button type="button" wire:click.prevent="deleteOrder({{$item->id}})" class="remove-item-button bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium tw-size-8 d-flex justify-content-center align-items-center rounded-circle"> 
+                                    <button type="button" wire:click.prevent="deleteOrder({{$item->id}})" class="remove-item-button bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium tw-size-8 d-flex justify-content-center align-items-center rounded-circle">
                                         <iconify-icon icon="fluent:delete-24-regular" class="menu-icon"></iconify-icon>
                                     </button>
                                     @endcan
                                 </div>
-                            </td> 
+                            </td>
                         </tr>
                         @endforeach
                   </tbody>
@@ -171,7 +255,7 @@
                 </div>
                 @endif
             </div>
-            
+
         </div>
     </div>
 
@@ -185,7 +269,7 @@
                 @if ($order)
                     <div class="modal-body p-24">
                         <form action="#">
-                            <div class="row">   
+                            <div class="row">
                                 <div class="col-12">
                                     <div class="">
                                         <ul>
@@ -211,11 +295,13 @@
                                             </li>
                                             <li class="d-flex align-items-center gap-1 mb-12 tw-justify-between">
                                                 <span class="text-md fw-semibold text-primary-light"> {{ $lang->data['paid_amount'] ?? 'Paid Amount' }} :</span>
-                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($paid_amount) }}</span>
+                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($current_paid_amount) }}</span>
                                             </li>
                                             <li class="d-flex align-items-center gap-1 tw-justify-between">
                                                 <span class="text-md fw-semibold text-primary-light"> {{ $lang->data['balance'] ?? 'Balance' }} :</span>
-                                                <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($order->total - $paid_amount) }}</span>
+                                                <span class="text-secondary-light fw-medium">
+                                                    {{ getFormattedCurrency($balance) }}
+                                                </span>
                                             </li>
                                         </ul>
                                     </div>
@@ -225,8 +311,8 @@
                                 </div>
                                 <div class="col-12 mb-20 ">
                                     <label for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['paid_amount'] ?? 'Paid Amount' }} <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control radius-8" placeholder="{{ $lang->data['enter_amount'] ?? 'Enter Amount' }}" wire:model="balance" >
-                                    @error('balance')
+                                    <input type="text" class="form-control radius-8" placeholder="{{ $lang->data['enter_amount'] ?? 'Enter Amount' }}" wire:model="paid_amount" >
+                                    @error('paid_amount')
                                         <span class="error text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
@@ -256,7 +342,27 @@
                                     <span class="error text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
+                                <div class="col-12 mb-20">
+                                    <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                        {{ $lang->data['payment_date'] ?? 'Payment Date' }}
+                                        <span class="text-danger">*</span>
+                                    </label>
 
+                                    <input
+                                        type="date"
+                                        class="form-control radius-8"
+                                        wire:model="payment_date">
+
+                                    @error('payment_date')
+                                        <span class="error text-danger d-block">
+                                            {{ $message }}
+                                        </span>
+                                    @enderror
+
+                                    <small class="text-muted d-block mt-1">
+                                        Use actual payment receipt date.
+                                    </small>
+                                </div>
                                 <div class="col-12 mb-20">
                                     <label for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['notes'] ?? 'Notes' }} </label>
                                     <textarea class="form-control radius-8" placeholder="{{ $lang->data['enter_notes'] ?? 'Enter Notes' }}"  wire:model="note"></textarea>
@@ -265,10 +371,10 @@
                                     @enderror
                                 </div>
                                 <div class="d-flex align-items-start justify-content-end gap-3 mt-24">
-                                    <button data-bs-dismiss="modal" type="button" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8"> 
+                                    <button data-bs-dismiss="modal" type="button" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8">
                                     {{ $lang->data['cancel'] ?? 'Cancel' }}
                                     </button>
-                                    <button type="button" wire:click.prevent="addPayment()" class="btn btn-primary border border-primary-600 text-md px-24 py-12 radius-8"> 
+                                    <button type="button" wire:click.prevent="addPayment()" class="btn btn-primary border border-primary-600 text-md px-24 py-12 radius-8">
                                     {{ $lang->data['save'] ?? 'Save' }}
                                     </button>
                                 </div>
@@ -280,3 +386,19 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('open-tag-print', (event) => {
+            const url = event.url;
+
+            if (!url) {
+                console.error('Tag print URL was not received.', event);
+                return;
+            }
+
+            window.open(url, '_blank');
+        });
+    });
+</script>
+@endpush

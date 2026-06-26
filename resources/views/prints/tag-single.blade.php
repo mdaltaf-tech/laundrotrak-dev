@@ -6,7 +6,7 @@
 
     <style>
         @page {
-            size: 38mm auto;
+            size: 38mm 50mm;
             margin: 0;
         }
 
@@ -26,7 +26,7 @@
 
         .tag {
             width: 38mm;
-            min-height: auto;
+            min-height: 50mm;
             padding: 2.5mm 2mm 3mm;
             text-align: center;
             overflow: hidden;

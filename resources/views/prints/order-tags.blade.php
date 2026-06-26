@@ -26,10 +26,13 @@
 
         .tag {
             width: 38mm;
-            min-height: auto;
-            padding: 2.5mm 2mm 3mm;
+            padding: 2.5mm 2mm;
             text-align: center;
             overflow: hidden;
+
+            page-break-after: avoid;
+            break-after: avoid;
+            margin-bottom: 2mm;
         }
 
         .brand {
@@ -89,7 +92,7 @@
         }
 
         .barcode-wrap {
-            margin-top: 1.5mm;
+            margin-top: 0.8mm;
             display: flex;
             justify-content: center;
             overflow: hidden;
@@ -102,8 +105,13 @@
 
         .barcode {
             max-width: 33mm;
-            height: 35px;
+            height:28px;
             margin-bottom: 0.5mm;
+        }
+
+        .page-break{
+            page-break-after: always;
+            break-after: page;
         }
 
         @media screen {
@@ -115,7 +123,7 @@
 </head>
 <body>
     @foreach ($articles as $index => $article)
-        <div class="tag">
+        <div class="tag @if(!$loop->last) page-break @endif">
             <div class="brand">FAEBLO-[OD-NPD-KHR]</div>
 
             <div class="order-number">
@@ -148,7 +156,7 @@
                     jsbarcode-format="CODE128"
                     jsbarcode-value="{{ $article->tag_number }}"
                     jsbarcode-width="1"
-                    jsbarcode-height="35"
+                    jsbarcode-height="28"
                     jsbarcode-displayValue="false">
                 </svg>
             </div>

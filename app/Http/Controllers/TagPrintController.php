@@ -9,7 +9,7 @@ class TagPrintController extends Controller
 {
     public function printSingle(Order $order, OrderArticle $article)
     {
-        abort_unless($article->order_id === $order->id, 404);
+        abort_unless((int) $article->order_id === (int) $order->id, 404);
 
         return view('prints.tag-single', [
             'order' => $order,

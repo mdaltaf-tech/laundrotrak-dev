@@ -15,30 +15,46 @@ class MapServicesToCategories extends Command
     {
         $this->info('Starting service mapping...');
 
-        Service::whereIn('id', [4,21,6,16,22,13,39,35,30,23,24,29,57])
-            ->update(['category_id' => 1]);
+        // Men Wear
+        Service::whereIn('id', [
+            4, 6, 13, 16, 21, 22, 23, 24, 29, 30, 35, 39, 57, 71
+        ])->update(['category_id' => 1]);
 
-        Service::whereIn('id', [11,32,33,34,43,65,66,64,63,52,50])
-            ->update(['category_id' => 2]);
+        // Women Wear
+        Service::whereIn('id', [
+            11, 32, 33, 34, 43, 50, 52, 63, 64, 65, 66
+        ])->update(['category_id' => 2]);
 
-        Service::whereIn('id', [31,20,47,48,58,53])
-            ->update(['category_id' => 3]);
+        // Winter Wear
+        Service::whereIn('id', [
+            20, 31, 47, 48, 53, 58
+        ])->update(['category_id' => 3]);
 
-        Service::whereIn('id', [28,61,36,37,46,55,68,54])
-            ->update(['category_id' => 4]);
+        // Household
+        Service::whereIn('id', [
+            28, 36, 37, 46, 54, 55, 61, 68, 72, 73
+        ])->update(['category_id' => 4]);
 
-        Service::whereIn('id', [49,70,59,60])
-            ->update(['category_id' => 5]);
+        // Footwear
+        Service::whereIn('id', [
+            38, 62, 69, 74
+        ])->update(['category_id' => 5]);
 
-        Service::whereIn('id', [38,62,69])
-            ->update(['category_id' => 6]);
+        // Accessories
+        Service::whereIn('id', [
+            49, 56, 59, 60, 70
+        ])->update(['category_id' => 6]);
 
-        Service::whereIn('id', [8,51,56,67])
-            ->update(['category_id' => 7]);
+        // Laundry Services
+        Service::whereIn('id', [
+            8, 51, 67
+        ])->update(['category_id' => 7]);
 
-        Service::whereIn('id', [40,41])
-            ->update(['category_id' => 8]);
+        // Steam Iron
+        Service::whereIn('id', [
+            40, 41
+        ])->update(['category_id' => 8]);
 
-        $this->info('Service mapping completed.');
+        $this->info('Service mapping completed successfully.');
     }
 }

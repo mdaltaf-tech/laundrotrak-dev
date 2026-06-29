@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\ServiceCategory;
+namespace App\Livewire\Service;
 
 use Livewire\Component;
 

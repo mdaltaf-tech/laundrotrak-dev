@@ -5,15 +5,16 @@
                 <a href="{{ route('orders') }}" class="no-underline">
                     <button style="width:130px;"
                         class="bg-primary-600 tw-text-white tw-text-xs radius-8
-        tw-h-10
-        tw-w-28
-        tw-flex
-        tw-items-center
-        tw-justify-center
-        gap-2">
+                        tw-h-10
+                        tw-w-28
+                        tw-flex
+                        tw-items-center
+                        tw-justify-center
+                        gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                             stroke="currentColor" class="tw-size-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                         </svg>
                         <span>{{ $lang->data['back'] ?? 'Back' }}</span>
                     </button>
@@ -22,16 +23,16 @@
                 <template x-if="detached">
                     <button style="width:130px;"
                         class="tw-h-10
-        tw-w-28
-        bg-primary-600
-        tw-rounded-md
-        tw-text-white
-        tw-flex
-        tw-items-center
-        tw-justify-center
-        tw-gap-1.5
-        tw-border-0
-        tw-shadow-md"
+                        tw-w-28
+                        bg-primary-600
+                        tw-rounded-md
+                        tw-text-white
+                        tw-flex
+                        tw-items-center
+                        tw-justify-center
+                        tw-gap-1.5
+                        tw-border-0
+                        tw-shadow-md"
                         @click="shown = !shown">
                         <template x-if="!shown">
                             <div class="tw-flex  tw-items-center tw-gap-2">
@@ -74,25 +75,23 @@
     </div>
 
     <div class="tw-w-full tw-h-full tw-flex lg:tw-flex-row tw-flex-col tw-relative tw-mt-0.5 lg:tw-gap-0">
-        <div class="lg:tw-w-1/2 lg:tw-flex-1 tw-w-full tw-flex tw-flex-col tw-h-[calc(100vh-4rem)] tw-p-2 tw-bg-white p-16">
+        <div
+            class="lg:tw-w-1/2 lg:tw-flex-1 tw-w-full tw-flex tw-flex-col tw-h-[calc(100vh-4rem)] tw-p-2 tw-bg-white p-16">
             <div class="tw-flex tw-flex-col">
 
-                         <div class="d-flex flex-nowrap gap-2 mb-2 overflow-auto category-scroll">
-                    <button
-                        wire:click="changeCategory(null)"
+                <div class="d-flex flex-nowrap gap-2 mb-2 overflow-auto category-scroll">
+                    <button wire:click="changeCategory(null)"
                         class="btn {{ !$selectedCategory ? 'btn-primary' : 'btn-outline-secondary' }} text-nowrap">
 
                         All
                         <small class="ms-1">({{ collect($this->categories)->sum('services_count') }})</small>
                     </button>
 
-                    @foreach($this->categories as $category)
-
-                        <button
-                            wire:click="changeCategory({{ $category->id }})"
+                    @foreach ($this->categories as $category)
+                        <button wire:click="changeCategory({{ $category->id }})"
                             class="btn {{ $selectedCategory == $category->id ? 'btn-primary' : 'btn-outline-secondary' }} text-nowrap">
 
-                            @if($selectedCategory == $category->id)
+                            @if ($selectedCategory == $category->id)
                                 <i class="fas fa-check-circle me-1"></i>
                             @endif
 
@@ -103,7 +102,6 @@
                             </small>
 
                         </button>
-
                     @endforeach
 
                 </div>
@@ -131,7 +129,7 @@
                 </div>
             </div>
         </div>
-       <div class="lg:tw-w-1/2
+        <div class="lg:tw-w-1/2
             lg:tw-flex-1
             tw-h-[calc(100vh-4rem)]
             tw-bg-white
@@ -139,8 +137,9 @@
             tw-flex
             tw-flex-col"
             :class="shown && detached ? 'tw-absolute tw-inset-0 tw-w-full' :
-            'tw-hidden lg:tw-block tw-shrink-0'">
-            <div class="tw-flex tw-flex-col lg:tw-flex-row tw-items-start lg:tw-items-center tw-gap-3 lg:tw-gap-8 tw-w-full">
+                'tw-hidden lg:tw-block tw-shrink-0'">
+            <div
+                class="tw-flex tw-flex-col lg:tw-flex-row tw-items-start lg:tw-items-center tw-gap-3 lg:tw-gap-8 tw-w-full">
                 <div class="tw-flex tw-w-full lg:tw-w-auto tw-flex-col" x-data="{}">
                     <div class="tw-text-sm">{{ $lang->data['order'] ?? 'Order' }} : <span
                             class="tw-font-bold">#{{ $order_id }}</span></div>
@@ -314,7 +313,8 @@
                                                         [{{ $serviceTypeLookup[$item['service_type']] ?? '' }}]</div>
                                                 </div>
                                             </td>
-                                            <td class="tw-py-2 tw-px-1 lg:tw-w-[15%] tw-w-[10rem] tw-text-center tw-hidden lg:tw-table-cell">
+                                            <td
+                                                class="tw-py-2 tw-px-1 lg:tw-w-[15%] tw-w-[10rem] tw-text-center tw-hidden lg:tw-table-cell">
                                                 <div
                                                     class="tw-h-full tw-w-full tw-flex tw-items-center tw-justify-center">
                                                     <input type="color" name=""
@@ -333,7 +333,8 @@
                                                         class="tw-ring-1 tw-px-1 tw-py-0.5 tw-rounded-md tw-w-[4rem]">
                                                 </div>
                                             </td>
-                                            <td class="tw-py-2 tw-px-1 lg:tw-w-[15%] tw-w-[10rem] tw-text-center tw-hidden lg:tw-table-cell">
+                                            <td
+                                                class="tw-py-2 tw-px-1 lg:tw-w-[15%] tw-w-[10rem] tw-text-center tw-hidden lg:tw-table-cell">
                                                 <div
                                                     class="tw-h-full tw-w-full tw-flex tw-items-center tw-justify-center">
                                                     {{ getFormattedCurrency($localrate ?? 0) }}
@@ -366,7 +367,8 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="tw-py-2 tw-px-1 lg:tw-w-[10%] tw-w-[10rem] tw-text-center tw-hidden lg:tw-table-cell">
+                                            <td
+                                                class="tw-py-2 tw-px-1 lg:tw-w-[10%] tw-w-[10rem] tw-text-center tw-hidden lg:tw-table-cell">
                                                 <div
                                                     class="tw-h-full tw-w-full tw-flex tw-items-center tw-justify-center">
                                                     {{ getFormattedCurrency($itemtaxtotal ?? 0) }}
@@ -481,17 +483,19 @@
                     </div>
                 </div>
             </div>
-            <div class="tw-grid tw-grid-cols-2 lg:tw-flex tw-gap-2 tw-mt-1 tw-p-2 tw-w-full">
-                <button
-                    class="tw-px-2 tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-success-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-w-full tw-border-0 tw-shadow-md "
-                    data-bs-toggle="modal" data-bs-target="#payment">
-                    <span>{{ $lang->data['payment'] ?? 'Payment' }}</span>
-                </button>
-                <button
-                    class="tw-px-2 tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-info-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-w-full tw-border-0 tw-shadow-md "
-                    wire:click.prevent="save('cash')">
-                    <span>{{ $lang->data['cash'] ?? 'Cash' }}</span>
-                </button>
+            <div class="tw-flex tw-items-center tw-gap-2 tw-mt-1 tw-p-2 tw-w-full tw-h-14">
+                @if (!$order)
+                    <button
+                        class="tw-px-2 tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-success-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-w-full tw-border-0 tw-shadow-md "
+                        data-bs-toggle="modal" data-bs-target="#payment">
+                        <span>{{ $lang->data['payment'] ?? 'Payment' }}</span>
+                    </button>
+                    <button
+                        class="tw-px-2 tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-info-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-w-full tw-border-0 tw-shadow-md "
+                        wire:click.prevent="save('cash')">
+                        <span>{{ $lang->data['cash'] ?? 'Cash' }}</span>
+                    </button>
+                @endif
                 <button
                     class="tw-px-2 tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-primary-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-w-full tw-border-0 tw-shadow-md "
                     wire:click.prevent="save">
@@ -569,8 +573,8 @@
                         <div class="">
                             {{ $lang->data['notes_remarks'] ?? 'Notes / Remarks' }}
                         </div>
-                        <textarea rows="3" type="number" name="" id="" wire:model.live="note"
-                            class=" form-control" placeholder="{{ $lang->data['enter_notes'] ?? 'Enter Notes' }}"></textarea>
+                        <textarea rows="3" type="number" name="" id="" wire:model.live="note" class=" form-control"
+                            placeholder="{{ $lang->data['enter_notes'] ?? 'Enter Notes' }}"></textarea>
                     </div>
 
                     <div class="d-flex align-items-start justify-content-end gap-3 mt-24">
@@ -651,7 +655,7 @@
             </div>
         </div>
     </div>
-    @if(!$order)
+    @if (!$order)
         <div class="modal fade" id="payment" tabindex="-1" role="dialog" aria-labelledby="payment"
             aria-hidden="true" wire:ignore.self>
             <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
@@ -660,7 +664,8 @@
                         <h1 class="modal-title text-md" id="exampleModalLabel">
                             {{ $lang->data['payments'] ?? 'Payments' }}
                         </h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                     </div>
                     <div class="modal-body p-24">
                         <div class="">
@@ -668,7 +673,8 @@
                                 <li class="d-flex align-items-center gap-1 tw-justify-between text-sm">
                                     <span class="text-md fw-semibold text-primary-light">
                                         {{ $lang->data['balance'] ?? 'Balance' }} :</span>
-                                    <span class="text-secondary-light fw-medium"> {{ getFormattedCurrency($this?->currentBalance) }}</span>
+                                    <span class="text-secondary-light fw-medium">
+                                        {{ getFormattedCurrency($this?->currentBalance) }}</span>
                                 </li>
                             </ul>
                         </div>
@@ -676,37 +682,43 @@
                             <hr>
                         </div>
                         <div class="col-12 tw-my-6">
-                            @if(count($payments) > 0)
-                            <table class="table basic-border-table mb-0 tw-w-full tw-text-xs">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">#</th>
-                                        <th scope="col">Amount</th>
-                                        <th scope="col">Payment Type </th>
-                                        <th scope="col">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($payments as $key => $item)
+                            @if (count($payments) > 0)
+                                <table class="table basic-border-table mb-0 tw-w-full tw-text-xs">
+                                    <thead>
                                         <tr>
-                                            <td>
-                                                {{$key + 1}}
-                                            </td>
-                                            <td class="text-primary">{{getFormattedCurrency($item['amount'])}}</td>
-                                            <td> {{ getpaymentMode($item['payment_type']) }}</td>
-                                            <td>
-                                                <button wire:click="removePayment({{$key}})" type="button" class="remove-item-button bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium tw-size-6 d-flex justify-content-center align-items-center rounded-circle">
-                                                    <iconify-icon icon="fluent:delete-24-regular" class="menu-icon"></iconify-icon>
-                                                </button>
-                                            </td>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Amount</th>
+                                            <th scope="col">Payment Type </th>
+                                            <th scope="col">Actions</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($payments as $key => $item)
+                                            <tr>
+                                                <td>
+                                                    {{ $key + 1 }}
+                                                </td>
+                                                <td class="text-primary">{{ getFormattedCurrency($item['amount']) }}
+                                                </td>
+                                                <td> {{ getpaymentMode($item['payment_type']) }}</td>
+                                                <td>
+                                                    <button wire:click="removePayment({{ $key }})"
+                                                        type="button"
+                                                        class="remove-item-button bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium tw-size-6 d-flex justify-content-center align-items-center rounded-circle">
+                                                        <iconify-icon icon="fluent:delete-24-regular"
+                                                            class="menu-icon"></iconify-icon>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                             @else
-                            <div class="tw-py-16">
-                                <div class="text-center tw-text-xs">{{$lang->data['no_payment'] ?? 'No payments were added, Add a payment to show it here.'}}</div>
-                            </div>
+                                <div class="tw-py-16">
+                                    <div class="text-center tw-text-xs">
+                                        {{ $lang->data['no_payment'] ?? 'No payments were added, Add a payment to show it here.' }}
+                                    </div>
+                                </div>
                             @endif
                         </div>
                         <div class="col-12 tw-my-6">
@@ -757,10 +769,9 @@
                             <div class="col-6 ">
                                 <label for="name"
                                     class="form-label fw-semibold text-primary-light text-sm mb-8">{{ $lang->data['notes'] ?? 'Notes' }}
-                                    </label>
+                                </label>
                                 <input type="text" class="form-control radius-8"
-                                    placeholder="{{ $lang->data['notes'] ?? 'Notes' }}"
-                                    wire:model="payment_note">
+                                    placeholder="{{ $lang->data['notes'] ?? 'Notes' }}" wire:model="payment_note">
                                 @error('payment_note')
                                     <span class="error text-danger tw-text-xs">{{ $message }}</span>
                                 @enderror
@@ -774,21 +785,13 @@
                             </div>
 
                         </div>
-
-
-
-                        <div class="modal-footer tw-mt-12">
-                            <button
-                            class="tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-primary-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-px-12 tw-border-0 tw-shadow-md "
-                            wire:click.prevent="save">
-                            <span>{{ $lang->data['save_print'] ?? 'Save & Print' }}</span>
-                        </div>
                     </div>
                     <div class="modal-footer tw-mt-12">
                         <button
-                        class="tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-primary-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-px-12 tw-border-0 tw-shadow-md "
-                        wire:click.prevent="save">
-                        <span>{{ $lang->data['save_print'] ?? 'Save & Print' }}</span>
+                            class="tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-primary-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-px-12 tw-border-0 tw-shadow-md "
+                            wire:click.prevent="save">
+                            <span>{{ $lang->data['save_print'] ?? 'Save & Print' }}</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -885,50 +888,46 @@
                             } else {
                                 this.detached = false;
                             }
-                            window.addEventListener('resize', (e) => {
-                                if (window.innerWidth < 1024) {
-                                    this.detached = true;
-                                } else {
-                                    this.detached = false;
-                                }
-                            })
+                        })
 
-                            this.$wire.on('reloadpage', orderId => {
-                                if (this.$wire.order) {
-                                    window.location.href = '{{ url('admin/orders/') }}';
-                                } else {
-                                    window.location.reload();
+                        this.$wire.on('reloadpage', orderId => {
+                            if (this.$wire.order) {
+                                window.location.href = '{{ url('admin/orders/') }}';
+                            } else {
+                                window.location.reload();
 
-                                }
-                            })
-                            this.$wire.on('printPageOrder', orderId => {
-                                console.log('PRINT ORDER', orderId);
+                            }
+                        })
+                        this.$wire.on('printPageOrder', orderId => {
+                            console.log('PRINT ORDER', orderId);
 
-                                window.open(
-                                    '{{ url('admin/orders/print') }}/' + orderId,
-                                    '_blank'
-                                );
+                            window.open(
+                                '{{ url('admin/orders/print') }}/' + orderId,
+                                '_blank'
+                            );
 
+                            setTimeout(function() {
+                                window.location.href =
+                                    '{{ url('admin/orders/') }}';
+                            }, 1000);
+                        })
+                        this.$wire.on('printPage', orderId => {
+                            var $id = orderId;
+                            window.open(
+                                '{{ url('admin/orders/print') }}' + '/' + $id,
+                                '_blank'
+                            );
+                            window.onfocus = function() {
                                 setTimeout(function() {
-                                    window.location.href =
-                                        '{{ url('admin/orders/') }}';
+                                    window.location.reload()
                                 }, 1000);
-                            })
-                            this.$wire.on('printPage', orderId => {
-                                var $id = orderId;
-                                window.open(
-                                    '{{ url('admin/orders/print') }}' + '/' + $id,
-                                    '_blank'
-                                );
-                                window.onfocus = function() {
-                                    setTimeout(function() {
-                                        window.location.reload()
-                                    }, 1000);
-                                }
-                            })
-                        },
-                    }
+                            }
+                        })
+                    },
                 }
-            </script>
-            <livewire:components.check-financial-year-component />
+            }
+        </script>
+        <livewire:components.check-financial-year-component />
+
+    </div>
 </div>

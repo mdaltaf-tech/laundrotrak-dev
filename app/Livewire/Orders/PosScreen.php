@@ -30,7 +30,7 @@ class PosScreen extends Component
     public $customer_name, $customer_phone, $email, $tax_no, $address, $selected_customer, $customers, $customer_query, $is_active = 1;
     public $total, $sub_total, $addon_total, $tax_percent, $tax, $balance, $flag = 0, $lang,$taxamount;
     public $taxable,$order;
-    public $payments = [],$payment_amount,$payment_note;
+    public $payments = [],$payment_amount, $payment_note;
     public $selectedCategory;
     public $serviceLookup = [];
     public $serviceTypeLookup = [];
@@ -132,10 +132,7 @@ class PosScreen extends Component
     public function editItem($row)
     {
         $this->add($this->inputi);
-        $serviceTypeId =
-            $this->serviceTypeIdLookup[$row->service_name]
-            ?? null;
-
+        $serviceTypeId = $row->service_type_id;
         $key =
             $row->service_id . '_' . $serviceTypeId;
 
@@ -235,6 +232,7 @@ class PosScreen extends Component
         }
         $this->calculateTotal();
     }
+
     /* select services*/
     public function addItem()
     {
@@ -547,7 +545,9 @@ class PosScreen extends Component
                 DB::rollBack();
                 return 0;
             }
-            $this->generateOrderID();
+            if (!$this->order) {
+                $this->generateOrderID();
+            }
 
             if ($this->order) {
                 $paidAmount = Payment::active()
@@ -684,41 +684,32 @@ class PosScreen extends Component
                     $this->serviceTypeLookup[$serviceTypeId]
                     ?? '';
                 $amount += $this->prices[$key];
-                OrderDetail::create([
-                    'order_id'  => $order->id,
-                    'service_id'    => $serviceId,
+
+
+                $orderDetail = OrderDetail::create([
+                    'order_id' => $order->id,
+                    'service_id' => $serviceId,
+                    'service_type_id' => $serviceTypeId,
                     'service_name' => $serviceTypeName,
-                    'service_quantity'  => $this->quantity[$key],
-                    'service_detail_total'  => $this->selling_price[$key] * $this->quantity[$key],
+                    'service_quantity' => $this->quantity[$key],
+                    'service_detail_total' => $this->selling_price[$key] * $this->quantity[$key],
                     'service_price' => $this->selling_price[$key],
                     'color_code' => $this->colors[$key],
                 ]);
 
-                    $orderDetail = OrderDetail::create([
+                for ($i = 1; $i <= $this->quantity[$key]; $i++) {
+                    OrderArticle::create([
                         'order_id' => $order->id,
-                        'service_id' => $service->id,
-                        'service_type_id' => $service_type->id,
-                        'service_name' => $service_type->service_type_name,
-                        'service_quantity' => $this->quantity[$key],
-                        'service_detail_total' => $this->selling_price[$key] * $this->quantity[$key],
-                        'service_price' => $this->selling_price[$key],
+                        'order_detail_id' => $orderDetail->id,
+                        'tag_number' =>
+                        $this->generateTag(
+                            $order->order_number
+                        ),
+                        'article_name' => $this->serviceLookup[$serviceId] ?? '',
+                        'service_name' => $serviceTypeName,
                         'color_code' => $this->colors[$key],
+                        'created_by' => Auth::id()
                     ]);
-
-                    for ($i = 1; $i <= $this->quantity[$key]; $i++) {
-                        OrderArticle::create([
-                            'order_id' => $order->id,
-                            'order_detail_id' => $orderDetail->id,
-                            'tag_number' =>
-                            $this->generateTag(
-                                $order->order_number
-                            ),
-                            'article_name' => $service->service_name,
-                            'service_name' => $service_type->service_type_name,
-                            'color_code' => $this->colors[$key],
-                            'created_by' => Auth::id()
-                        ]);
-                    }
                 }
             }
         }
@@ -917,6 +908,8 @@ class PosScreen extends Component
         ->where('is_active', 1)
         ->orderBy('sort_order')
         ->get();
+    }
+
     private function hasProcessedArticles(): bool
     {
         if (!$this->order) {
@@ -946,10 +939,10 @@ class PosScreen extends Component
         foreach ($this->order->details as $detail) {
 
             $existing[] = [
-                'service_id' => $detail->service_id,
-                'service_name' => $detail->service_name,
-                'qty' => (int)$detail->service_quantity,
-                'color' => $detail->color_code,
+                'service_id'      => $detail->service_id,
+                'service_type_id' => $detail->service_type_id,
+                'qty'             => (int) $detail->service_quantity,
+                'color'           => $detail->color_code,
             ];
         }
 
@@ -962,10 +955,10 @@ class PosScreen extends Component
             );
 
             $current[] = [
-                'service_id' => $value['service'],
-                'service_name' => $serviceType?->service_type_name,
-                'qty' => (int)$this->quantity[$key],
-                'color' => $this->colors[$key] ?? '',
+                'service_id'      => $value['service'],
+                'service_type_id' => $value['service_type'],
+                'qty'             => (int) $this->quantity[$key],
+                'color'           => $this->colors[$key] ?? '',
             ];
         }
 

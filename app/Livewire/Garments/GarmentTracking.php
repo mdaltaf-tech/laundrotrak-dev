@@ -63,7 +63,7 @@ class GarmentTracking extends Component
 
         })
 
-        ->limit(30)
+        ->limit(100)
         ->get();
     }
 

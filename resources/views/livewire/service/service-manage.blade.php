@@ -5,6 +5,30 @@
         </div>
         <div class="card-body ">
             <div class="row mb-20">
+                <div class="col-sm-4 mb-4">
+
+                    <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                        Category
+                        <span class="text-danger">*</span>
+                    </label>
+
+                    <select
+                        class="form-select radius-8"
+                        wire:model="category_id">
+
+                        <option value="">
+                            Select Category
+                        </option>
+
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}">
+                                {{ $category->category_name }}
+                            </option>
+                        @endforeach
+
+                    </select>
+
+                </div>
                 <div class="col-sm-6">
                     <div class="tw-flex tw-items-center tw-gap-4">
                         <label

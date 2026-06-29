@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             $this->call([
                 MasterControlSeeder::class,
                 CountryControlSeeder::class,
+                ServiceCategorySeeder::class,
             ]);
         }
         if(Permission::count() == 0){

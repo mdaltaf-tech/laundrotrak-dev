@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Http\Livewire\Admin\Service\ServiceType as ServiceServiceType;
 use App\Models\Service;
 use App\Models\ServiceDetail;
+use App\Models\ServiceCategory;
 use File;
 use App\Models\ServiceType;
 use App\Models\Translation;
@@ -13,7 +14,20 @@ use Livewire\Attributes\Title;
 
 class ServiceManage extends Component
 {
-    public $services, $files, $imageicon, $inputs = [], $service_types, $prices = [], $servicetypes = [], $inputi = 1, $service_name, $is_active = 1, $lang;
+    public $services,
+       $files,
+       $imageicon,
+       $inputs = [],
+       $service_types,
+       $prices = [],
+       $servicetypes = [],
+       $inputi = 1,
+       $service_name,
+       $category_id,
+       $categories = [],
+       $is_active = 1,
+       $lang;
+
     /* render the page */
     #[Title('Manage Service')]
     public function render()
@@ -29,6 +43,14 @@ class ServiceManage extends Component
         $files = File::files(public_path('assets/img/service-icons'));
         $i = 0;
         $this->service_types = ServiceType::latest()->get();
+
+        $this->categories = ServiceCategory::where(
+            'is_active',
+            1
+        )
+        ->orderBy('sort_order')
+        ->get();
+
         foreach ($files as $value) {
             $i++;
             $this->files[$i]['path'] = $value->getfilename();
@@ -61,6 +83,7 @@ class ServiceManage extends Component
             'servicetypes.*' => 'required',
             'prices.*'  => 'numeric|required',
             'service_name'  => 'required',
+            'category_id' => 'required',
         ]);
         /* if image icon is not selected send error alert*/
         if (!$this->imageicon) {
@@ -74,8 +97,9 @@ class ServiceManage extends Component
         }
         $service = Service::create([
             'service_name'  => $this->service_name,
+            'category_id' => $this->category_id,
             'icon'  => $this->imageicon['path'],
-            'is_active' => $this->is_active
+            'is_active' => $this->is_active,
         ]);
         foreach ($this->inputs as $key => $value) {
             $servicetype = ServiceType::where('id', $this->servicetypes[$value])->first();

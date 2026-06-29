@@ -12,32 +12,61 @@
 }
 
 .sidebar-menu li a {
-    font-size: 0.825rem !important;
+    .sidebar-menu li a {
+        font-size: 0.825rem !important;
+    }
 }
 
 .sidebar-menu li a .menu-icon {
-    font-size: 1.2rem !important;
+    .sidebar-menu li a .menu-icon {
+        font-size: 1.2rem !important;
+    }
 }
 
 .sidebar-menu .sidebar-menu-group-title {
-    font-size: 0.90rem !important;
+    .sidebar-menu .sidebar-menu-group-title {
+        font-size: 0.90rem !important;
+    }
 }
 
 .btn-sm {
     padding: 0.375rem 0.75rem !important;
+
+    .btn-sm {
+        padding: 0.375rem 0.75rem !important;
+    }
 }
 
 .navbar-search input {
     height: 2.2rem !important;
     font-size: 0.725rem;
+
+    .navbar-search input {
+        height: 2.2rem !important;
+        font-size: 0.725rem;
+    }
 }
 
 .badge.text-sm {
     font-size: 0.745rem !important;
+
+    .badge.text-sm {
+        font-size: 0.745rem !important;
+    }
 }
 
 .btn {
     font-size: 0.745rem !important;
+
+    .btn {
+        font-size: 0.745rem !important;
+    }
+}
+
+.form-control,
+.form-select,
+.form-control::placeholder {
+    font-size: 0.825rem !important;
 }
 
 .form-control,
@@ -50,8 +79,20 @@
     height: auto !important;
 }
 
+.form-control {
+    height: auto !important;
+}
+
 .form-select {
     height: auto !important;
+
+    .form-select {
+        height: auto !important;
+    }
+}
+
+.kanban-wrapper {
+    min-width: 1000px !important;
 }
 
 .kanban-wrapper {
@@ -67,6 +108,7 @@ input::-webkit-inner-spin-button {
 
 /* Firefox */
 input[type=number] {
+    -moz-appearance: textfield;
     -moz-appearance: textfield;
 }
 
@@ -210,6 +252,34 @@ input[type=number] {
     }
 }
 
+.category-scroll .btn {
+    flex-shrink: 0;
+}
+
+
+.category-scroll {
+    scrollbar-width: thin;
+    white-space: nowrap;
+}
+
+.category-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.category-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+@media (max-width: 1023px) {
+
+    .mobile-cart-panel {
+        height: calc(100vh - 70px);
+        display: flex;
+        flex-direction: column;
+    }
+
+}
 .dashboard-kpi-card {
     height: 110px;
     transition: all .2s ease;

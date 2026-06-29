@@ -6,6 +6,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use App\Models\Service;
 use App\Models\ServiceDetail;
+use App\Models\ServiceCategory;
 use File;
 use App\Models\ServiceType;
 use App\Models\Translation;
@@ -13,7 +14,21 @@ use App\Models\Translation;
 class ServiceEdit extends Component
 {
     #[Title('Service Edit')]
-    public $services,$files,$imageicon,$inputs=[],$service_types,$prices = [],$servicetypes =[],$inputi=1,$service_name,$is_active=1,$service,$lang;
+    public $services;
+    public $files;
+    public $imageicon;
+    public $inputs=[];
+    public $service_types;
+    public $prices = [];
+    public $servicetypes =[];
+    public $inputi=1;
+    public $service_name;
+    public $is_active=1;
+    public $service;
+    public $lang;
+    public $category_id;
+    public $categories = [];
+
     /* render the page */
     public function render()
     {
@@ -34,6 +49,11 @@ class ServiceEdit extends Component
             $this->files[$i]['path'] = $value->getfilename();
         }
         $this->service = Service::where('id',$id)->first();
+        $this->categories = ServiceCategory::where('is_active',1)
+            ->orderBy('sort_order')
+            ->get();
+
+        $this->category_id = $this->service->category_id;
         /* if service is not exist */
         if(!$this->service)
         {
@@ -94,6 +114,7 @@ class ServiceEdit extends Component
         $this->service->service_name = $this->service_name;
         $this->service->icon = $this->imageicon['path'];
         $this->service->is_active = $this->is_active ?? 0;
+        $this->service->category_id = $this->category_id;
         $this->service->save();
         $details = ServiceDetail::where('service_id',$this->service->id)->delete();
         foreach($this->inputs as $key => $value)

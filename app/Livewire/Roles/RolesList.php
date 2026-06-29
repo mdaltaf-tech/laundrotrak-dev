@@ -27,6 +27,7 @@ class RolesList extends Component
         'Report' => null,
         'Translation' => ['translation_list'],
         'Service Type' => ['service_type_list'],
+        'Service Category' => ['service_category_list'],
         'Expense Category' => ['expense_category_list'],
     ];
 
@@ -74,7 +75,7 @@ class RolesList extends Component
         $this->validate([
             'name' => 'required',
         ]);
-        
+
         $userRole = new UserRole();
         $userRole->name = $this->name;
         $userRole->save();
@@ -135,14 +136,14 @@ class RolesList extends Component
         $this->dispatch('closemodal');
     }
 
-    
+
     /* process while change the content*/
     public function updated($name, $value)
     {
     }
     /* reset input fields */
     public function resetFields()
-    {   
+    {
         $this->resetErrorBag();
         $this->name = '';
         $this->editRole = null;

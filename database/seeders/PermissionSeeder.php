@@ -41,6 +41,13 @@ class PermissionSeeder extends Seeder
             ['name' => 'service_edit', 'display_name' => 'Service Edit', 'category' => 'Service'],
             ['name' => 'service_delete', 'display_name' => 'Service Delete', 'category' => 'Service'],
 
+            // Service Category Permissions
+            ['name' => 'service_category_list', 'display_name' => 'Service Category List', 'category' => 'Service Category'],
+            ['name' => 'service_category_view', 'display_name' => 'Service Category View', 'category' => 'Service Category'],
+            ['name' => 'service_category_create', 'display_name' => 'Service Category Create', 'category' => 'Service Category'],
+            ['name' => 'service_category_edit', 'display_name' => 'Service Category Edit', 'category' => 'Service Category'],
+            ['name' => 'service_category_delete', 'display_name' => 'Service Category Delete', 'category' => 'Service Category'],
+
             ['name' => 'addon_list', 'display_name' => 'Addon List', 'category' => 'Addon'],
             ['name' => 'addon_view', 'display_name' => 'Addon View', 'category' => 'Addon'],
             ['name' => 'addon_create', 'display_name' => 'Addon Create', 'category' => 'Addon'],
@@ -82,7 +89,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'setting_sms', 'display_name' => 'SMS Settings', 'category' => 'Setting'],
             ['name' => 'setting_master', 'display_name' => 'Master Settings', 'category' => 'Setting'],
             ['name' => 'setting_theme', 'display_name' => 'Theme Settings', 'category' => 'Setting'],
-            
+
 
             ['name' => 'user_list', 'display_name' => 'User List', 'category' => 'User'],
             ['name' => 'user_view', 'display_name' => 'User View', 'category' => 'User'],

@@ -23,7 +23,13 @@ class ServiceList extends Component
         if(!\Illuminate\Support\Facades\Gate::allows('service_list')){
             abort(404);
         }
-        $this->services = Service::latest()->get();
+
+        $this->services = Service::with('category')
+            ->orderByRaw('category_id IS NULL')
+            ->orderBy('category_id')
+            ->orderBy('service_name')
+            ->get();
+
         if(session()->has('selected_language'))
         {   /* if session has selected language */
             $this->lang = Translation::where('id',session()->get('selected_language'))->first();
@@ -39,7 +45,14 @@ class ServiceList extends Component
         try{
             $service = Service::where('id',$id)->delete();
             ServiceDetail::where('service_id',$id)->delete();
-            $this->services = Service::latest()->get();
+
+            $this->services = Service::with([
+                'category',
+                'serviceDetails'
+            ])
+            ->orderBy('category_id')
+            ->orderBy('service_name')
+            ->get();
         }
         catch(\Exception $e)
         {
@@ -52,10 +65,22 @@ class ServiceList extends Component
     {   /* if the updated element is search_query */
         if($name == 'search_query' && $value != '')
         {
-            $this->services = Service::where('service_name', 'like' , '%'.$value.'%')->get();
+            $this->services = Service::with('category')
+                ->where(
+                    'service_name',
+                    'like',
+                    '%'.$value.'%'
+                )
+                ->orderBy('category_id')
+                ->orderBy('service_name')
+                ->get();
         }
         elseif($name == 'search_query' && $value == ''){
-            $this->services = Service::latest()->get();
+            $this->services = Service::with('category')
+                ->orderByRaw('category_id IS NULL')
+                ->orderBy('category_id')
+                ->orderBy('service_name')
+                ->get();
 
         }
     }

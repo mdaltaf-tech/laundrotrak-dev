@@ -20,6 +20,7 @@
                     <thead>
                         <tr>
                             <th scope="col">#</th>
+                            <th scope="col" class="">{{$lang->data['service_category'] ?? 'Service Category'}}</th>
                             <th scope="col" class="">{{$lang->data['service_name'] ?? 'Service Name'}}</th>
                             <th scope="col" class="">{{$lang->data['service_types'] ?? 'Service Types'}}</th>
                             <th scope="col" class="">{{$lang->data['status'] ?? 'Status'}}</th>
@@ -33,26 +34,53 @@
                             <td>{{$loop->index+1}}</td>
                             <td class="">
                                 <div class="tw-flex tw-gap-2 tw-items-center">
-                                    <div class="tw-aspect-square tw-w-10 tw-rounded-lg tw-overflow-clip">
-                                        <img src="{{asset('assets/img/service-icons/'.$item->icon)}}" alt="" class="tw-h-full tw-w-full tw-object-cover">
-                                    </div>
-                                    {{$item->service_name}}
+                                    <span class="tw-bg-gray-200 tw-text-gray-600 tw-px-2 tw-py-0.5 tw-rounded tw-text-xs">
+                                        {{ $item->category?->category_name ?? 'Uncategorized' }}
+                                    </span>
                                 </div>
                             </td>
                             <td class="">
-                                <div class="tw-flex tw-flex-col tw-gap-0.5 tw-items-center">
-                                    @php
-                                    $details = \App\Models\ServiceDetail::where('service_id',$item->id)->get();
-                                    @endphp
-                                    @if($details)
-                                    @foreach ($details as $row)
-                                    @php
-                                    $type = \App\Models\ServiceType::where('id',$row->service_type_id)->first();
-                                    @endphp
-                                    <span class="tw-bg-gray-200  tw-px-2 tw-text-xs tw-text-gray-600 tw-font-normal tw-rounded tw-py-0.5">{{$type->service_type_name}}</span>
-                                    @endforeach
-                                    @endif
+                                <div class="tw-flex tw-gap-2 tw-items-center">
+                                    <div class="tw-aspect-square tw-w-10 tw-rounded-lg tw-overflow-clip">
+                                        <img src="{{asset('assets/img/service-icons/'.$item->icon)}}" alt="" class="tw-h-full tw-w-full tw-object-cover">
+                                    </div>
+                                    <span class="tw-font-medium">
+                                        {{ $item->service_name }}
+                                    </span>
                                 </div>
+                            </td>
+                            <td>
+                                @php
+                                    $details = \App\Models\ServiceDetail::where('service_id',$item->id)->get();
+                                @endphp
+                                <span class="tw-bg-blue-100 tw-text-blue-700 tw-px-2 tw-py-1 tw-rounded tw-text-xs">
+                                    {{ $details->count() }}
+                                </span>
+                                {{--
+
+                                <div class="tw-flex tw-flex-wrap tw-gap-1">
+
+                                    @foreach ($details->take(3) as $row)
+
+                                        @php
+                                            $type = \App\Models\ServiceType::find($row->service_type_id);
+                                        @endphp
+
+                                        @if($type)
+                                            <span class="tw-bg-gray-200 tw-text-gray-600 tw-px-2 tw-py-0.5 tw-rounded tw-text-xs">
+                                                {{ $type->service_type_name }}
+                                            </span>
+                                        @endif
+
+                                    @endforeach
+
+                                    @if($details->count() > 3)
+                                        <span class="tw-bg-blue-100 tw-text-blue-700 tw-px-2 tw-py-0.5 tw-rounded tw-text-xs">
+                                            +{{ $details->count() - 3 }} More
+                                        </span>
+                                    @endif
+
+                                </div> --}}
                             </td>
                             <td class="">
                                 @if($item->is_active == 1)
@@ -83,7 +111,7 @@
                 @if(count($services) == 0)
                     <x-empty-item/>
                 @endif
-            </div>  
+            </div>
         </div>
     </div>
 </div>

@@ -3,6 +3,7 @@
 namespace App\Livewire\Orders;
 
 use App\Livewire\Installer\InstallController;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use App\Models\Addon;
@@ -17,6 +18,8 @@ use App\Models\ServiceDetail;
 use App\Models\ServiceType;
 use App\Models\OrderAddonDetail;
 use App\Models\Translation;
+use App\Models\AdditionalChargeType;
+use App\Models\OrderAdditionalCharge;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -37,6 +40,32 @@ class PosScreen extends Component
     public $serviceTypeIdLookup = [];
     public $serviceDetailLookup = [];
     public $addonLookup = [];
+    public $editingAdditionalCharge = null;
+    public $editingAdditionalChargePosition = null;
+    public $additionalChargeTypeLookup = [];
+    public float $additionalChargeTotal = 0;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Order Additional Charges
+    |--------------------------------------------------------------------------
+    */
+
+    public $orderAdditionalChargeTypeId = '';
+
+    public $orderAdditionalChargeAmount = '';
+
+    public $orderAdditionalChargeRemarks = '';
+
+    public $orderAdditionalCharges = [];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Masters
+    |--------------------------------------------------------------------------
+    */
+
+    public $additionalChargeTypes = [];
 
     #[Layout('components.layouts.pos'), Title('POS')]
     public function render()
@@ -78,6 +107,22 @@ class PosScreen extends Component
             ->get()
             ->keyBy('id');
 
+        $chargeTypes = AdditionalChargeType::active()
+            ->ordered()
+            ->get();
+
+        $this->additionalChargeTypes = $chargeTypes;
+
+        $this->additionalChargeTypeLookup =
+            $chargeTypes
+                ->mapWithKeys(fn ($item) => [
+                    $item->id => [
+                        'charge_name'    => $item->charge_name,
+                        'default_amount' => (float) $item->default_amount,
+                    ],
+                ])
+                ->toArray();
+
         if ($this->categories->count()) {
 
             $this->selectedCategory = $this->categories->first()->id;
@@ -98,6 +143,7 @@ class PosScreen extends Component
         $this->tax_percent = getTaxPercentage();
         $this->generateOrderID();
 
+
         if ($id) {
             $this->order = Order::whereId($id)->firstOrFail();
             // Payments are managed from View Order / Orders List.
@@ -114,6 +160,8 @@ class PosScreen extends Component
             $this->order_id = $this->order->order_number;
             $this->note = $this->order->note;
             $this->discount = $this->order->discount;
+            $this->loadOrderAdditionalCharges($this->order);
+
             foreach ($this->order->addons as $row) {
                 $this->selected_addons[$row->addon_id] = true;
             }
@@ -164,6 +212,7 @@ class PosScreen extends Component
     {
         $this->colors[$id] = $this->colors[$id];
     }
+
     /* process while update element */
     public function updated($name, $value)
     {
@@ -200,7 +249,6 @@ class PosScreen extends Component
             $this->calculateTotal();
         }
     }
-
 
     /* select service */
     public function selectService($id)
@@ -391,7 +439,6 @@ class PosScreen extends Component
         $this->taxamount = 0;
         $this->taxable = 0;
 
-        $unitprice = 0;
         $itemtotal = 0;
         $itemtaxtotal2 = 0;
         $sub_total = 0;
@@ -453,10 +500,17 @@ class PosScreen extends Component
         }
         $this->sub_total = $sub_total;
         $this->tax = $itemtaxtotal2;
-        $this->total = ($this->sub_total + $itemtaxtotal2) - $this->discount;
-        $this->total = round($this->total, 3, PHP_ROUND_HALF_UP);
-        $this->balance = $this->total - $this->paid_amount;
+        $this->total =
+            ($this->sub_total + $itemtaxtotal2)
+            + $this->orderAdditionalChargesTotal
+            - ($this->discount ?? 0);
+
+        $this->total = round($this->total, 2);
+        $this->balance = $this->total - ($this->paid_amount ?? 0);
+        $this->additionalChargeTotal = collect($this->orderAdditionalCharges)
+            ->sum(fn ($charge) => (float) ($charge['amount'] ?? 0));
     }
+
     //add payment
     public function add_payment()
     {
@@ -479,12 +533,6 @@ class PosScreen extends Component
             'alert',
             ['type' => 'success',  'message' => ' Payment has been created']
         );
-    }
-
-    #[Computed()]
-    public function currentBalance()
-    {
-        return $this->getPaymentBalance();
     }
 
     /* save the order */
@@ -623,6 +671,8 @@ class PosScreen extends Component
                     'order_type'    => 1,
                 ]);
 
+                $this->saveOrderAdditionalCharges($order);
+
                 if ($garmentsChanged)
                 {
                     OrderDetail::whereOrderId(
@@ -670,6 +720,8 @@ class PosScreen extends Component
                     'created_by'    => Auth::user()->id,
                     'financial_year_id' => getFinancialYearId()
                 ]);
+
+                $this->saveOrderAdditionalCharges($order);
             }
 
         if (
@@ -714,9 +766,9 @@ class PosScreen extends Component
             }
         }
         if (
-              !$this->order
-              || $addonsChanged
-          )
+            !$this->order
+            || $addonsChanged
+        )
         {
             if ($this->selected_addons) {
                 foreach ($this->selected_addons as $key => $value) {
@@ -829,17 +881,6 @@ class PosScreen extends Component
         array_splice($this->payments, $paymentIndex, 1);
     }
 
-    #[Computed]
-    public function totalItems()
-    {
-        return array_sum(
-            array_map(
-                fn($qty) => (int)$qty,
-                $this->quantity ?? []
-            )
-        );
-    }
-
     public function generateTag($orderNumber)
     {
         $orderNo = preg_replace(
@@ -895,19 +936,6 @@ class PosScreen extends Component
         }
 
         $this->services = $query->latest()->get();
-    }
-
-    #[Computed]
-    public function categories()
-    {
-        return ServiceCategory::withCount([
-            'services' => function ($query) {
-                $query->where('is_active', 1);
-            }
-        ])
-        ->where('is_active', 1)
-        ->orderBy('sort_order')
-        ->get();
     }
 
     private function hasProcessedArticles(): bool
@@ -968,6 +996,237 @@ class PosScreen extends Component
         return $existing != $current;
     }
 
+
+
+    #[Computed]
+    public function totalItems()
+    {
+        return array_sum(
+            array_map(
+                fn($qty) => (int)$qty,
+                $this->quantity ?? []
+            )
+        );
+    }
+
+    #[Computed]
+    public function orderAdditionalChargesTotal()
+    {
+        return collect($this->orderAdditionalCharges)
+            ->sum('amount');
+    }
+
+    public function updatedOrderAdditionalChargeTypeId($value): void
+    {
+        if ($this->editingAdditionalCharge !== null) {
+            return;
+        }
+
+        // Reset amount when no charge type is selected.
+        $this->orderAdditionalChargeAmount = '';
+
+        if (blank($value)) {
+            return;
+        }
+
+        // Fetch charge details from the cached lookup.
+        $chargeType = $this->additionalChargeTypeLookup[$value] ?? null;
+
+        if (!$chargeType) {
+            return;
+        }
+
+        // Auto-fill configured default amount.
+        $this->orderAdditionalChargeAmount = (float) ($chargeType['default_amount'] ?? 0);
+    }
+
+    public function addOrderAdditionalCharge()
+    {
+        $this->validate([
+            'orderAdditionalChargeTypeId'  => 'required|integer',
+            'orderAdditionalChargeAmount'  => 'required|numeric|gt:0',
+            'orderAdditionalChargeRemarks' => 'nullable|string|max:255',
+        ]);
+
+        $chargeType = $this->getAdditionalChargeType(
+            $this->orderAdditionalChargeTypeId
+        );
+
+        if (!$chargeType) {
+            return;
+        }
+
+        $duplicate = collect($this->orderAdditionalCharges)
+            ->contains(function ($charge) use ($chargeType) {
+                return (int) $charge['charge_type_id'] === (int) $chargeType['id'];
+            });
+
+        if ($duplicate) {
+
+            $this->addError(
+                'orderAdditionalChargeTypeId',
+                'Charge already added.'
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Restore edited row
+            |--------------------------------------------------------------------------
+            */
+
+            if ($this->editingAdditionalCharge !== null) {
+
+                array_splice(
+                    $this->orderAdditionalCharges,
+                    $this->editingAdditionalChargePosition,
+                    0,
+                    [$this->editingAdditionalCharge]
+                );
+
+                $this->editingAdditionalCharge = null;
+                $this->editingAdditionalChargePosition = null;
+            }
+
+            return;
+        }
+
+        $this->orderAdditionalCharges[] = [
+
+            'charge_type_id' => $chargeType['id'],
+
+            'charge_name' => $chargeType['charge_name'],
+
+            'amount' => (float) $this->orderAdditionalChargeAmount,
+
+            'remarks' => trim($this->orderAdditionalChargeRemarks ?? ''),
+        ];
+
+        $this->resetOrderAdditionalChargeForm();
+
+        $this->calculateTotal();
+    }
+
+    private function resetOrderAdditionalChargeForm(): void
+    {
+        $this->editingAdditionalCharge = null;
+
+        $this->editingAdditionalChargePosition = null;
+
+        $this->orderAdditionalChargeTypeId = '';
+
+        $this->orderAdditionalChargeAmount = '';
+
+        $this->orderAdditionalChargeRemarks = '';
+
+        $this->resetValidation([
+            'orderAdditionalChargeTypeId',
+            'orderAdditionalChargeAmount',
+            'orderAdditionalChargeRemarks',
+        ]);
+    }
+
+    private function getAdditionalChargeType($id): ?array
+    {
+        if (empty($id)) {
+            return null;
+        }
+
+        return $this->additionalChargeTypeLookup[(int) $id]
+            ?? null;
+    }
+
+    public function removeOrderAdditionalCharge($index)
+    {
+        if (!isset($this->orderAdditionalCharges[$index])) {
+            return;
+        }
+
+        unset($this->orderAdditionalCharges[$index]);
+
+        $this->orderAdditionalCharges = array_values(
+            $this->orderAdditionalCharges
+        );
+
+        $this->calculateTotal();
+    }
+
+    public function getSelectableAdditionalChargeTypesProperty()
+    {
+        $selectedChargeTypeIds = collect($this->orderAdditionalCharges)
+            ->pluck('charge_type_id');
+
+        return collect($this->additionalChargeTypes)
+            ->reject(function ($charge) use ($selectedChargeTypeIds) {
+
+                if (
+                    (int) $this->orderAdditionalChargeTypeId ===
+                    (int) data_get($charge, 'id')
+                ) {
+                    return false;
+                }
+
+                return $selectedChargeTypeIds->contains(
+                    data_get($charge, 'id')
+                );
+            })
+            ->values();
+    }
+
+    public function editOrderAdditionalCharge($index)
+    {
+        if (!isset($this->orderAdditionalCharges[$index])) {
+            return;
+        }
+
+        $charge = $this->orderAdditionalCharges[$index];
+
+        $this->orderAdditionalChargeTypeId = $charge['charge_type_id'];
+
+        $this->orderAdditionalChargeAmount = $charge['amount'];
+
+        $this->orderAdditionalChargeRemarks = $charge['remarks'];
+
+        $this->editingAdditionalCharge = $charge;
+
+        $this->editingAdditionalChargePosition = $index;
+
+        unset($this->orderAdditionalCharges[$index]);
+
+        $this->orderAdditionalCharges = array_values($this->orderAdditionalCharges);
+
+        $this->resetValidation([
+            'orderAdditionalChargeTypeId',
+            'orderAdditionalChargeAmount',
+            'orderAdditionalChargeRemarks',
+        ]);
+
+        $this->calculateTotal();
+    }
+
+    #[Computed]
+    public function categories()
+    {
+        return ServiceCategory::withCount([
+            'services' => function ($query) {
+                $query->where('is_active', 1);
+            }
+        ])
+        ->where('is_active', 1)
+        ->orderBy('sort_order')
+        ->get();
+    }
+
+    #[Computed()]
+    public function currentBalance()
+    {
+        return $this->getPaymentBalance();
+    }
+
+    public function getAdditionalChargeCountProperty(): int
+    {
+        return count($this->orderAdditionalCharges);
+    }
+
     private function addonsChanged(): bool
     {
         if (!$this->order) {
@@ -991,5 +1250,100 @@ class PosScreen extends Component
         sort($current);
 
         return $existing != $current;
+    }
+
+    private function loadOrderAdditionalCharges(Order $order): void
+    {
+        $this->orderAdditionalCharges = [];
+
+        $order->loadMissing([
+            'additionalCharges' => function ($query) {
+                $query->where('is_deleted', false)
+                    ->with('chargeType')
+                    ->orderBy('charge_type_id');
+            },
+        ]);
+
+        foreach ($order->additionalCharges as $charge) {
+
+            $this->orderAdditionalCharges[] = [
+                'charge_type_id' => $charge->charge_type_id,
+                'charge_name'    => $charge->chargeType?->charge_name ?? '',
+                'amount'         => (float) $charge->amount,
+                'remarks'        => $charge->remarks ?? '',
+            ];
+        }
+    }
+
+    private function saveOrderAdditionalCharges(Order $order): void
+    {
+        $relation = $order->additionalCharges();
+
+        $relation->update([
+            'is_deleted' => true,
+            'updated_by' => $this->currentUserId(),
+        ]);
+
+        $existingCharges = $relation
+            ->get()
+            ->keyBy('charge_type_id');
+
+        foreach ($this->orderAdditionalCharges as $charge) {
+
+            $existing = $existingCharges->get(
+                $charge['charge_type_id']
+            );
+
+            if (!$existing) {
+
+                $relation->create([
+                    'charge_type_id' => $charge['charge_type_id'],
+                    'amount'         => $charge['amount'],
+                    'remarks'        => $charge['remarks'],
+                    'created_by'     => $this->currentUserId(),
+                    'updated_by'     => $this->currentUserId(),
+                ]);
+
+                continue;
+            }
+
+            $existing->update([
+                'amount' => $charge['amount'],
+                'remarks' => $charge['remarks'],
+                'is_deleted' => false,
+                'updated_by' => $this->currentUserId(),
+            ]);
+        }
+    }
+
+    private function currentUserId(): ?int
+    {
+        return Auth::id();
+    }
+
+    public function getAdditionalChargeSummaryProperty(): string
+    {
+        if (empty($this->orderAdditionalCharges)) {
+            return 'No additional charges';
+        }
+
+        $names = collect($this->orderAdditionalCharges)
+            ->pluck('charge_name')
+            ->values();
+
+        if ($names->count() === 1) {
+            return $names->first();
+        }
+
+        if ($names->count() === 2) {
+            return $names->implode(', ');
+        }
+
+        return sprintf(
+            '%s, %s (+%d)',
+            $names[0],
+            $names[1],
+            $names->count() - 2
+        );
     }
 }

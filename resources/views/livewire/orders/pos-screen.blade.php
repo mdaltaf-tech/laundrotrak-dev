@@ -229,12 +229,12 @@
             </div>
             <div
                 class="tw-w-full
-       tw-flex
-       tw-flex-col
-       tw-flex-1
-       tw-min-h-0
-       tw-mt-4
-       tw-rounded-lg tw-overflow-visible tw-border @error('error') tw-border-red-500 @else tw-border-neutral-200 dark:tw-border-[#1b2431] @enderror tw-border-solid">
+                    tw-flex
+                    tw-flex-col
+                    tw-flex-1
+                    tw-min-h-0
+                    tw-mt-4
+                    tw-rounded-lg tw-overflow-visible tw-border @error('error') tw-border-red-500 @else tw-border-neutral-200 dark:tw-border-[#1b2431] @enderror tw-border-solid">
                 <div class="tw-flex tw-flex-col lg:tw-w-full tw-overflow-x-auto">
                     <div class="tw-flex tw-flex-col lg:tw-w-full tw-w-[100rem]">
                         <div class="tw-flex tw-flex-col  tw-overflow-x-auto tw-w-full tw-shrink-0">
@@ -269,7 +269,6 @@
                                 </thead>
                             </table>
                         </div>
-
                         <div
                             class="tw-flex tw-h-[calc(100dvh-23rem)] tw-overflow-y-auto tw-overflow-x-auto tw-w-full tw-shrink-0">
                             <table class="tw-w-full tw-text-xs tw-shrink-0 tw-h-fit">
@@ -398,88 +397,110 @@
                                             </td>
                                         </tr>
                                     @endforeach
-
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-                <div
-                    class="tw-mt-2
-                        tw-grid
-                        tw-grid-cols-2
-                        lg:tw-flex
-                        tw-text-sm
-                        tw-p-2
-                        tw-gap-x-4
-                        tw-gap-y-2 tw-border-t dark:tw-border-[#1b2431] tw-border-dashed tw-border-neutral-200 tw-border-b-0 tw-border-l-0 tw-border-r-0">
-                    <div class="tw-flex tw-flex-col tw-gap-2 tw-w-full">
-                        <div class="tw-flex tw-items-center tw-gap-2">
-                            <div class="tw-flex tw-items-center tw-gap-2">
-                                {{ $lang->data['addon'] ?? 'Addon' }} <button data-bs-toggle="modal"
-                                    data-bs-target="#addons"
-                                    class="tw-px-1 tw-py-1  tw-rounded-md  tw-flex tw-items-center tw-gap-1.5 tw-border-0 tw-shadow-md @if ($selected_addons && count($selected_addons) > 0) bg-primary-600 tw-text-white @else tw-border tw-border-solid tw-bg-transparent tw-border-neutral-400 @endif">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                        fill="currentColor" class="bi bi-box-fill" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd"
-                                            d="M15.528 2.973a.75.75 0 0 1 .472.696v8.662a.75.75 0 0 1-.472.696l-7.25 2.9a.75.75 0 0 1-.557 0l-7.25-2.9A.75.75 0 0 1 0 12.331V3.669a.75.75 0 0 1 .471-.696L7.443.184l.004-.001.274-.11a.75.75 0 0 1 .558 0l.274.11.004.001zm-1.374.527L8 5.962 1.846 3.5 1 3.839v.4l6.5 2.6v7.922l.5.2.5-.2V6.84l6.5-2.6v-.4l-.846-.339Z" />
-                                    </svg>
-                                </button>
-                                :
+                <div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-5">
+                    {{-- LEFT CARD --}}
+                    <div class="summary-card">
+                        <h6 class="summary-title">
+                            Order Details
+                        </h6>
+                        {{-- Addon --}}
+                        <div class="summary-action-row" data-bs-toggle="modal" data-bs-target="#addons">
+                            <div class="summary-icon">
+                                <iconify-icon icon="solar:box-bold"></iconify-icon>
                             </div>
-                            <div class="tw-font-bold"> {{ getFormattedCurrency($addon_total) }}</div>
+                            <div class="summary-content">
+                                <div class="summary-label">Addon</div>
+                                <small>
+                                    @if (count($selected_addons))
+                                        {{ count($selected_addons) }} addon(s) selected
+                                    @else
+                                        No addons selected
+                                    @endif
+                                </small>
+                            </div>
                         </div>
-                        <div class="tw-flex tw-items-center tw-gap-2">
-                            <div class="">{{ $lang->data['sub_total'] ?? 'Sub Total' }} :</div>
-                            <div class="tw-font-bold">{{ getFormattedCurrency($sub_total) }}</div>
+                        {{-- Notes --}}
+                        <div class="summary-action-row" data-bs-toggle="modal" data-bs-target="#notesModal">
+                            <div class="summary-icon">
+                                <iconify-icon icon="solar:pen-bold"></iconify-icon>
+                            </div>
+                            <div class="summary-content">
+                                <div class="summary-label">Notes</div>
+                                <small>
+                                    {{ blank($note) ? 'No notes added' : Str::limit($note, 40) }}
+                                </small>
+                            </div>
                         </div>
-                        <div class="tw-flex tw-items-center  tw-gap-2">
-                            <div class="tw-flex tw-items-center tw-gap-2">
-                                {{ $lang->data['notes'] ?? 'Notes' }} : <button data-bs-toggle="modal"
-                                    data-bs-target="#notesModal"
-                                    class="tw-px-1 tw-py-1  tw-rounded-md  tw-flex tw-items-center tw-gap-1.5 tw-border-0 tw-shadow-md @if ($note && $note != '') bg-primary-600 tw-text-white @else tw-border tw-border-solid tw-bg-transparent tw-border-neutral-400 @endif">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                        fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                                        <path
-                                            d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                                        <path fill-rule="evenodd"
-                                            d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                                    </svg>
-                                </button>
+                        {{-- Discount --}}
+                        <div class="summary-action-row" data-bs-toggle="modal" data-bs-target="#discount">
+                            <div class="summary-icon">
+                                <iconify-icon icon="solar:tag-price-bold"></iconify-icon>
+                            </div>
+                            <div class="summary-content">
+                                <div class="summary-label">Discount</div>
+                                <small>
+                                    {{ $discount ? getFormattedCurrency($discount) . ' Applied' : 'No discount applied' }}
+                                </small>
+                            </div>
+                        </div>
+                        {{-- Charges --}}
+                        <div class="summary-action-row" data-bs-toggle="modal"
+                            data-bs-target="#additionalChargesModal">
+                            <div class="summary-icon">
+                                <iconify-icon icon="solar:bill-list-bold"></iconify-icon>
+                            </div>
+                            <div class="summary-content">
+                                <div class="tw-flex tw-items-center tw-gap-2">
+                                    <div class="summary-label">
+                                        Order Charges
+                                    </div>
+                                    @if ($this->additionalChargeCount)
+                                        <span class="additional-charge-badge">
+                                            {{ $this->additionalChargeCount }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <small>
+                                    {{ $this->additionalChargeSummary }}
+                                </small>
                             </div>
                         </div>
                     </div>
-                    <div class="tw-flex tw-flex-col tw-gap-2 tw-w-full">
-                        <div class="tw-flex tw-items-center tw-justify-between lg:tw-justify-end tw-gap-2">
-                            <div class="">{{ $lang->data['tax'] ?? 'Tax' }}
-                                ({{ getTaxPercentage() }}%) :</div>
-                            <div class="tw-font-bold"> {{ getFormattedCurrency($tax) }} </div>
+                    {{-- RIGHT CARD --}}
+                    <div class="summary-card">
+                        <h6 class="summary-title">
+                            Bill Summary
+                        </h6>
+                        {{-- Existing Summary rows here --}}
+                        <div class="summary-value-row">
+                            <span>Sub Total</span>
+                            <strong>{{ getFormattedCurrency($sub_total) }}</strong>
                         </div>
-                        <div class="tw-flex tw-items-center tw-justify-between lg:tw-justify-end tw-gap-2">
-                            <div class="tw-flex tw-items-center tw-gap-2">
-                                {{ $lang->data['discount'] ?? 'Discount' }}
-                                <button data-bs-toggle="modal" data-bs-target="#discount"
-                                    class="tw-px-1 tw-py-1  tw-rounded-md  tw-flex tw-items-center tw-gap-1.5 tw-border-0 tw-shadow-md @if ($discount && $discount > 0) bg-primary-600 tw-text-white @else tw-border tw-border-solid tw-bg-transparent tw-border-neutral-400 @endif">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                        fill="currentColor" class="bi bi-tag-fill" viewBox="0 0 16 16">
-                                        <path
-                                            d="M2 1a1 1 0 0 0-1 1v4.586a1 1 0 0 0 .293.707l7 7a1 1 0 0 0 1.414 0l4.586-4.586a1 1 0 0 0 0-1.414l-7-7A1 1 0 0 0 6.586 1zm4 3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0" />
-                                    </svg>
-                                </button>
-                                :
-                            </div>
-                            <div class="tw-font-bold">{{ getFormattedCurrency($discount) }}</div>
+                        <div class="summary-value-row">
+                            <span>Tax ({{ getTaxPercentage() }}%)</span>
+                            <strong>{{ getFormattedCurrency($tax) }}</strong>
                         </div>
-                        <div class="tw-flex tw-items-center tw-justify-between lg:tw-justify-end tw-gap-2">
-                            <div class="">{{ $lang->data['gross_total'] ?? 'Gross Total' }} :</div>
-                            <div class="tw-font-extrabold"> {{ getFormattedCurrency($total) }}</div>
+                        <div class="summary-value-row">
+                            <span>Order Charges</span>
+                            <strong>{{ getFormattedCurrency($additionalChargeTotal) }}</strong>
                         </div>
-                        <div class="tw-flex tw-items-center tw-justify-between lg:tw-justify-end tw-gap-2">
-                            <div class="">{{ $lang->data['total_items'] ?? 'Total Items' }} :</div>
-                            <div class="tw-font-extrabold">
-                                {{ $this->totalItems() }}
-                            </div>
+                        <div class="summary-value-row">
+                            <span>Total Items</span>
+                            <strong>{{ $this->totalItems() }}</strong>
                         </div>
+                    </div>
+                </div>
+                <div class="summary-total-card">
+                    <div class="summary-total-label">
+                        Gross Total
+                    </div>
+                    <div class="summary-total-value">
+                        {{ getFormattedCurrency($total) }}
                     </div>
                 </div>
             </div>
@@ -616,12 +637,163 @@
         </div>
     </div>
 
+    <!-- Order Charges Modal -->
+    <div class="modal fade" id="additionalChargesModal" tabindex="-1" aria-hidden="true" wire:ignore.self>
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content radius-16 bg-base">
+                <div class="modal-header py-16 px-24 border border-top-0 border-start-0 border-end-0">
+                    <h1 class="modal-title text-md d-flex align-items-center">
+                        {{ $lang->data['order_charges'] ?? 'Order Charges' }}
+                        @if ($this->additionalChargeCount)
+                            <span class="badge rounded-pill bg-primary ms-2">
+                                {{ $this->additionalChargeCount }}
+                            </span>
+                        @endif
+                    </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-24 py-20">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <select wire:model.live="orderAdditionalChargeTypeId" class="form-select">
+                                    <option value="">Select Charge</option>
+                                    @foreach ($this->selectableAdditionalChargeTypes as $charge)
+                                        <option value="{{ data_get($charge, 'id') }}">
+                                            {{ data_get($charge, 'charge_name') }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <label>Charge</label>
+                            </div>
+                            @error('orderAdditionalChargeTypeId')
+                                <div class="invalid-feedback d-block">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="number" step="0.01" min="0"
+                                    wire:model.live="orderAdditionalChargeAmount" class="form-control text-end pe-4">
+                                <label>Amount</label>
+                            </div>
+                            @error('orderAdditionalChargeAmount')
+                                <div class="invalid-feedback d-block">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="text" maxlength="255" wire:model.live="orderAdditionalChargeRemarks"
+                                    class="form-control" placeholder="Enter remarks...">
+                                <label>Remarks</label>
+                            </div>
+                            @error('orderAdditionalChargeRemarks')
+                                <div class="invalid-feedback d-block">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+                        <div class="col-auto">
+                            <button type="button"
+                                class="{{ $editingAdditionalCharge !== null ? 'btn btn-warning btn-add-charge' : 'btn btn-primary btn-add-charge' }}"
+                                wire:click="addOrderAdditionalCharge" @disabled(blank($orderAdditionalChargeTypeId) || blank($orderAdditionalChargeAmount))>
+                                @if ($editingAdditionalCharge !== null)
+                                    <iconify-icon icon="solar:check-circle-bold"></iconify-icon>
+                                    Update
+                                @else
+                                    <iconify-icon icon="solar:add-circle-bold"></iconify-icon>
+                                    Add
+                                @endif
+                            </button>
+                        </div>
+                    </div>
+                    <div class="my-4 border-top"></div>
+                    <div class="additional-charge-list">
+                        @forelse($this->orderAdditionalCharges as $index => $charge)
+                            <div
+                                class="additional-charge-item
+                                {{ $editingAdditionalCharge && $editingAdditionalCharge['charge_type_id'] == $charge['charge_type_id']
+                                    ? 'editing'
+                                    : '' }}">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <div class="charge-title">
+                                            {{ $charge['charge_name'] }}
+                                        </div>
+                                        @if (!empty($charge['remarks']))
+                                            <small class="text-muted">
+                                                {{ $charge['remarks'] }}
+                                            </small>
+                                        @endif
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="charge-amount">
+                                            {{ getFormattedCurrency($charge['amount']) }}
+                                        </div>
+                                        <div class="mt-2 d-flex justify-content-end gap-2">
+                                            <button type="button" class="btn btn-light btn-sm charge-action-btn"
+                                                wire:click="editOrderAdditionalCharge({{ $index }})"
+                                                title="Edit">
+                                                <iconify-icon icon="solar:pen-bold"></iconify-icon>
+                                            </button>
+                                            <button type="button"
+                                                class="btn btn-outline-danger btn-sm charge-action-btn"
+                                                wire:click="removeOrderAdditionalCharge({{ $index }})"
+                                                title="Delete">
+                                                <iconify-icon icon="solar:trash-bin-trash-bold"></iconify-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-receipt fa-2x opacity-25 mb-3"></i>
+                                <div class="fw-semibold">
+                                    No charges added
+                                </div>
+                                <small>
+                                    Select a charge type and click Add.
+                                </small>
+                            </div>
+                        @endforelse
+                    </div>
+                    <div class="border-top my-3"></div>
+                    <div class="additional-charge-total">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-receipt me-2 text-primary"></i>
+                                Total Charges
+                            </span>
+                            <span class="charge-total-value">
+                                {{ getFormattedCurrency($additionalChargeTotal) }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+
+                            <iconify-icon icon="solar:check-circle-bold"></iconify-icon>
+
+                            <span class="ms-1">Done</span>
+
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="addons" tabindex="-1" role="dialog" aria-labelledby="discount"
         aria-hidden="true" wire:ignore.self>
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content radius-16 bg-base">
                 <div class="modal-header py-16 px-24 border border-top-0 border-start-0 border-end-0">
-                    <h1 class="modal-title text-md" id="exampleModalLabel">{{ $lang->data['addons'] ?? 'Addons' }}
+                    <h1 class="modal-title text-md" id="exampleModalLabel">
+                        {{ $lang->data['addons'] ?? 'Addons' }}
                     </h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -698,7 +870,8 @@
                                                 <td>
                                                     {{ $key + 1 }}
                                                 </td>
-                                                <td class="text-primary">{{ getFormattedCurrency($item['amount']) }}
+                                                <td class="text-primary">
+                                                    {{ getFormattedCurrency($item['amount']) }}
                                                 </td>
                                                 <td> {{ getpaymentMode($item['payment_type']) }}</td>
                                                 <td>
@@ -846,6 +1019,14 @@
                                 <input type="text" class="form-control"
                                     placeholder="{{ $lang->data['enter_tax_number'] ?? 'Enter Tax Number' }}"
                                     wire:model="tax_no">
+                            </div>
+                            <div class="tw-flex tw-items-center tw-justify-between lg:tw-justify-end tw-gap-2">
+                                <div>
+                                    {{ $lang->data['order_charges'] ?? 'Order Charges' }} :
+                                </div>
+                                <div class="tw-font-bold">
+                                    {{ getFormattedCurrency($this->additionalChargeTotal) }}
+                                </div>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">{{ $lang->data['address'] ?? 'Address' }}</label>

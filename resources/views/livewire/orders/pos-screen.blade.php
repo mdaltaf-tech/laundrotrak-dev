@@ -402,12 +402,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-5">
+                <div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-5 gap-20">
                     {{-- LEFT CARD --}}
                     <div class="summary-card">
-                        <h6 class="summary-title">
+                        {{-- <h6 class="summary-title">
                             Order Details
-                        </h6>
+                        </h6> --}}
                         {{-- Addon --}}
                         <div class="summary-action-row" data-bs-toggle="modal" data-bs-target="#addons">
                             <div class="summary-icon">
@@ -415,13 +415,14 @@
                             </div>
                             <div class="summary-content">
                                 <div class="summary-label">Addon</div>
-                                <small>
-                                    @if (count($selected_addons))
-                                        {{ count($selected_addons) }} addon(s) selected
-                                    @else
-                                        No addons selected
-                                    @endif
-                                </small>
+                                @if (!empty($selected_addons))
+                                    <small data-bs-toggle="tooltip"
+                                        title="{{ count($selected_addons) }} addon(s) selected">
+
+                                        {{ count($selected_addons) }} selected
+
+                                    </small>
+                                @endif
                             </div>
                         </div>
                         {{-- Notes --}}
@@ -431,9 +432,11 @@
                             </div>
                             <div class="summary-content">
                                 <div class="summary-label">Notes</div>
-                                <small>
-                                    {{ blank($note) ? 'No notes added' : Str::limit($note, 40) }}
-                                </small>
+                                @if ($note)
+                                    <small data-bs-toggle="tooltip" title="{{ $note }}">
+                                        {{ Str::limit($note, 20) }}
+                                    </small>
+                                @endif
                             </div>
                         </div>
                         {{-- Discount --}}
@@ -443,9 +446,11 @@
                             </div>
                             <div class="summary-content">
                                 <div class="summary-label">Discount</div>
-                                <small>
-                                    {{ $discount ? getFormattedCurrency($discount) . ' Applied' : 'No discount applied' }}
-                                </small>
+                                @if ($discount)
+                                    <small>
+                                        {{ getFormattedCurrency($discount) }}
+                                    </small>
+                                @endif
                             </div>
                         </div>
                         {{-- Charges --}}
@@ -465,17 +470,19 @@
                                         </span>
                                     @endif
                                 </div>
-                                <small>
-                                    {{ $this->additionalChargeSummary }}
-                                </small>
+                                @if ($this->additionalChargeCount)
+                                    <small data-bs-toggle="tooltip" title="{{ $this->additionalChargeSummary }}">
+                                        {{ $this->additionalChargeCount }} Charge(s)
+                                    </small>
+                                @endif
                             </div>
                         </div>
                     </div>
                     {{-- RIGHT CARD --}}
                     <div class="summary-card">
-                        <h6 class="summary-title">
+                        {{-- <h6 class="summary-title">
                             Bill Summary
-                        </h6>
+                        </h6> --}}
                         {{-- Existing Summary rows here --}}
                         <div class="summary-value-row">
                             <span>Sub Total</span>
@@ -487,20 +494,20 @@
                         </div>
                         <div class="summary-value-row">
                             <span>Order Charges</span>
-                            <strong>{{ getFormattedCurrency($additionalChargeTotal) }}</strong>
+                            <strong>{{ getFormattedCurrency($this->orderAdditionalChargesTotal) }}</strong>
                         </div>
                         <div class="summary-value-row">
                             <span>Total Items</span>
-                            <strong>{{ $this->totalItems() }}</strong>
+                            <strong>{{ $this->totalItems }}</strong>
                         </div>
-                    </div>
-                </div>
-                <div class="summary-total-card">
-                    <div class="summary-total-label">
-                        Gross Total
-                    </div>
-                    <div class="summary-total-value">
-                        {{ getFormattedCurrency($total) }}
+                        <div class="summary-total-row">
+                            <span class="summary-total-label">
+                                Gross Total
+                            </span>
+                            <span class="summary-total-value">
+                                {{ getFormattedCurrency($total) }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -652,136 +659,142 @@
                     </h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body px-24 py-20">
-                    <div class="row g-3 align-items-end">
+                <div class="modal-body px-4 py-4">
+
+                    {{-- Add Charge Row --}}
+                    <div class="row g-3 align-items-end p-10">
+
                         <div class="col-md-4">
                             <div class="form-floating">
                                 <select wire:model.live="orderAdditionalChargeTypeId" class="form-select">
                                     <option value="">Select Charge</option>
+
                                     @foreach ($this->selectableAdditionalChargeTypes as $charge)
-                                        <option value="{{ data_get($charge, 'id') }}">
-                                            {{ data_get($charge, 'charge_name') }}
+                                        <option value="{{ $charge['id'] }}">
+                                            {{ $charge['charge_name'] }}
                                         </option>
                                     @endforeach
                                 </select>
+
                                 <label>Charge</label>
                             </div>
-                            @error('orderAdditionalChargeTypeId')
-                                <div class="invalid-feedback d-block">
-                                    {{ $message }}
-                                </div>
-                            @enderror
                         </div>
-                        <div class="col-md-3">
+
+                        <div class="col-md-2">
                             <div class="form-floating">
-                                <input type="number" step="0.01" min="0"
-                                    wire:model.live="orderAdditionalChargeAmount" class="form-control text-end pe-4">
+                                <input type="number" class="form-control text-end" step="0.01" min="0"
+                                    wire:model.live="orderAdditionalChargeAmount">
+
                                 <label>Amount</label>
                             </div>
-                            @error('orderAdditionalChargeAmount')
-                                <div class="invalid-feedback d-block">
-                                    {{ $message }}
-                                </div>
-                            @enderror
                         </div>
-                        <div class="col-md-4">
+
+                        <div class="col-md-5">
                             <div class="form-floating">
-                                <input type="text" maxlength="255" wire:model.live="orderAdditionalChargeRemarks"
-                                    class="form-control" placeholder="Enter remarks...">
+                                <input type="text" maxlength="255" class="form-control"
+                                    wire:model.live="orderAdditionalChargeRemarks">
+
                                 <label>Remarks</label>
                             </div>
-                            @error('orderAdditionalChargeRemarks')
-                                <div class="invalid-feedback d-block">
-                                    {{ $message }}
-                                </div>
-                            @enderror
                         </div>
-                        <div class="col-auto">
-                            <button type="button"
-                                class="{{ $editingAdditionalCharge !== null ? 'btn btn-warning btn-add-charge' : 'btn btn-primary btn-add-charge' }}"
-                                wire:click="addOrderAdditionalCharge" @disabled(blank($orderAdditionalChargeTypeId) || blank($orderAdditionalChargeAmount))>
-                                @if ($editingAdditionalCharge !== null)
-                                    <iconify-icon icon="solar:check-circle-bold"></iconify-icon>
-                                    Update
-                                @else
-                                    <iconify-icon icon="solar:add-circle-bold"></iconify-icon>
-                                    Add
-                                @endif
+
+                        <div class="col-md-1">
+
+                            <button type="button" class="btn btn-primary charge-add-btn w-100"
+                                wire:click="addOrderAdditionalCharge" wire:loading.attr="disabled"
+                                @disabled(blank($orderAdditionalChargeTypeId) || blank($orderAdditionalChargeAmount))>
+                                <iconify-icon icon="solar:add-circle-bold"></iconify-icon>
                             </button>
+
                         </div>
+
                     </div>
-                    <div class="my-4 border-top"></div>
+
+                    <hr class="my-4">
+
+                    {{-- Charges --}}
                     <div class="additional-charge-list">
-                        @forelse($this->orderAdditionalCharges as $index => $charge)
-                            <div
-                                class="additional-charge-item
-                                {{ $editingAdditionalCharge && $editingAdditionalCharge['charge_type_id'] == $charge['charge_type_id']
-                                    ? 'editing'
-                                    : '' }}">
+
+                        @forelse($this->orderAdditionalCharges as $index=>$charge)
+                            <div class="charge-card">
+
                                 <div class="d-flex justify-content-between">
+
                                     <div>
+
                                         <div class="charge-title">
                                             {{ $charge['charge_name'] }}
                                         </div>
-                                        @if (!empty($charge['remarks']))
+
+                                        @if ($charge['remarks'])
                                             <small class="text-muted">
+
                                                 {{ $charge['remarks'] }}
+
                                             </small>
                                         @endif
+
                                     </div>
+
                                     <div class="text-end">
+
                                         <div class="charge-amount">
+
                                             {{ getFormattedCurrency($charge['amount']) }}
+
                                         </div>
+
                                         <div class="mt-2 d-flex justify-content-end gap-2">
-                                            <button type="button" class="btn btn-light btn-sm charge-action-btn"
-                                                wire:click="editOrderAdditionalCharge({{ $index }})"
-                                                title="Edit">
+
+                                            <button class="btn btn-light btn-sm charge-action-btn"
+                                                wire:click="editOrderAdditionalCharge({{ $index }})">
+
                                                 <iconify-icon icon="solar:pen-bold"></iconify-icon>
+
                                             </button>
-                                            <button type="button"
-                                                class="btn btn-outline-danger btn-sm charge-action-btn"
-                                                wire:click="removeOrderAdditionalCharge({{ $index }})"
-                                                title="Delete">
+
+                                            <button class="btn btn-danger btn-sm charge-action-btn"
+                                                wire:click="removeOrderAdditionalCharge({{ $index }})">
+
                                                 <iconify-icon icon="solar:trash-bin-trash-bold"></iconify-icon>
+
                                             </button>
+
                                         </div>
+
                                     </div>
+
                                 </div>
+
                             </div>
+
                         @empty
-                            <div class="text-center py-5 text-muted">
-                                <i class="fas fa-receipt fa-2x opacity-25 mb-3"></i>
-                                <div class="fw-semibold">
-                                    No charges added
-                                </div>
+
+                            <div class="additional-charge-empty">
+
+                                <iconify-icon icon="solar:bill-list-bold"></iconify-icon>
+
+                                <h5>No Charges Added</h5>
+
                                 <small>
-                                    Select a charge type and click Add.
+                                    Add Pickup, Delivery, Packing or any custom order charge.
                                 </small>
                             </div>
                         @endforelse
                     </div>
-                    <div class="border-top my-3"></div>
-                    <div class="additional-charge-total">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>
-                                <i class="fas fa-receipt me-2 text-primary"></i>
-                                Total Charges
-                            </span>
-                            <span class="charge-total-value">
-                                {{ getFormattedCurrency($additionalChargeTotal) }}
-                            </span>
-                        </div>
+                </div>
+                <div class="modal-footer charge-footer">
+                    <div class="charge-total-card">
+                        <span>Total Charges</span>
+                        <span class="charge-total-value">
+                            {{ getFormattedCurrency($this->orderAdditionalChargesTotal) }}
+                        </span>
                     </div>
-                    <div class="d-flex justify-content-end gap-2 mt-4">
-                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
-
-                            <iconify-icon icon="solar:check-circle-bold"></iconify-icon>
-
-                            <span class="ms-1">Done</span>
-
-                        </button>
-                    </div>
+                    <button
+                        class="border border-primary-600 bg-hover-primary-200 text-primary-600 text-md px-40 py-11 radius-8"
+                        data-bs-dismiss="modal">
+                        Done
+                    </button>
                 </div>
             </div>
         </div>
@@ -854,7 +867,7 @@
                             <hr>
                         </div>
                         <div class="col-12 tw-my-6">
-                            @if (count($payments) > 0)
+                            @if (!empty($payments))
                                 <table class="table basic-border-table mb-0 tw-w-full tw-text-xs">
                                     <thead>
                                         <tr>
@@ -962,7 +975,7 @@
                     <div class="modal-footer tw-mt-12">
                         <button
                             class="tw-justify-center tw-font-semibold tw-py-2 tw-h-full bg-primary-600 tw-rounded-md tw-text-white tw-flex tw-items-center tw-gap-1.5 tw-px-12 tw-border-0 tw-shadow-md "
-                            wire:click.prevent="save">
+                            wire:click.prevent="save" wire:loading.attr="disabled">
                             <span>{{ $lang->data['save_print'] ?? 'Save & Print' }}</span>
                         </button>
                     </div>
@@ -1019,14 +1032,6 @@
                                 <input type="text" class="form-control"
                                     placeholder="{{ $lang->data['enter_tax_number'] ?? 'Enter Tax Number' }}"
                                     wire:model="tax_no">
-                            </div>
-                            <div class="tw-flex tw-items-center tw-justify-between lg:tw-justify-end tw-gap-2">
-                                <div>
-                                    {{ $lang->data['order_charges'] ?? 'Order Charges' }} :
-                                </div>
-                                <div class="tw-font-bold">
-                                    {{ getFormattedCurrency($this->additionalChargeTotal) }}
-                                </div>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">{{ $lang->data['address'] ?? 'Address' }}</label>
@@ -1092,20 +1097,27 @@
                                     '{{ url('admin/orders/') }}';
                             }, 1000);
                         })
-                        this.$wire.on('printPage', orderId => {
-                            var $id = orderId;
-                            window.open(
-                                '{{ url('admin/orders/print') }}' + '/' + $id,
-                                '_blank'
-                            );
+
+                        this.$wire.on('printPage', (url) => {
+
+                            window.open(url, '_blank');
+
                             window.onfocus = function() {
-                                setTimeout(function() {
-                                    window.location.reload()
-                                }, 1000);
-                            }
-                        })
+                                setTimeout(() => window.location.reload(), 1000);
+                            };
+
+                        });
                     },
                 }
+            }
+
+            document.addEventListener('livewire:navigated', initTooltips);
+            document.addEventListener('livewire:load', initTooltips);
+
+            function initTooltips() {
+                document
+                    .querySelectorAll('[data-bs-toggle="tooltip"]')
+                    .forEach(el => new bootstrap.Tooltip(el));
             }
         </script>
         <livewire:components.check-financial-year-component />

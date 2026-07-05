@@ -43,7 +43,6 @@ class PosScreen extends Component
     public $editingAdditionalCharge = null;
     public $editingAdditionalChargePosition = null;
     public $additionalChargeTypeLookup = [];
-    public float $additionalChargeTotal = 0;
 
     /*
     |--------------------------------------------------------------------------
@@ -117,6 +116,7 @@ class PosScreen extends Component
             $chargeTypes
                 ->mapWithKeys(fn ($item) => [
                     $item->id => [
+                        'id'             => $item->id,
                         'charge_name'    => $item->charge_name,
                         'default_amount' => (float) $item->default_amount,
                     ],
@@ -507,8 +507,6 @@ class PosScreen extends Component
 
         $this->total = round($this->total, 2);
         $this->balance = $this->total - ($this->paid_amount ?? 0);
-        $this->additionalChargeTotal = collect($this->orderAdditionalCharges)
-            ->sum(fn ($charge) => (float) ($charge['amount'] ?? 0));
     }
 
     //add payment
@@ -830,17 +828,23 @@ class PosScreen extends Component
                 'alert',
                 ['type' => 'success',  'message' => $message]
             );
+
             if (\Illuminate\Support\Facades\Gate::allows('order_print')) {
-                if ($this->order) {
-                    $this->dispatch(
-                        'printPageOrder',
-                        $this->order->id
-                    );
-                } else {
-                    $this->dispatch('printPage', $order->id);
+                $printOrderId = $this->order?->id ?? $order->id;
+
+                $this->dispatch(
+                    'printPage',
+                    route('order.print', [
+                        'id' => $printOrderId,
+                        'printer_type' => 1,
+                    ])
+                );
+
+                if (!$this->order) {
                     $this->clearAll();
                 }
             }
+
             if (!$this->order) {
                 $this->clearAll();
             }
@@ -1022,22 +1026,20 @@ class PosScreen extends Component
             return;
         }
 
-        // Reset amount when no charge type is selected.
-        $this->orderAdditionalChargeAmount = '';
+        $this->orderAdditionalChargeAmount = null;
 
-        if (blank($value)) {
+        if(blank($value)){
             return;
         }
 
-        // Fetch charge details from the cached lookup.
-        $chargeType = $this->additionalChargeTypeLookup[$value] ?? null;
+        $chargeType=$this->getAdditionalChargeType($value);
 
-        if (!$chargeType) {
+        if(!$chargeType){
             return;
         }
 
-        // Auto-fill configured default amount.
-        $this->orderAdditionalChargeAmount = (float) ($chargeType['default_amount'] ?? 0);
+        $this->orderAdditionalChargeAmount=
+            (float)$chargeType['default_amount'];
     }
 
     public function addOrderAdditionalCharge()
@@ -1057,8 +1059,9 @@ class PosScreen extends Component
         }
 
         $duplicate = collect($this->orderAdditionalCharges)
-            ->contains(function ($charge) use ($chargeType) {
-                return (int) $charge['charge_type_id'] === (int) $chargeType['id'];
+            ->contains(function ($charge) {
+                return (int) $charge['charge_type_id']
+                    === (int) $this->orderAdditionalChargeTypeId;
             });
 
         if ($duplicate) {
@@ -1068,12 +1071,7 @@ class PosScreen extends Component
                 'Charge already added.'
             );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Restore edited row
-            |--------------------------------------------------------------------------
-            */
-
+            // Restore row if we were editing
             if ($this->editingAdditionalCharge !== null) {
 
                 array_splice(
@@ -1091,14 +1089,10 @@ class PosScreen extends Component
         }
 
         $this->orderAdditionalCharges[] = [
-
-            'charge_type_id' => $chargeType['id'],
-
-            'charge_name' => $chargeType['charge_name'],
-
-            'amount' => (float) $this->orderAdditionalChargeAmount,
-
-            'remarks' => trim($this->orderAdditionalChargeRemarks ?? ''),
+            'charge_type_id' => (int) $chargeType['id'],
+            'charge_name'    => $chargeType['charge_name'],
+            'amount'         => (float) $this->orderAdditionalChargeAmount,
+            'remarks'        => trim($this->orderAdditionalChargeRemarks ?? ''),
         ];
 
         $this->resetOrderAdditionalChargeForm();
@@ -1127,12 +1121,11 @@ class PosScreen extends Component
 
     private function getAdditionalChargeType($id): ?array
     {
-        if (empty($id)) {
+        if (blank($id)) {
             return null;
         }
 
-        return $this->additionalChargeTypeLookup[(int) $id]
-            ?? null;
+        return $this->additionalChargeTypeLookup[(int) $id] ?? null;
     }
 
     public function removeOrderAdditionalCharge($index)
@@ -1265,12 +1258,11 @@ class PosScreen extends Component
         ]);
 
         foreach ($order->additionalCharges as $charge) {
-
             $this->orderAdditionalCharges[] = [
-                'charge_type_id' => $charge->charge_type_id,
-                'charge_name'    => $charge->chargeType?->charge_name ?? '',
-                'amount'         => (float) $charge->amount,
-                'remarks'        => $charge->remarks ?? '',
+                'charge_type_id' => (int)$charge->charge_type_id,
+                'charge_name'    => optional($charge->chargeType)->charge_name,
+                'amount'         => (float)$charge->amount,
+                'remarks'        => $charge->remarks,
             ];
         }
     }
@@ -1279,12 +1271,15 @@ class PosScreen extends Component
     {
         $relation = $order->additionalCharges();
 
-        $relation->update([
-            'is_deleted' => true,
-            'updated_by' => $this->currentUserId(),
-        ]);
+        $relation
+            ->where('is_deleted',0)
+            ->update([
+                'is_deleted' => true,
+                'updated_by' => $this->currentUserId(),
+            ]);
 
         $existingCharges = $relation
+            ->whereIn('is_deleted', [0,1])
             ->get()
             ->keyBy('charge_type_id');
 
@@ -1345,5 +1340,27 @@ class PosScreen extends Component
             $names[1],
             $names->count() - 2
         );
+    }
+
+    public function cancelEditAdditionalCharge()
+    {
+        if ($this->editingAdditionalCharge !== null) {
+
+            array_splice(
+                $this->orderAdditionalCharges,
+                $this->editingAdditionalChargePosition,
+                0,
+                [$this->editingAdditionalCharge]
+            );
+        }
+
+        $this->resetOrderAdditionalChargeForm();
+        $this->calculateTotal();
+    }
+
+    #[Computed]
+    public function additionalChargeCount()
+    {
+        return count($this->orderAdditionalCharges);
     }
 }

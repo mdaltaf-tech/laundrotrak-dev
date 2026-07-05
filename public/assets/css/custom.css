@@ -359,6 +359,7 @@ input[type=number] {
 .additional-charge-total {
     background:#f8f9fa;
     border-radius:10px;
+    border:1px solid #dbeafe;
     padding:14px 18px;
     margin-top:18px;
 }
@@ -549,323 +550,335 @@ input[type=number] {
     margin-bottom:2px;
 }
 
+/* ==========================================================
+   POS Summary Panel
+   ========================================================== */
 
-.summary-action-header{
+/* ---------- Section Titles ---------- */
+
+.summary-title{
+    font-size:15px;
+    font-weight:600;
+    color:#374151;
+    margin-bottom:12px;
+}
+
+/* ---------- Cards ---------- */
+
+.summary-card{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    padding:14px 16px;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
 
     display:flex;
+    flex-direction:column;
+    height:100%;
+}
 
+/* ==========================================================
+   ORDER DETAILS
+   ========================================================== */
+
+.summary-action-row{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+
+    width:100%;
+    padding:8px 0;
+
+    border-bottom:1px dashed #e5e7eb;
+
+    cursor:pointer;
+    transition:.2s ease;
+}
+
+.summary-action-row:last-child{
+    border-bottom:none;
+}
+
+.summary-action-row:hover{
+    background:#f8fbff;
+}
+
+.summary-icon{
+    flex:0 0 26px;
+    width:26px;
+    height:26px;
+
+    display:flex;
     align-items:center;
+    justify-content:center;
 
-    gap:8px;
+    color:#2563eb;
+    font-size:18px;
 }
 
-.summary-action-text{
-    padding-left:28px;
-    font-size:12px;
+.summary-icon iconify-icon{
+    display:block;
+    font-size:16px;
+    line-height:1;
+}
+
+.summary-content{
+    flex:1;
+    min-width:0;
+}
+
+.summary-label{
+    margin:0;
+    font-size:14px;
+    font-weight:600;
+    color:#374151;
+}
+
+.summary-content small{
+    display:block;
+    margin-top:2px;
+
+    font-size:11px;
+    font-style:italic;
     color:#6b7280;
-    line-height:1.3;
+
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
 }
+
+/* ---------- Badge ---------- */
+
+.additional-charge-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    min-width:20px;
+    height:20px;
+    padding:0 6px;
+
+    border-radius:999px;
+
+    background:#2563eb;
+    color:#fff;
+
+    font-size:11px;
+    font-weight:600;
+}
+
+/* ==========================================================
+   BILL SUMMARY
+   ========================================================== */
 
 .summary-value-row{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-bottom:10px;
-    font-size:14px;
-    padding:15px 0;
+
+    padding:8px 0;
+
     border-bottom:1px dashed #e5e7eb;
+
+    font-size:14px;
+}
+
+.summary-value-row:last-child{
+    border-bottom:none;
 }
 
 .summary-value{
     font-weight:700;
+    color:#111827;
 }
 
-.summary-action-button{
-    width:24px;
-    height:24px;
-    border:1px solid #d1d5db;
-    border-radius:6px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#fff;
-}
+/* ---------- Gross Total ---------- */
 
-.summary-action{
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-}
-
-.summary-action-header{
+.summary-total-row{
     display:flex;
     justify-content:space-between;
     align-items:center;
-}
 
-.summary-action-description{
-    padding-left:4px;
-    color:#9ca3af;
-    font-size:12px;
-    font-style:italic;
-    line-height:1.35;
-}
-
-.summary-action-button{
-    width:28px;
-    height:28px;
-    border:1px solid #d1d5db;
-    border-radius:6px;
-    background:#fff;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    transition:.15s;
-}
-
-.summary-action-button:hover{
-    background:#f3f4f6;
-}
-
-.summary-action-button-active{
-    background:#2563eb;
-    color:#fff;
-    border-color:#2563eb;
-}
-
-.summary-value-row span:last-child{
-    font-weight:700;
-}
-
-.summary-value-total{
-    margin-top:6px;
-    padding-top:10px;
-    border-top:1px dashed #d1d5db;
-    font-size:16px;
-    font-weight:700;
-}
-
-.summary-value-total span:last-child{
-    color:#2563eb;
-    font-size:18px;
-}
-
-.summary-total{
-    margin-top:12px;
-
+    margin-top:10px;
     padding-top:12px;
 
-    border-top:1px dashed #d7dce3;
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    font-size:18px;
-
-    font-weight:700;
-}
-
-.summary-total div:last-child{
-
-    color:#2563eb;
-}
-
-.summary-action-description{
-
-    margin-left:28px;
-
-    font-size:12px;
-
-    color:#9ca3af;
-
-    font-style:italic;
-
-    line-height:1.3;
-}
-
-.summary-action-button{
-
-    width:26px;
-
-    height:26px;
-
-    border-radius:6px;
-
-    border:1px solid #d4d7dd;
-
-    background:#fff;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    transition:.15s;
-}
-
-.summary-action-button-active{
-
-    background:#2563eb;
-
-    color:#fff;
-
-    border-color:#2563eb;
-}
-
-.summary-title{
-    font-size:15px;
-    font-weight:600;
-    margin-bottom:18px;
-    color:#374151;
-}
-
-.summary-total{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    margin-top:18px;
-
-    padding:18px 24px;
-
     border-top:2px solid #dbeafe;
-
-    background:#f8fbff;
-
-    border-radius:10px;
-
-    font-size:22px;
-
-    font-weight:700;
 }
 
-.summary-total span:last-child{
-
-    color:#2563eb;
-}
-
-
-.summary-icon{
-
-    width:24px;
-
-    color:#2563eb;
-
-    font-size:20px;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-}
-
-.summary-action-row{
-    display:flex !important;
-    flex-direction:row !important;
-    align-items:flex-start !important;
-    gap:12px;
-    width:100%;
-    padding: 12px 0;
-    border-bottom: 1px dashed #e5e7eb;
-    cursor: pointer;
-    transition: all .2s ease;
-    margin-bottom:12px;
-}
-
-.summary-action-row:hover {
-    background: #fafafa;
-}
-.summary-icon{
-    flex:0 0 34px;
-    width:34px;
-    height:34px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    align-self:flex-start;
-    margin-top:2px;
-}
-
-.summary-content{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-}
-
-.summary-label {
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 1.2;
-    margin-bottom: 3px;
-}
-
-.summary-content small {
-    color: #9ca3af;
-    font-style: italic;
-    line-height: 1.3;
-}
-
-.summary-icon iconify-icon {
-    display: block;
-    font-size: 20px;
-}
-
-
-.summary-card{
-
-    background:#fff;
-
-    border:1px solid #e5e7eb;
-
-    border-radius:12px;
-
-    padding:20px;
-
-    box-shadow:0 2px 8px rgba(0,0,0,.04);
-
-    height:100%;
-}
-
-.summary-total-card{
-
-    margin-top:20px;
-
-    background:#f8fbff;
-
-    border:1px solid #cfe2ff;
-
-    border-radius:14px;
-
-    padding:22px 28px;
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-}
 .summary-total-label{
-
-    font-size:20px;
-
+    font-size:18px;
     font-weight:700;
-
     color:#334155;
 }
 
 .summary-total-value{
-
-    font-size:34px;
-
+    font-size:28px;
     font-weight:800;
-
     color:#2563eb;
+}
+
+/* ==========================================================
+   ORDER CHARGES MODAL
+   ========================================================== */
+
+.charge-add-btn{
+    width:44px;
+    height:44px;
+    padding:0;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:10px;
+    font-size:20px;
+}
+
+.additional-charge-list{
+    max-height:300px;
+    overflow-y:auto;
+}
+
+/* ---------- Empty ---------- */
+
+.additional-charge-empty{
+    min-height:180px;
+    padding:32px 15px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    text-align:center;
+}
+
+.additional-charge-empty iconify-icon{
+    font-size:42px;
+    color:#9ca3af;
+    margin-bottom:12px;
+}
+
+.additional-charge-empty h5{
+    margin:0 0 6px;
+    font-weight:600;
+}
+
+.additional-charge-empty small{
+    color:#6b7280;
+}
+
+/* ---------- Charge Card ---------- */
+
+.charge-card{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+
+    padding:16px 18px;
+    margin-bottom:14px;
+
+    transition:.2s ease;
+}
+
+.charge-card:hover{
+    border-color:#dbeafe;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+
+.charge-title{
+    font-size:15px;
+    font-weight:600;
+}
+
+.charge-amount{
+    font-size:20px;
+    font-weight:700;
+    color:#2563eb;
+}
+
+.charge-action-btn{
+    width:34px;
+    height:34px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:8px;
+}
+
+/* ---------- Footer ---------- */
+
+.charge-footer{
+    display:flex;
+    align-items:center;
+    gap:16px;
+
+    padding:18px 24px;
+}
+
+.charge-total-card{
+    flex:1;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:14px 20px;
+
+    background:#f8fbff;
+    border:1px solid #dbeafe;
+    border-radius:10px;
+}
+
+.charge-total-value{
+    font-size:24px;
+    font-weight:700;
+    color:#2563eb;
+}
+
+.btn-charge-done{
+    width:120px;
+    height:48px;
+
+    border-radius:10px;
+
+    font-weight:600;
+    transition:.2s;
+}
+
+.btn-charge-done:hover{
+    transform:translateY(-1px);
+}
+
+/* ==========================================================
+   Responsive
+   ========================================================== */
+
+@media (max-width:991px){
+
+    .summary-card{
+        margin-bottom:18px;
+    }
+
+    .summary-total-label{
+        font-size:18px;
+    }
+
+    .summary-total-value{
+        font-size:26px;
+    }
+}
+
+@media (max-width:768px){
+
+    .charge-footer{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .btn-charge-done{
+        width:100%;
+    }
 }

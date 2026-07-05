@@ -14,7 +14,24 @@ use App\Models\Translation;
 
 class PrintOrder extends Component
 {
-    public $order, $orderdetails, $orderaddons, $balance, $total, $customer, $payments, $sitename, $address, $phone, $paid_amount, $payment_type, $zipcode, $tax_number, $store_email, $from_date, $to_date;
+    public $order,
+       $orderdetails,
+       $orderaddons,
+       $balance,
+       $total,
+       $customer,
+       $payments,
+       $sitename,
+       $address,
+       $phone,
+       $paid_amount,
+       $payment_type,
+       $zipcode,
+       $tax_number,
+       $store_email,
+       $from_date,
+       $to_date,
+       $printer_type;
 
     #[Layout('components.layouts.print-layout')]
     public function render()
@@ -33,6 +50,12 @@ class PrintOrder extends Component
         if (!$this->order) {
             abort(404);
         }
+
+        $this->printer_type = request()->integer(
+            'printer_type',
+            getPrinterType()
+        );
+
         $this->customer = Customer::where('id', $this->order->customer_id)->first();
         $this->orderaddons = OrderAddonDetail::active()
             ->where(
@@ -42,12 +65,21 @@ class PrintOrder extends Component
             ->get();
 
         $this->orderdetails = OrderDetail::active()
-            ->where(
-                'order_id',
-                $this->order->id
-            )
+            ->with([
+                'service',
+                'serviceType'
+            ])
+            ->where('order_id', $this->order->id)
             ->get();
-        $this->payments = Payment::where('order_id', $this->order->id)->get();
+
+        $this->payments = Payment::active()
+            ->where('order_id', $this->order->id)
+            ->get();
+
+        $this->order->load([
+            'additionalCharges.chargeType'
+        ]);
+
         $settings = new MasterSettings();
         $site = $settings->siteData();
 

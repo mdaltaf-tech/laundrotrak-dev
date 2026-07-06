@@ -1020,28 +1020,6 @@ class PosScreen extends Component
             ->sum('amount');
     }
 
-    public function updatedOrderAdditionalChargeTypeId($value): void
-    {
-        if ($this->editingAdditionalCharge !== null) {
-            return;
-        }
-
-        $this->orderAdditionalChargeAmount = null;
-
-        if(blank($value)){
-            return;
-        }
-
-        $chargeType=$this->getAdditionalChargeType($value);
-
-        if(!$chargeType){
-            return;
-        }
-
-        $this->orderAdditionalChargeAmount=
-            (float)$chargeType['default_amount'];
-    }
-
     public function addOrderAdditionalCharge()
     {
         $this->validate([
@@ -1148,19 +1126,23 @@ class PosScreen extends Component
         $selectedChargeTypeIds = collect($this->orderAdditionalCharges)
             ->pluck('charge_type_id');
 
-        return collect($this->additionalChargeTypes)
-            ->reject(function ($charge) use ($selectedChargeTypeIds) {
+        $editingChargeTypeId = $this->editingAdditionalCharge['charge_type_id'] ?? null;
 
+        return collect($this->additionalChargeTypes)
+            ->reject(function ($charge) use ($selectedChargeTypeIds, $editingChargeTypeId) {
+
+                $chargeId = (int) data_get($charge, 'id');
+
+                // Keep the currently edited charge in the dropdown
                 if (
-                    (int) $this->orderAdditionalChargeTypeId ===
-                    (int) data_get($charge, 'id')
+                    $editingChargeTypeId !== null &&
+                    $chargeId === (int) $editingChargeTypeId
                 ) {
                     return false;
                 }
 
-                return $selectedChargeTypeIds->contains(
-                    data_get($charge, 'id')
-                );
+                // Remove all other already selected charges
+                return $selectedChargeTypeIds->contains($chargeId);
             })
             ->values();
     }
@@ -1173,19 +1155,18 @@ class PosScreen extends Component
 
         $charge = $this->orderAdditionalCharges[$index];
 
-        $this->orderAdditionalChargeTypeId = $charge['charge_type_id'];
+        // Remove the row FIRST
+        unset($this->orderAdditionalCharges[$index]);
+        $this->orderAdditionalCharges = array_values($this->orderAdditionalCharges);
 
-        $this->orderAdditionalChargeAmount = $charge['amount'];
-
-        $this->orderAdditionalChargeRemarks = $charge['remarks'];
-
+        // Then enter edit mode
         $this->editingAdditionalCharge = $charge;
-
         $this->editingAdditionalChargePosition = $index;
 
-        unset($this->orderAdditionalCharges[$index]);
-
-        $this->orderAdditionalCharges = array_values($this->orderAdditionalCharges);
+        // Then populate the form
+        $this->orderAdditionalChargeTypeId = (int) $charge['charge_type_id'];
+        $this->orderAdditionalChargeAmount = $charge['amount'];
+        $this->orderAdditionalChargeRemarks = $charge['remarks'];
 
         $this->resetValidation([
             'orderAdditionalChargeTypeId',
@@ -1362,5 +1343,29 @@ class PosScreen extends Component
     public function additionalChargeCount()
     {
         return count($this->orderAdditionalCharges);
+    }
+
+    public function changeAdditionalChargeType($value): void
+    {
+        $this->orderAdditionalChargeTypeId = (int) $value;
+
+        if (blank($value)) {
+            $this->orderAdditionalChargeAmount = null;
+            return;
+        }
+
+        $chargeType = $this->getAdditionalChargeType($value);
+
+        if (!$chargeType) {
+            $this->orderAdditionalChargeAmount = null;
+            return;
+        }
+
+        // Preserve custom amount while editing
+        if ($this->editingAdditionalCharge !== null) {
+            return;
+        }
+
+        $this->orderAdditionalChargeAmount = (float) $chargeType['default_amount'];
     }
 }

@@ -666,7 +666,10 @@
 
                         <div class="col-md-4">
                             <div class="form-floating">
-                                <select wire:model.live="orderAdditionalChargeTypeId" class="form-select">
+                                <select
+                                    wire:key="additional-charge-select-{{ $editingAdditionalChargePosition ?? 'new' }}"
+                                    wire:model="orderAdditionalChargeTypeId"
+                                    wire:change="changeAdditionalChargeType($event.target.value)" class="form-select">
                                     <option value="">Select Charge</option>
 
                                     @foreach ($this->selectableAdditionalChargeTypes as $charge)
@@ -675,7 +678,6 @@
                                         </option>
                                     @endforeach
                                 </select>
-
                                 <label>Charge</label>
                             </div>
                         </div>

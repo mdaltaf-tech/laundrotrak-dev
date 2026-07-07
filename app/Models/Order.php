@@ -150,4 +150,10 @@ class Order extends Model
             'payment_status' => $paymentStatus,
         ]);
     }
+
+    public function additionalCharges()
+    {
+        return $this->hasMany(OrderAdditionalCharge::class)
+            ->where('is_deleted', false);
+    }
 }

@@ -300,3 +300,585 @@ input[type=number] {
 .tomorrow-card {
     min-height: 155px;
 }
+
+.additional-charge-item{
+
+    padding:12px 0;
+
+    border-bottom:1px solid #ececec;
+}
+
+.additional-charge-item:last-child{
+
+    border-bottom:none;
+}
+
+.charge-title{
+
+    font-weight:600;
+
+    font-size:14px;
+}
+
+.charge-amount{
+
+    font-weight:600;
+
+    font-size:15px;
+}
+
+.amount-input {
+    padding-left: 22px;
+    text-align: right;
+}
+
+.amount-wrapper {
+    position: relative;
+}
+
+.amount-wrapper::before {
+    content: "₹";
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    z-index: 5;
+}
+
+.btn-add-charge {
+    min-width:90px;
+    height:56px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:600;
+    border-radius:10px;
+}
+
+.additional-charge-total {
+    background:#f8f9fa;
+    border-radius:10px;
+    border:1px solid #dbeafe;
+    padding:14px 18px;
+    margin-top:18px;
+}
+
+.additional-charge-item small {
+    display:block;
+    margin-top:3px;
+    font-size:13px;
+    color:#6c757d;
+}
+
+.additional-charge-list {
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.additional-charge-item {
+    padding: 14px 0;
+    border-bottom: 1px solid #eef1f5;
+    transition: all .15s ease;
+}
+
+.additional-charge-item:last-child {
+    border-bottom: none;
+}
+
+.additional-charge-item:hover {
+    background: #fafbfc;
+}
+
+.charge-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #495057;
+    line-height: 1.2;
+}
+
+.additional-charge-item small {
+    display: block;
+    margin-top: 3px;
+    font-size: 13px;
+    color: #6c757d;
+}
+
+.charge-amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: #495057;
+}
+
+.charge-action-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.additional-charge-item.editing{
+    background:#fff8e8;
+    border-left:4px solid #0d6efd;
+    border-radius:10px;
+    padding:14px 14px 14px 10px;
+}
+
+.additional-charge-item {
+    animation:chargeFade .18s ease;
+}
+
+@keyframes chargeFade{
+    from {
+        opacity:0;
+        transform:translateY(6px);
+    }
+
+    to {
+        opacity:1;
+        transform:none;
+    }
+}
+
+.additional-charge-list::-webkit-scrollbar{
+    width:6px;
+}
+
+.additional-charge-list::-webkit-scrollbar-thumb{
+    background:#d9dde3;
+    border-radius:20px;
+}
+
+.additional-charge-list::-webkit-scrollbar-track{
+    background:transparent;
+}
+
+.additional-charge-total{
+    background:#f8f9fb;
+    border:1px solid #eef1f4;
+    border-radius:10px;
+    padding:15px 18px;
+}
+
+.charge-total-value{
+    color:#0d6efd;
+    font-size:20px;
+    font-weight:700;
+}
+
+.form-control:focus,
+.form-select:focus{
+    border-color:#0d6efd;
+    box-shadow:0 0 0 .15rem rgba(13,110,253,.15);
+}
+
+.additional-charge-summary{
+    line-height:1.25;
+    min-height:34px;
+}
+
+.additional-charge-summary .text-primary{
+    font-size:14px;
+    font-weight:600;
+}
+
+.additional-charge-badge{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-width:18px;
+
+    height:18px;
+
+    padding:0 6px;
+
+    border-radius:999px;
+
+    background:#0d6efd;
+
+    color:#fff;
+
+    font-size:10px;
+
+    font-weight:600;
+
+    line-height:18px;
+}
+
+#additionalChargesModal .modal-dialog{
+    max-width:720px;
+}
+
+.amount-field{
+
+    padding-left:26px;
+
+    text-align:right;
+}
+
+.amount-wrapper{
+
+    position:relative;
+}
+
+.amount-wrapper::before{
+
+    content:"₹";
+
+    position:absolute;
+
+    left:12px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    z-index:4;
+
+    color:#6c757d;
+}
+
+.btn-add-charge{
+    margin-bottom:2px;
+}
+
+/* ==========================================================
+   POS Summary Panel
+   ========================================================== */
+
+/* ---------- Section Titles ---------- */
+
+.summary-title{
+    font-size:15px;
+    font-weight:600;
+    color:#374151;
+    margin-bottom:12px;
+}
+
+/* ---------- Cards ---------- */
+
+.summary-card{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    padding:14px 16px;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+
+    display:flex;
+    flex-direction:column;
+    height:100%;
+}
+
+/* ==========================================================
+   ORDER DETAILS
+   ========================================================== */
+
+.summary-action-row{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+
+    width:100%;
+    padding:8px 0;
+
+    border-bottom:1px dashed #e5e7eb;
+
+    cursor:pointer;
+    transition:.2s ease;
+}
+
+.summary-action-row:last-child{
+    border-bottom:none;
+}
+
+.summary-action-row:hover{
+    background:#f8fbff;
+}
+
+.summary-icon{
+    flex:0 0 26px;
+    width:26px;
+    height:26px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    color:#2563eb;
+    font-size:18px;
+}
+
+.summary-icon iconify-icon{
+    display:block;
+    font-size:16px;
+    line-height:1;
+}
+
+.summary-content{
+    flex:1;
+    min-width:0;
+}
+
+.summary-label{
+    margin:0;
+    font-size:14px;
+    font-weight:600;
+    color:#374151;
+}
+
+.summary-content small{
+    display:block;
+    margin-top:2px;
+
+    font-size:11px;
+    font-style:italic;
+    color:#6b7280;
+
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+/* ---------- Badge ---------- */
+
+.additional-charge-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    min-width:20px;
+    height:20px;
+    padding:0 6px;
+
+    border-radius:999px;
+
+    background:#2563eb;
+    color:#fff;
+
+    font-size:11px;
+    font-weight:600;
+}
+
+/* ==========================================================
+   BILL SUMMARY
+   ========================================================== */
+
+.summary-value-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:8px 0;
+
+    border-bottom:1px dashed #e5e7eb;
+
+    font-size:14px;
+}
+
+.summary-value-row:last-child{
+    border-bottom:none;
+}
+
+.summary-value{
+    font-weight:700;
+    color:#111827;
+}
+
+/* ---------- Gross Total ---------- */
+
+.summary-total-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-top:10px;
+    padding-top:12px;
+
+    border-top:2px solid #dbeafe;
+}
+
+.summary-total-label{
+    font-size:18px;
+    font-weight:700;
+    color:#334155;
+}
+
+.summary-total-value{
+    font-size:28px;
+    font-weight:800;
+    color:#2563eb;
+}
+
+/* ==========================================================
+   ORDER CHARGES MODAL
+   ========================================================== */
+
+.charge-add-btn{
+    width:44px;
+    height:44px;
+    padding:0;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:10px;
+    font-size:20px;
+}
+
+.additional-charge-list{
+    max-height:300px;
+    overflow-y:auto;
+}
+
+/* ---------- Empty ---------- */
+
+.additional-charge-empty{
+    min-height:180px;
+    padding:32px 15px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    text-align:center;
+}
+
+.additional-charge-empty iconify-icon{
+    font-size:42px;
+    color:#9ca3af;
+    margin-bottom:12px;
+}
+
+.additional-charge-empty h5{
+    margin:0 0 6px;
+    font-weight:600;
+}
+
+.additional-charge-empty small{
+    color:#6b7280;
+}
+
+/* ---------- Charge Card ---------- */
+
+.charge-card{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+
+    padding:16px 18px;
+    margin-bottom:14px;
+
+    transition:.2s ease;
+}
+
+.charge-card:hover{
+    border-color:#dbeafe;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+
+.charge-title{
+    font-size:15px;
+    font-weight:600;
+}
+
+.charge-amount{
+    font-size:20px;
+    font-weight:700;
+    color:#2563eb;
+}
+
+.charge-action-btn{
+    width:34px;
+    height:34px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:8px;
+}
+
+/* ---------- Footer ---------- */
+
+.charge-footer{
+    display:flex;
+    align-items:center;
+    gap:16px;
+
+    padding:18px 24px;
+}
+
+.charge-total-card{
+    flex:1;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:14px 20px;
+
+    background:#f8fbff;
+    border:1px solid #dbeafe;
+    border-radius:10px;
+}
+
+.charge-total-value{
+    font-size:24px;
+    font-weight:700;
+    color:#2563eb;
+}
+
+.btn-charge-done{
+    width:120px;
+    height:48px;
+
+    border-radius:10px;
+
+    font-weight:600;
+    transition:.2s;
+}
+
+.btn-charge-done:hover{
+    transform:translateY(-1px);
+}
+
+/* ==========================================================
+   Responsive
+   ========================================================== */
+
+@media (max-width:991px){
+
+    .summary-card{
+        margin-bottom:18px;
+    }
+
+    .summary-total-label{
+        font-size:18px;
+    }
+
+    .summary-total-value{
+        font-size:26px;
+    }
+}
+
+@media (max-width:768px){
+
+    .charge-footer{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .btn-charge-done{
+        width:100%;
+    }
+}

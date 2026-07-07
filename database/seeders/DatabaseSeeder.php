@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
                 MasterControlSeeder::class,
                 CountryControlSeeder::class,
                 ServiceCategorySeeder::class,
+                AdditionalChargeTypeSeeder::class,
             ]);
         }
         if(Permission::count() == 0){

@@ -1086,28 +1086,19 @@
 
                             }
                         })
-                        this.$wire.on('printPageOrder', orderId => {
-                            console.log('PRINT ORDER', orderId);
 
-                            window.open(
-                                '{{ url('admin/orders/print') }}/' + orderId,
-                                '_blank'
-                            );
-
-                            setTimeout(function() {
-                                window.location.href =
-                                    '{{ url('admin/orders/') }}';
-                            }, 1000);
-                        })
-
-                        this.$wire.on('printPage', (url) => {
-
+                        this.$wire.on('printPage', (data) => {
+                            const [url, isEdit] = data;
                             window.open(url, '_blank');
-
-                            window.onfocus = function() {
-                                setTimeout(() => window.location.reload(), 1000);
-                            };
-
+                            if (isEdit) {
+                                setTimeout(() => {
+                                    window.location.href = "{{ url('admin/orders') }}";
+                                }, 500);
+                            } else {
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 500);
+                            }
                         });
                     },
                 }

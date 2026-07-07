@@ -18,6 +18,9 @@ class ViewOrder extends Component
 {
     public $order,$orderdetails,$orderaddons,$lang,$balance,$total,$customer,$payments,$sitename,$address,$phone,$paid_amount,$payment_type,$payment_date,$zipcode,$tax_number,$store_email,$notes;
     public $current_delivery_date;
+    public $totalItems = 0;
+    public $orderAdditionalCharges;
+
     #[Title('View Order')]
     public function render()
     {
@@ -54,12 +57,19 @@ class ViewOrder extends Component
             )
             ->get();
 
+        $this->orderAdditionalCharges =
+            $this->order->additionalCharges()
+                ->with('chargeType')
+                ->get();
+
         $this->orderdetails = OrderDetail::active()
             ->where(
                 'order_id',
                 $this->order->id
             )
             ->get();
+
+        $this->totalItems = $this->orderdetails->sum('service_quantity');
 
         $this->payments = Payment::active()
             ->where(

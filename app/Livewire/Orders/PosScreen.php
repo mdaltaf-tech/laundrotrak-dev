@@ -2,8 +2,6 @@
 
 namespace App\Livewire\Orders;
 
-use App\Livewire\Installer\InstallController;
-use Illuminate\Support\Str;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use App\Models\Addon;
@@ -205,7 +203,7 @@ class PosScreen extends Component
             $this->prices[$this->inputi] = $row->service_price;
             $this->quantity[$this->inputi] = $row->service_quantity;
         }
-        $this->calculateTotal();
+        //$this->calculateTotal();
     }
 
     public function changeColor($id)
@@ -830,14 +828,16 @@ class PosScreen extends Component
             );
 
             if (\Illuminate\Support\Facades\Gate::allows('order_print')) {
-                $printOrderId = $this->order?->id ?? $order->id;
+
+                $printUrl = route('order.print', [
+                    'id' => $order->id,
+                    'printer_type' => 1,
+                ]);
 
                 $this->dispatch(
                     'printPage',
-                    route('order.print', [
-                        'id' => $printOrderId,
-                        'printer_type' => 1,
-                    ])
+                    $printUrl,
+                    $this->order ? true : false
                 );
 
                 if (!$this->order) {
@@ -1230,7 +1230,7 @@ class PosScreen extends Component
     {
         $this->orderAdditionalCharges = [];
 
-        $order->loadMissing([
+        $order->load([
             'additionalCharges' => function ($query) {
                 $query->where('is_deleted', false)
                     ->with('chargeType')
@@ -1250,45 +1250,44 @@ class PosScreen extends Component
 
     private function saveOrderAdditionalCharges(Order $order): void
     {
-        $relation = $order->additionalCharges();
-
-        $relation
-            ->where('is_deleted',0)
+        // Soft delete all existing charges
+        OrderAdditionalCharge::where('order_id', $order->id)
+            ->where('is_deleted', 0)
             ->update([
-                'is_deleted' => true,
+                'is_deleted' => 1,
                 'updated_by' => $this->currentUserId(),
             ]);
 
-        $existingCharges = $relation
-            ->whereIn('is_deleted', [0,1])
+        // Load ALL charges (including deleted)
+        $existingCharges = OrderAdditionalCharge::where('order_id', $order->id)
             ->get()
             ->keyBy('charge_type_id');
 
         foreach ($this->orderAdditionalCharges as $charge) {
 
-            $existing = $existingCharges->get(
-                $charge['charge_type_id']
-            );
+            $existing = $existingCharges->get((int) $charge['charge_type_id']);
 
-            if (!$existing) {
+            if ($existing) {
 
-                $relation->create([
+                $existing->update([
+                    'amount'      => $charge['amount'],
+                    'remarks'     => $charge['remarks'],
+                    'is_deleted'  => 0,
+                    'updated_by'  => $this->currentUserId(),
+                ]);
+
+            } else {
+
+                OrderAdditionalCharge::create([
+                    'order_id'       => $order->id,
                     'charge_type_id' => $charge['charge_type_id'],
                     'amount'         => $charge['amount'],
                     'remarks'        => $charge['remarks'],
                     'created_by'     => $this->currentUserId(),
                     'updated_by'     => $this->currentUserId(),
+                    'is_deleted'     => 0,
                 ]);
-
-                continue;
             }
-
-            $existing->update([
-                'amount' => $charge['amount'],
-                'remarks' => $charge['remarks'],
-                'is_deleted' => false,
-                'updated_by' => $this->currentUserId(),
-            ]);
         }
     }
 

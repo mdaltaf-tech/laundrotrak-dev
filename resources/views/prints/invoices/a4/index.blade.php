@@ -42,7 +42,7 @@
 
     <meta charset="UTF-8">
 
-    <title>{{ $lang->data['print_invoice'] ?? 'Print Invoice' }}</title>
+    <title>Faeblo_{{ $order->order_number }}</title>
 
     @include('prints.invoices.a4.styles')
 

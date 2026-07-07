@@ -63,10 +63,8 @@ class ViewOrder extends Component
                 ->get();
 
         $this->orderdetails = OrderDetail::active()
-            ->where(
-                'order_id',
-                $this->order->id
-            )
+            ->with('service')
+            ->where('order_id', $this->order->id)
             ->get();
 
         $this->totalItems = $this->orderdetails->sum('service_quantity');

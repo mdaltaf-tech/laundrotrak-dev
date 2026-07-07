@@ -155,22 +155,24 @@
                         </thead>
                         <tbody>
                             @foreach ($orderdetails as $item)
-                                @php
-                                    $service = \App\Models\Service::where('id', $item->service_id)->first();
-                                @endphp
                                 <tr class="tw-text-sm">
                                     <td>
                                         {{ $loop->index + 1 }}
                                     </td>
                                     <td class="">
                                         <div class="tw-flex tw-gap-4">
-                                            <div class="tw-size-10">
+                                            {{-- <div class="tw-size-10">
                                                 <img src="{{ asset('assets/img/service-icons/' . $service->icon) }}"
                                                     class="tw-object-contain" alt="">
-                                            </div>
+                                            </div> --}}
                                             <div class="tw-flex tw-flex-col">
-                                                <p class="tw-text-black">{{ $service->service_name }}</p>
-                                                <p class="tw-text-gray-600 tw-text-xs">[{{ $item->service_name }}]</p>
+                                                <p class="tw-text-black">
+                                                    {{ $item->service?->service_name }}
+                                                </p>
+
+                                                <p class="tw-text-gray-600 tw-text-xs">
+                                                    [{{ $item->service_name }}]
+                                                </p>
                                             </div>
                                         </div>
                                     </td>

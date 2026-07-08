@@ -37,6 +37,10 @@
                     class="btn btn-sm rounded-pill {{ $quick_filter == 'ready' ? 'btn-primary text-white' : 'btn-outline-primary' }}">
                     Ready Orders
                 </button>
+                <button wire:click="filterByQuick('today_delivered')"
+                    class="btn btn-sm rounded-pill {{ $quick_filter == 'today_delivered' ? 'btn-primary text-white' : 'btn-outline-primary' }}">
+                    Delivered Today
+                </button>
                 <button
                     class="btn btn-sm rounded-pill {{ $quick_filter == 'today' ? 'btn-primary' : 'btn-outline-primary' }}"
                     wire:click="filterByQuick('today')">

@@ -56,6 +56,14 @@ class HomePage extends Component
     public $monthlyCreditOrders = 0;
     public $monthlyAverageOrderValue = 0;
     public $todayOrderValue = 0;
+    public $pendingGarments = 0;
+    public $pendingValue = 0;
+
+    public $processingGarments = 0;
+    public $processingValue = 0;
+
+    public $readyGarments = 0;
+    public $readyValue = 0;
 
     public function render()
     {
@@ -70,6 +78,17 @@ class HomePage extends Component
         $this->ready_count = Order::active()
             ->where('status', Order::STATUS_READY)
             ->count();
+
+        $readyQuery = Order::active()
+            ->where('status', Order::STATUS_READY);
+
+        $this->readyGarments = OrderArticle::whereHas('order', function ($q) {
+            $q->active()
+            ->where('status', Order::STATUS_READY);
+        })->count();
+
+        $this->readyValue = (clone $readyQuery)
+            ->sum('total');
 
         $this->delivered_count = Order::active()
             ->whereNotNull('delivered_at')
@@ -255,8 +274,30 @@ class HomePage extends Component
         $pendingOrders = Order::active()
             ->where('balance_amount', '>', 0);
 
+        $pendingQuery = Order::active()
+            ->where('status', Order::STATUS_NEW);
+
+        $this->pendingGarments = OrderArticle::whereHas('order', function ($q) {
+            $q->active()
+            ->where('status', Order::STATUS_NEW);
+        })->count();
+
+        $this->pendingValue = (clone $pendingQuery)
+            ->sum('total');
+
         $this->pendingCollection =
             (clone $pendingOrders)->sum('balance_amount');
+
+        $processingQuery = Order::active()
+            ->where('status', Order::STATUS_PROCESSING);
+
+        $this->processingGarments = OrderArticle::whereHas('order', function ($q) {
+            $q->active()
+            ->where('status', Order::STATUS_PROCESSING);
+        })->count();
+
+        $this->processingValue = (clone $processingQuery)
+            ->sum('total');
 
         $this->unpaidOrderCount =
             (clone $pendingOrders)->count();

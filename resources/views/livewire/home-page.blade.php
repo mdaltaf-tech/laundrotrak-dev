@@ -10,9 +10,14 @@
                                     <div class="flex-grow-1">
                                         <p class="fw-medium text-primary-light mb-1">
                                             {{ $lang->data['pending_order'] ?? 'Pending Orders' }}</p>
-                                        <h6 class="mb-0">{{ $pending_count }}</h6>
-                                        <small class="text-secondary-light">
-
+                                        <h6 class="mb-0">
+                                            {{ $pending_count }} Orders
+                                        </h6>
+                                        <small class="d-block text-success mt-1">
+                                            {{ $pendingGarments }} Garments
+                                        </small>
+                                        <small class="d-block text-primary">
+                                            {{ getFormattedCurrency($pendingValue) }} Value
                                         </small>
                                     </div>
                                     <div
@@ -34,6 +39,13 @@
                                         <p class="fw-medium text-primary-light mb-1">
                                             {{ $lang->data['processing_order'] ?? 'Processing Order' }}</p>
                                         <h6 class="mb-0"> {{ $processing_count }}</h6>
+                                        <small class="d-block text-success mt-1">
+                                            {{ $processingGarments }} Garments
+                                        </small>
+
+                                        <small class="d-block text-primary">
+                                            {{ getFormattedCurrency($processingValue) }} Value
+                                        </small>
                                     </div>
                                     <div
                                         class="w-50-px h-50-px bg-purple rounded-circle d-flex justify-content-center align-items-center">
@@ -54,6 +66,12 @@
                                         <p class="fw-medium text-primary-light mb-1">
                                             {{ $lang->data['ready_to_deliver'] ?? 'Ready To Deliver' }}</p>
                                         <h6 class="mb-0">{{ $ready_count }}</h6>
+                                        <small class="d-block text-success mt-1">
+                                            {{ $readyGarments }} Garments
+                                        </small>
+                                        <small class="d-block text-primary">
+                                            {{ getFormattedCurrency($readyValue) }} Value
+                                        </small>
                                     </div>
                                     <div
                                         class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
@@ -66,7 +84,8 @@
                     </a>
                 </div>
                 <div class="col-xl-3 col-lg-3 col-md-6">
-                    <a href="{{ url('admin/orders') }}?quick_filter=delayed" class="text-decoration-none d-block h-100">
+                    <a href="{{ url('admin/orders') }}?quick_filter=delayed"
+                        class="text-decoration-none d-block h-100">
                         <div class="card shadow-none border h-100 dashboard-kpi-card">
                             <div class="card-body p-20">
                                 <div class="d-flex align-items-center h-100">
@@ -227,13 +246,14 @@
                     </a>
                 </div> --}}
                 <div class="col-xl-3 col-lg-3 col-md-6">
-                    <a href="{{ url('admin/orders') }}?status=3" class="text-decoration-none d-block h-100">
+                    <a href="{{ url('admin/orders') }}?quick_filter=today_delivered"
+                        class="text-decoration-none d-block h-100">
                         <div class="card shadow-none border h-100 dashboard-kpi-card">
                             <div class="card-body p-20">
                                 <div class="d-flex align-items-center h-100">
                                     <div class="flex-grow-1">
                                         <p class="fw-medium mb-1">
-                                            Today's Deliveries
+                                            Delivered Orders
                                         </p>
                                         <h6 class="mb-0">
                                             {{ $todayDelivered }}

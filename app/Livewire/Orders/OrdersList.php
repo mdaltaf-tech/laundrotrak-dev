@@ -385,6 +385,19 @@ class OrdersList extends Component
 
         }
 
+        elseif ($this->quick_filter == 'today_delivered') {
+
+            $orders->whereDate(
+                    'delivered_at',
+                    today()
+                )
+                ->where(
+                    'status',
+                    Order::STATUS_DELIVERED
+                );
+
+        }
+
         return $orders
             ->latest('id')
             ->cursorPaginate(

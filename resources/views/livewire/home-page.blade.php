@@ -12,12 +12,13 @@
                                             {{ $lang->data['pending_order'] ?? 'Pending Orders' }}</p>
                                         <h6 class="mb-0">{{ $pending_count }}</h6>
                                         <small class="text-secondary-light">
-                                            Click to view
+
                                         </small>
                                     </div>
                                     <div
                                         class="w-50-px h-50-px bg-cyan rounded-circle d-flex justify-content-center align-items-center">
-                                        <iconify-icon icon="game-icons:basket" class="text-white text-2xl mb-0"></iconify-icon>
+                                        <iconify-icon icon="game-icons:basket"
+                                            class="text-white text-2xl mb-0"></iconify-icon>
                                     </div>
                                 </div>
                             </div>
@@ -56,7 +57,8 @@
                                     </div>
                                     <div
                                         class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
-                                        <iconify-icon icon="ion:thumbs-up" class="text-white text-2xl mb-0"></iconify-icon>
+                                        <iconify-icon icon="ion:thumbs-up"
+                                            class="text-white text-2xl mb-0"></iconify-icon>
                                     </div>
                                 </div>
                             </div>
@@ -64,6 +66,38 @@
                     </a>
                 </div>
                 <div class="col-xl-3 col-lg-3 col-md-6">
+                    <a href="{{ url('admin/orders') }}?quick_filter=delayed" class="text-decoration-none d-block h-100">
+                        <div class="card shadow-none border h-100 dashboard-kpi-card">
+                            <div class="card-body p-20">
+                                <div class="d-flex align-items-center h-100">
+                                    <div class="flex-grow-1">
+                                        <p class="fw-medium text-primary-light mb-1">
+                                            This Month
+                                        </p>
+                                        <h6 class="mb-0">
+                                            {{ $monthlyOrders }} Orders
+                                        </h6>
+                                        <div class="mt-1">
+                                            <small class="d-block text-success mt-1">
+                                                {{ $monthlyGarments }} Garments
+                                            </small>
+
+                                            <small class="d-block text-primary">
+                                                {{ getFormattedCurrency($monthlyRevenue) }} Revenue
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="w-50-px h-50-px bg-success rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon icon="mdi:calendar-month" class="text-white text-2xl">
+                                        </iconify-icon>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {{-- <div class="col-xl-3 col-lg-3 col-md-6">
                     <a href="{{ url('admin/orders') }}?quick_filter=delayed" class="text-decoration-none d-block h-100">
                         <div class="card shadow-none border h-100 dashboard-kpi-card">
                             <div class="card-body p-20">
@@ -79,17 +113,16 @@
                                             {{ now()->format('F Y') }}
                                         </small>
                                     </div>
-                                    <div class="w-50-px h-50-px bg-success rounded-circle d-flex justify-content-center align-items-center">
-                                        <iconify-icon
-                                            icon="mdi:calendar-month"
-                                            class="text-white text-2xl">
+                                    <div
+                                        class="w-50-px h-50-px bg-success rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon icon="mdi:calendar-month" class="text-white text-2xl">
                                         </iconify-icon>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </a>
-                </div>
+                </div> --}}
                 <div class="col-xl-3 col-lg-3 col-md-6">
                     <a href="javascript:void(0)" class="text-decoration-none d-block h-100">
                         <div class="card shadow-none border h-100 dashboard-kpi-card">
@@ -100,22 +133,36 @@
                                             Today's Collection
                                         </p>
                                         <h6 class="mb-0">
-                                            ₹{{ number_format($today_collection,2) }}
+                                            ₹{{ number_format($today_collection, 2) }}
                                         </h6>
                                         <div class="d-flex flex-wrap gap-2 mt-1">
-                                            <span class="badge bg-success-subtle text-success">
-                                                Cash ₹{{ number_format($todayCash, 0) }}
+                                            <span class="badge bg-success-subtle text-success" data-bs-toggle="tooltip"
+                                                data-bs-placement="auto" data-bs-html="true"
+                                                title="
+                                                    Transactions : {{ $todayCashTransactions }}
+                                                ">
+                                                Cash {{ getFormattedCurrency($todayCash) }}
                                             </span>
-
-                                            <span class="badge bg-primary-subtle text-primary">
-                                                UPI ₹{{ number_format($todayUpi, 0) }}
+                                            <span class="badge bg-primary-subtle text-primary" data-bs-toggle="tooltip"
+                                                data-bs-placement="auto" data-bs-html="true"
+                                                title="
+                                                    Transactions : {{ $todayUpiTransactions }}
+                                                ">
+                                                UPI {{ getFormattedCurrency($todayUpi) }}
                                             </span>
                                         </div>
+                                        <small class="d-inline-block text-primary mt-2" data-bs-toggle="tooltip"
+                                            data-bs-placement="bottom" data-bs-html="true"
+                                            title="
+                                                Cash {{ getFormattedCurrency($monthCash) }} ({{ $monthCashTransactions }})<br>
+                                                UPI {{ getFormattedCurrency($monthUpi) }} ({{ $monthUpiTransactions }})
+                                            ">
+                                            {{ getFormattedCurrency($monthCash + $monthUpi) }} This Month
+                                        </small>
                                     </div>
-                                    <div class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
-                                        <iconify-icon
-                                            icon="mdi:cash"
-                                            class="text-white text-2xl">
+                                    <div
+                                        class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon icon="mdi:cash" class="text-white text-2xl">
                                         </iconify-icon>
                                     </div>
                                 </div>
@@ -123,36 +170,43 @@
                         </div>
                     </a>
                 </div>
+
                 <div class="col-xl-3 col-lg-3 col-md-6">
-                    <a href="{{ url('admin/orders') }}?paid_filter=0" class="text-decoration-none d-block h-100">
+                    <a href="{{ url('admin/orders') }}?quick_filter=todays_orders"
+                        class="text-decoration-none d-block h-100">
                         <div class="card shadow-none border h-100 dashboard-kpi-card">
                             <div class="card-body p-20">
                                 <div class="d-flex align-items-center h-100">
                                     <div class="flex-grow-1">
-                                        <p class="fw-medium mb-1">
-                                            Pending Collection
+                                        <p class="fw-medium text-primary-light mb-1">
+                                            Today's Orders
                                         </p>
-
-                                        <h6 class="mb-1">
-                                            ₹{{ number_format($pendingCollection,2) }}
+                                        <h6 class="mb-0">
+                                            {{ $todayReceivedOrders }}
+                                            {{ Str::plural('Order', $todayReceivedOrders) }}
                                         </h6>
 
-                                        <small class="text-muted">
-                                            {{ $unpaidOrderCount }} Orders
+                                        <small class="d-block text-success">
+                                            {{ $todayReceivedGarments }}
+                                            {{ Str::plural('Garment', $todayReceivedGarments) }}
+                                        </small>
+
+                                        <small class="d-block text-primary">
+                                            {{ getFormattedCurrency($todayOrderValue) }} Value
                                         </small>
                                     </div>
-                                    <div class="w-50-px h-50-px bg-danger rounded-circle d-flex justify-content-center align-items-center">
-                                        <iconify-icon
-                                            icon="mdi:cash-remove"
-                                            class="text-white text-2xl">
-                                        </iconify-icon>
+                                    <div
+                                        class="w-50-px h-50-px bg-warning rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon icon="mdi:package-variant"
+                                            class="text-white text-2xl mb-0"></iconify-icon>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </a>
                 </div>
-                <div class="col-xl-3 col-lg-3 col-md-6">
+
+                {{-- <div class="col-xl-3 col-lg-3 col-md-6">
                     <a href="{{ url('admin/orders') }}?quick_filter=pickup_overdue" class="text-decoration-none d-block h-100">
                         <div class="card shadow-none border h-100 dashboard-kpi-card">
                             <div class="card-body p-20">
@@ -171,7 +225,7 @@
                             </div>
                         </div>
                     </a>
-                </div>
+                </div> --}}
                 <div class="col-xl-3 col-lg-3 col-md-6">
                     <a href="{{ url('admin/orders') }}?status=3" class="text-decoration-none d-block h-100">
                         <div class="card shadow-none border h-100 dashboard-kpi-card">
@@ -179,19 +233,54 @@
                                 <div class="d-flex align-items-center h-100">
                                     <div class="flex-grow-1">
                                         <p class="fw-medium mb-1">
-                                            Delivered Orders
+                                            Today's Deliveries
                                         </p>
                                         <h6 class="mb-0">
-                                            {{ $delivered_count }}
+                                            {{ $todayDelivered }}
                                         </h6>
-                                        <small class="text-success">
-                                            {{ $todayDelivered }} delivered today
+                                        <div class="mt-1">
+                                            <div class="mt-1">
+                                                <small class="d-block text-primary mt-1">
+                                                    {{ $monthlyDelivered }} This Month
+                                                </small>
+
+                                                <small class="d-block text-success">
+                                                    {{ number_format($delivered_count) }} Lifetime
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="w-50-px h-50-px bg-success rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon icon="mdi:check-circle" class="text-white text-2xl">
+                                        </iconify-icon>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-6">
+                    <a href="{{ url('admin/orders') }}?paid_filter=0" class="text-decoration-none d-block h-100">
+                        <div class="card shadow-none border h-100 dashboard-kpi-card">
+                            <div class="card-body p-20">
+                                <div class="d-flex align-items-center h-100">
+                                    <div class="flex-grow-1">
+                                        <p class="fw-medium mb-1">
+                                            Pending Collection
+                                        </p>
+
+                                        <h6 class="mb-1">
+                                            ₹{{ number_format($pendingCollection, 2) }}
+                                        </h6>
+
+                                        <small class="text-muted">
+                                            {{ $unpaidOrderCount }} Orders
                                         </small>
                                     </div>
-                                    <div class="w-50-px h-50-px bg-success rounded-circle d-flex justify-content-center align-items-center">
-                                        <iconify-icon
-                                            icon="mdi:check-circle"
-                                            class="text-white text-2xl">
+                                    <div
+                                        class="w-50-px h-50-px bg-danger rounded-circle d-flex justify-content-center align-items-center">
+                                        <iconify-icon icon="mdi:cash-remove" class="text-white text-2xl">
                                         </iconify-icon>
                                     </div>
                                 </div>
@@ -210,43 +299,41 @@
                         <div class="card-body">
                             <div>
                                 <h6 class="mb-0 d-flex align-items-center gap-2">
-                                    <iconify-icon
-                                        icon="mdi:calendar-today"
-                                        class="text-primary">
+                                    <iconify-icon icon="mdi:calendar-today" class="text-primary">
                                     </iconify-icon>
                                     Today's Delivery
                                 </h6>
                                 <div class="d-flex justify-content-between align-items-center mt-1">
                                     <div class="fw-medium text-dark mt-1">
-                                        {{ $totalTodayOrders  }} Orders • {{ $todayGarments  }} Garments
+                                        {{ $totalTodayOrders }} Orders • {{ $todayGarments }} Garments
                                     </div>
-                                    @if($totalTodayOrders  > 4)
+                                    @if ($totalTodayOrders > 4)
                                         <a href="{{ url('admin/orders?quick_filter=today') }}"
-                                        class="text-primary small fw-semibold">
+                                            class="text-primary small fw-semibold">
                                             View All
                                         </a>
                                     @endif
                                 </div>
                             </div>
                             <div class="row g-2 mt-1">
-                                @foreach($todayOrders as $order)
+                                @foreach ($todayOrders as $order)
                                     <div class="col-md-6 col-xl-3">
-                                        <a href="{{ url('admin/orders/view/'.$order->id) }}" class="text-decoration-none d-block h-100">
-                                            <div class="bg-neutral-50 p-16 radius-8 border dashboard-order-card" style="cursor:pointer;">
+                                        <a href="{{ url('admin/orders/view/' . $order->id) }}"
+                                            class="text-decoration-none d-block h-100">
+                                            <div class="bg-neutral-50 p-16 radius-8 border dashboard-order-card"
+                                                style="cursor:pointer;">
                                                 <div class="tw-flex tw-justify-between tw-items-start">
                                                     <div class="tw-font-bold text-primary-light">
                                                         {{ $order->order_number }}
                                                     </div>
-                                                    @if($order->status == 0)
+                                                    @if ($order->status == 0)
                                                         <span class="badge bg-secondary-subtle text-secondary">
                                                             Pending
                                                         </span>
-
                                                     @elseif($order->status == 1)
                                                         <span class="badge bg-warning-subtle text-warning">
                                                             Processing
                                                         </span>
-
                                                     @elseif($order->status == 2)
                                                         <span class="badge bg-success-subtle text-success">
                                                             Ready
@@ -254,8 +341,10 @@
                                                     @endif
                                                 </div>
                                                 <div class="tw-mt-2 text-sm">
-                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
-                                                        <div class="d-flex align-items-center justify-content-between gap-10">
+                                                    <div
+                                                        class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-10">
                                                             <iconify-icon icon="mdi:user-outline"
                                                                 class="text-primary-light"></iconify-icon>
                                                             <span class="tw-font-bold text-truncate d-inline-block"
@@ -270,10 +359,10 @@
                                                             {{ $order->garment_count }}
                                                         </span>
                                                     </div>
-                                                    @if($order->balance_amount > 0)
+                                                    @if ($order->balance_amount > 0)
                                                         <div class="text-sm text-danger small">
                                                             Balance :
-                                                            ₹{{ number_format($order->balance_amount,2) }}
+                                                            ₹{{ number_format($order->balance_amount, 2) }}
                                                         </div>
                                                     @else
                                                         <div class="text-success text-sm fw-semibold">
@@ -281,8 +370,10 @@
                                                         </div>
                                                     @endif
                                                 </div>
-                                                <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
-                                                    <div class="d-flex text-sm align-items-center justify-content-between gap-10">
+                                                <div
+                                                    class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                    <div
+                                                        class="d-flex text-sm align-items-center justify-content-between gap-10">
                                                         <iconify-icon icon="solar:calendar-outline"
                                                             class="text-primary-light"></iconify-icon>
                                                         <span
@@ -294,8 +385,8 @@
                                     </div>
                                 @endforeach
                             </div>
-                            @if(count($orders) <= 0)
-                            <x-empty-item/>
+                            @if (count($orders) <= 0)
+                                <x-empty-item />
                             @endif
                         </div>
                     </div>
@@ -305,9 +396,7 @@
                         <div class="card-body">
                             <div>
                                 <h6 class="mb-0 d-flex align-items-center gap-2">
-                                    <iconify-icon
-                                        icon="mdi:calendar-arrow-right"
-                                        class="text-success">
+                                    <iconify-icon icon="mdi:calendar-arrow-right" class="text-success">
                                     </iconify-icon>
                                     Tomorrow's Delivery
                                 </h6>
@@ -315,9 +404,9 @@
                                     <div class="fw-medium text-dark mt-1">
                                         {{ $totalTomorrowOrders }} Orders • {{ $tomorrowGarments }} Garments
                                     </div>
-                                    @if($totalTomorrowOrders > 4)
+                                    @if ($totalTomorrowOrders > 4)
                                         <a href="{{ url('admin/orders?quick_filter=tomorrow') }}"
-                                        class="text-primary small fw-semibold">
+                                            class="text-primary small fw-semibold">
                                             View All
                                         </a>
                                     @endif
@@ -326,22 +415,22 @@
                             <div class="row g-2 mt-1">
                                 @foreach ($orders as $item)
                                     <div class="col-md-6 col-xl-3">
-                                        <a href="{{ url('admin/orders/view/'.$item->id) }}" class="text-decoration-none d-block h-100">
-                                            <div class="bg-neutral-50 p-16 radius-8 border dashboard-order-card" style="cursor:pointer;">
+                                        <a href="{{ url('admin/orders/view/' . $item->id) }}"
+                                            class="text-decoration-none d-block h-100">
+                                            <div class="bg-neutral-50 p-16 radius-8 border dashboard-order-card"
+                                                style="cursor:pointer;">
                                                 <div class="tw-flex tw-justify-between tw-items-start">
                                                     <div class="tw-font-bold text-primary-light">
                                                         {{ $item->order_number }}
                                                     </div>
-                                                    @if($item->status == 0)
+                                                    @if ($item->status == 0)
                                                         <span class="badge bg-secondary-subtle text-secondary">
                                                             Pending
                                                         </span>
-
                                                     @elseif($item->status == 1)
                                                         <span class="badge bg-warning-subtle text-warning">
                                                             Processing
                                                         </span>
-
                                                     @elseif($item->status == 2)
                                                         <span class="badge bg-success-subtle text-success">
                                                             Ready
@@ -349,8 +438,10 @@
                                                     @endif
                                                 </div>
                                                 <div class="tw-mt-2 text-sm">
-                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
-                                                        <div class="d-flex align-items-center justify-content-between gap-10">
+                                                    <div
+                                                        class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-10">
                                                             <iconify-icon icon="mdi:user-outline"
                                                                 class="text-primary-light"></iconify-icon>
                                                             <span class="tw-font-bold text-truncate d-inline-block"
@@ -365,10 +456,10 @@
                                                             {{ $item->garment_count }}
                                                         </span>
                                                     </div>
-                                                    @if($item->balance_amount > 0)
+                                                    @if ($item->balance_amount > 0)
                                                         <div class="text-sm text-danger small">
                                                             Balance :
-                                                            ₹{{ number_format($item->balance_amount,2) }}
+                                                            ₹{{ number_format($item->balance_amount, 2) }}
                                                         </div>
                                                     @else
                                                         <div class="text-success text-sm fw-semibold">
@@ -376,8 +467,10 @@
                                                         </div>
                                                     @endif
                                                 </div>
-                                                <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
-                                                    <div class="d-flex text-sm align-items-center justify-content-between gap-10">
+                                                <div
+                                                    class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                    <div
+                                                        class="d-flex text-sm align-items-center justify-content-between gap-10">
                                                         <iconify-icon icon="solar:calendar-outline"
                                                             class="text-primary-light"></iconify-icon>
                                                         <span
@@ -389,8 +482,8 @@
                                     </div>
                                 @endforeach
                             </div>
-                            @if(count($orders) <= 0)
-                            <x-empty-item/>
+                            @if (count($orders) <= 0)
+                                <x-empty-item />
                             @endif
                         </div>
                     </div>
@@ -399,9 +492,7 @@
                     <div class="card h-auto">
                         <div class="card-body">
                             <h6 class="mb-0 d-flex align-items-center gap-2">
-                                <iconify-icon
-                                    icon="mdi:clock-alert-outline"
-                                    class="text-warning">
+                                <iconify-icon icon="mdi:clock-alert-outline" class="text-warning">
                                 </iconify-icon>
                                 Delayed Orders
                             </h6>
@@ -409,32 +500,31 @@
                                 <div class="fw-medium text-dark mt-1">
                                     {{ $totalDelayedOrders }} Orders • {{ $delayedGarments }} Garments
                                 </div>
-                                @if($totalDelayedOrders > 4)
+                                @if ($totalDelayedOrders > 4)
                                     <a href="{{ url('admin/orders?quick_filter=delayed') }}"
-                                    class="text-primary small fw-semibold">
+                                        class="text-primary small fw-semibold">
                                         View All
                                     </a>
                                 @endif
                             </div>
                             <div class="row g-2 mt-1">
-                                @foreach($delayedOrderList as $order)
+                                @foreach ($delayedOrderList as $order)
                                     <div class="col-md-6 col-xl-3">
-                                        <a href="{{ url('admin/orders/view/'.$order->id) }}" class="text-decoration-none d-block h-100">
+                                        <a href="{{ url('admin/orders/view/' . $order->id) }}"
+                                            class="text-decoration-none d-block h-100">
                                             <div class="bg-neutral-50 p-16 radius-8 border dashboard-order-card">
                                                 <div class="tw-flex tw-justify-between tw-items-start">
                                                     <div class="tw-font-bold text-primary-light">
                                                         {{ $order->order_number }}
                                                     </div>
-                                                    @if($order->status == 0)
+                                                    @if ($order->status == 0)
                                                         <span class="badge bg-secondary-subtle text-secondary">
                                                             Pending
                                                         </span>
-
                                                     @elseif($order->status == 1)
                                                         <span class="badge bg-warning-subtle text-warning">
                                                             Processing
                                                         </span>
-
                                                     @elseif($order->status == 2)
                                                         <span class="badge bg-success-subtle text-success">
                                                             Ready
@@ -442,8 +532,10 @@
                                                     @endif
                                                 </div>
                                                 <div class="tw-mt-2 text-sm">
-                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
-                                                        <div class="d-flex align-items-center justify-content-between gap-10">
+                                                    <div
+                                                        class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-10">
                                                             <iconify-icon icon="mdi:user-outline"
                                                                 class="text-primary-light"></iconify-icon>
                                                             <span class="tw-font-bold text-truncate d-inline-block"
@@ -458,17 +550,21 @@
                                                             {{ $order->garment_count }}
                                                         </span>
                                                     </div>
-                                                    @if($order->balance_amount > 0)
+                                                    @if ($order->balance_amount > 0)
                                                         <div class="text-danger">
                                                             Balance :
-                                                            ₹{{ number_format($order->balance_amount,2) }}
+                                                            ₹{{ number_format($order->balance_amount, 2) }}
                                                         </div>
                                                     @endif
                                                     <div class="text-danger">
-                                                        {{ \Carbon\Carbon::parse($order->delivery_date)->diffInDays(today()) }} day{{ \Carbon\Carbon::parse($order->delivery_date)->diffInDays(today()) > 1 ? 's' : '' }} delayed
+                                                        {{ \Carbon\Carbon::parse($order->delivery_date)->diffInDays(today()) }}
+                                                        day{{ \Carbon\Carbon::parse($order->delivery_date)->diffInDays(today()) > 1 ? 's' : '' }}
+                                                        delayed
                                                     </div>
-                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
-                                                        <div class="d-flex text-sm align-items-center justify-content-between gap-10">
+                                                    <div
+                                                        class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div
+                                                            class="d-flex text-sm align-items-center justify-content-between gap-10">
                                                             <iconify-icon icon="solar:calendar-outline"
                                                                 class="text-primary-light"></iconify-icon>
                                                             <span
@@ -480,8 +576,8 @@
                                         </a>
                                     </div>
                                 @endforeach
-                                @if($delayedOrderList->count() == 0)
-                                    <x-empty-item/>
+                                @if ($delayedOrderList->count() == 0)
+                                    <x-empty-item />
                                 @endif
                             </div>
                         </div>
@@ -491,9 +587,7 @@
                     <div class="card h-auto">
                         <div class="card-body">
                             <h6 class="mb-0 d-flex align-items-center gap-2">
-                                <iconify-icon
-                                    icon="mdi:package-variant-closed"
-                                    class="text-danger">
+                                <iconify-icon icon="mdi:package-variant-closed" class="text-danger">
                                 </iconify-icon>
                                 Overdue Pickups
                             </h6>
@@ -501,32 +595,31 @@
                                 <div class="fw-medium text-dark mt-1">
                                     {{ $totalOverdueOrders }} Orders • {{ $overdueGarments }} Garments
                                 </div>
-                                @if($totalOverdueOrders > 4)
+                                @if ($totalOverdueOrders > 4)
                                     <a href="{{ url('admin/orders?quick_filter=pickup_overdue') }}"
-                                    class="text-primary small fw-semibold">
+                                        class="text-primary small fw-semibold">
                                         View All
                                     </a>
                                 @endif
                             </div>
                             <div class="row g-2 mt-1">
-                                @foreach($overduePickupList as $order)
+                                @foreach ($overduePickupList as $order)
                                     <div class="col-md-6 col-xl-3">
-                                        <a href="{{ url('admin/orders/view/'.$order->id) }}" class="text-decoration-none d-block h-100">
+                                        <a href="{{ url('admin/orders/view/' . $order->id) }}"
+                                            class="text-decoration-none d-block h-100">
                                             <div class="bg-neutral-50 p-16 radius-8 border dashboard-order-card">
                                                 <div class="tw-flex tw-justify-between tw-items-start">
                                                     <div class="tw-font-bold text-primary-light">
                                                         {{ $order->order_number }}
                                                     </div>
-                                                    @if($order->status == 0)
+                                                    @if ($order->status == 0)
                                                         <span class="badge bg-secondary-subtle text-secondary">
                                                             Pending
                                                         </span>
-
                                                     @elseif($order->status == 1)
                                                         <span class="badge bg-warning-subtle text-warning">
                                                             Processing
                                                         </span>
-
                                                     @elseif($order->status == 2)
                                                         <span class="badge bg-success-subtle text-success">
                                                             Ready
@@ -534,8 +627,10 @@
                                                     @endif
                                                 </div>
                                                 <div class="tw-mt-2 text-sm">
-                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
-                                                        <div class="d-flex align-items-center justify-content-between gap-10">
+                                                    <div
+                                                        class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-10">
                                                             <iconify-icon icon="mdi:user-outline"
                                                                 class="text-primary-light"></iconify-icon>
                                                             <span class="tw-font-bold text-truncate d-inline-block"
@@ -550,14 +645,16 @@
                                                             {{ $order->garment_count }}
                                                         </span>
                                                     </div>
-                                                    @if($order->balance_amount > 0)
+                                                    @if ($order->balance_amount > 0)
                                                         <div class="text-danger">
                                                             Balance :
-                                                            ₹{{ number_format($order->balance_amount,2) }}
+                                                            ₹{{ number_format($order->balance_amount, 2) }}
                                                         </div>
                                                     @endif
-                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
-                                                        <div class="d-flex text-sm align-items-center justify-content-between gap-10">
+                                                    <div
+                                                        class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div
+                                                            class="d-flex text-sm align-items-center justify-content-between gap-10">
                                                             <iconify-icon icon="solar:calendar-outline"
                                                                 class="text-primary-light"></iconify-icon>
                                                             <span
@@ -570,15 +667,14 @@
                                                             ->diffInDays(today());
                                                     @endphp
 
-                                                    <p class="
+                                                    <p
+                                                        class="
                                                         mb-0
-                                                        @if($daysReady > 30)
-                                                            text-danger fw-bold
+                                                        @if ($daysReady > 30) text-danger fw-bold
                                                         @elseif($daysReady > 7)
                                                             text-warning fw-semibold
                                                         @else
-                                                            text-info
-                                                        @endif
+                                                            text-info @endif
                                                     ">
                                                         {{ $daysReady }} day{{ $daysReady > 1 ? 's' : '' }} overdue
                                                     </p>
@@ -588,8 +684,8 @@
                                         </a>
                                     </div>
                                 @endforeach
-                                @if($overduePickupList->count() == 0)
-                                    <x-empty-item/>
+                                @if ($overduePickupList->count() == 0)
+                                    <x-empty-item />
                                 @endif
                             </div>
                         </div>
@@ -599,27 +695,27 @@
                     <div class="card h-auto">
                         <div class="card-body">
                             <h6 class="mb-0 d-flex align-items-center gap-2">
-                                <iconify-icon
-                                    icon="mdi:cash-clock"
-                                    class="text-info">
+                                <iconify-icon icon="mdi:cash-clock" class="text-info">
                                 </iconify-icon>
                                 Credit Delivered Orders
                             </h6>
                             <div class="d-flex justify-content-between align-items-center mt-1">
                                 <div class="fw-medium text-dark mt-1">
-                                    {{ $creditDeliveredOrders }} Orders • ₹{{ number_format($creditDeliveredAmount,2) }}
+                                    {{ $creditDeliveredOrders }} Orders •
+                                    ₹{{ number_format($creditDeliveredAmount, 2) }}
                                 </div>
-                                @if($creditDeliveredOrders > 1)
+                                @if ($creditDeliveredOrders > 1)
                                     <a href="{{ url('admin/orders?paid_filter=3') }}"
-                                    class="text-primary small fw-semibold">
+                                        class="text-primary small fw-semibold">
                                         View All
                                     </a>
                                 @endif
                             </div>
                             <div class="row g-2 mt-1">
-                                @foreach($creditDeliveredList as $order)
+                                @foreach ($creditDeliveredList as $order)
                                     <div class="col-md-6 col-xl-3">
-                                        <a href="{{ url('admin/orders/view/'.$order->id) }}" class="text-decoration-none d-block h-100">
+                                        <a href="{{ url('admin/orders/view/' . $order->id) }}"
+                                            class="text-decoration-none d-block h-100">
                                             <div class="bg-neutral-50 p-16 radius-8 border dashboard-order-card">
                                                 <div class="tw-flex tw-justify-between tw-items-start">
                                                     <div class="tw-font-bold text-primary-light">
@@ -630,8 +726,10 @@
                                                     </span>
                                                 </div>
                                                 <div class="tw-mt-2 text-sm">
-                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
-                                                        <div class="d-flex align-items-center justify-content-between gap-10">
+                                                    <div
+                                                        class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-10">
                                                             <iconify-icon icon="mdi:user-outline"
                                                                 class="text-primary-light"></iconify-icon>
                                                             <span class="tw-font-bold text-truncate d-inline-block"
@@ -646,14 +744,16 @@
                                                             {{ $order->garment_count }}
                                                         </span>
                                                     </div>
-                                                    @if($order->balance_amount > 0)
+                                                    @if ($order->balance_amount > 0)
                                                         <div class="text-danger">
                                                             Balance :
-                                                            ₹{{ number_format($order->balance_amount,2) }}
+                                                            ₹{{ number_format($order->balance_amount, 2) }}
                                                         </div>
                                                     @endif
-                                                    <div class="mt-12 d-flex align-items-center justify-content-between gap-10">
-                                                        <div class="d-flex text-sm align-items-center justify-content-between gap-10">
+                                                    <div
+                                                        class="mt-12 d-flex align-items-center justify-content-between gap-10">
+                                                        <div
+                                                            class="d-flex text-sm align-items-center justify-content-between gap-10">
                                                             <iconify-icon icon="solar:calendar-outline"
                                                                 class="text-primary-light"></iconify-icon>
                                                             <span
@@ -673,8 +773,8 @@
                                         </a>
                                     </div>
                                 @endforeach
-                                @if($creditDeliveredList->count() == 0)
-                                    <x-empty-item/>
+                                @if ($creditDeliveredList->count() == 0)
+                                    <x-empty-item />
                                 @endif
                             </div>
                         </div>
@@ -686,8 +786,8 @@
 
     @push('js')
         <script>
-        var chartdata = document.getElementById("chartdata").value;
-        var options = {
+            var chartdata = document.getElementById("chartdata").value;
+            var options = {
                 series: JSON.parse(chartdata),
                 labels: ['Pending', 'Processing', 'Ready to Deliver', 'Delivered', 'Returned'],
                 legend: {

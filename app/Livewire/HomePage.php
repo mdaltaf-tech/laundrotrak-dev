@@ -36,6 +36,34 @@ class HomePage extends Component
     public $todayOrders;
     public $todayGarments = 0;
     public $totalTodayOrders = 0;
+    public $todayReceivedOrders = 0;
+    public $todayReceivedGarments = 0;
+    public $monthlyDelivered = 0;
+    public $monthlyGarments = 0;
+    public $monthlyRevenue = 0;
+    public $monthlyCashCollection = 0;
+    public $monthlyUpiCollection = 0;
+    public $todayCashTransactions = 0;
+    public $todayUpiTransactions = 0;
+    public $monthCash = 0;
+    public $monthUpi = 0;
+
+    public $monthCashTransactions = 0;
+    public $monthUpiTransactions = 0;
+
+    public $monthlyPaidOrders = 0;
+    public $monthlyPartialOrders = 0;
+    public $monthlyCreditOrders = 0;
+    public $monthlyAverageOrderValue = 0;
+    public $todayOrderValue = 0;
+    public $pendingGarments = 0;
+    public $pendingValue = 0;
+
+    public $processingGarments = 0;
+    public $processingValue = 0;
+
+    public $readyGarments = 0;
+    public $readyValue = 0;
 
     public function render()
     {
@@ -51,11 +79,19 @@ class HomePage extends Component
             ->where('status', Order::STATUS_READY)
             ->count();
 
+        $readyQuery = Order::active()
+            ->where('status', Order::STATUS_READY);
+
+        $this->readyGarments = OrderArticle::whereHas('order', function ($q) {
+            $q->active()
+            ->where('status', Order::STATUS_READY);
+        })->count();
+
+        $this->readyValue = (clone $readyQuery)
+            ->sum('total');
+
         $this->delivered_count = Order::active()
-            ->where(
-                'status',
-                Order::STATUS_DELIVERED
-            )
+            ->whereNotNull('delivered_at')
             ->count();
 
         return view('livewire.home-page');
@@ -65,9 +101,24 @@ class HomePage extends Component
     public function mount()
     {
         $this->todayDelivered = Order::active()
-            ->where('status', Order::STATUS_DELIVERED)
-            ->whereDate('updated_at', today())
+            ->whereDate('delivered_at', today())
             ->count();
+
+        $this->todayReceivedOrders = Order::active()
+            ->whereDate('order_date', today())
+            ->count();
+
+        $todayReceivedOrderIds = Order::active()
+            ->whereDate('order_date', today())
+            ->pluck('id');
+
+        $this->todayReceivedGarments = OrderArticle::active()
+            ->whereIn('order_id', $todayReceivedOrderIds)
+            ->count();
+
+        $this->todayOrderValue = Order::active()
+            ->whereDate('order_date', today())
+            ->sum('total');
 
         $todayOrdersQuery = Order::active()
             ->whereDate(
@@ -223,8 +274,30 @@ class HomePage extends Component
         $pendingOrders = Order::active()
             ->where('balance_amount', '>', 0);
 
+        $pendingQuery = Order::active()
+            ->where('status', Order::STATUS_NEW);
+
+        $this->pendingGarments = OrderArticle::whereHas('order', function ($q) {
+            $q->active()
+            ->where('status', Order::STATUS_NEW);
+        })->count();
+
+        $this->pendingValue = (clone $pendingQuery)
+            ->sum('total');
+
         $this->pendingCollection =
             (clone $pendingOrders)->sum('balance_amount');
+
+        $processingQuery = Order::active()
+            ->where('status', Order::STATUS_PROCESSING);
+
+        $this->processingGarments = OrderArticle::whereHas('order', function ($q) {
+            $q->active()
+            ->where('status', Order::STATUS_PROCESSING);
+        })->count();
+
+        $this->processingValue = (clone $processingQuery)
+            ->sum('total');
 
         $this->unpaidOrderCount =
             (clone $pendingOrders)->count();
@@ -250,10 +323,102 @@ class HomePage extends Component
             ->where('payment_type', 2)
             ->sum('received_amount');
 
-        $this->monthlyOrders = Order::active()
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
+        $this->todayCashTransactions = Payment::active()
+            ->whereDate('payment_date', today())
+            ->where('payment_type', 1)
             ->count();
+
+        $this->todayUpiTransactions = Payment::active()
+            ->whereDate('payment_date', today())
+            ->where('payment_type', 2)
+            ->count();
+
+        $this->monthlyOrders = Order::active()
+            ->whereMonth('order_date', now()->month)
+            ->whereYear('order_date', now()->year)
+            ->count();
+
+        $monthlyOrderIds = Order::active()
+            ->whereMonth('order_date', now()->month)
+            ->whereYear('order_date', now()->year)
+            ->pluck('id');
+
+        $this->monthlyGarments = OrderArticle::active()
+            ->whereIn('order_id', $monthlyOrderIds)
+            ->count();
+
+        $this->monthlyDelivered = Order::active()
+            ->whereMonth('delivered_at', now()->month)
+            ->whereYear('delivered_at', now()->year)
+            ->count();
+
+        $this->monthlyRevenue = Order::active()
+            ->whereMonth('order_date', now()->month)
+            ->whereYear('order_date', now()->year)
+            ->sum('total');
+
+        $this->monthlyCashCollection = Payment::active()
+            ->where('payment_type', Payment::PAYMENT_CASH)
+            ->whereMonth('payment_date', now()->month)
+            ->whereYear('payment_date', now()->year)
+            ->sum('received_amount');
+
+        $this->monthlyUpiCollection = Payment::active()
+            ->where('payment_type', Payment::PAYMENT_UPI)
+            ->whereMonth('payment_date', now()->month)
+            ->whereYear('payment_date', now()->year)
+            ->sum('received_amount');
+
+        $this->monthCash = Payment::active()
+            ->whereMonth('payment_date', now()->month)
+            ->whereYear('payment_date', now()->year)
+            ->where('payment_type', 1)
+            ->sum('received_amount');
+
+        $this->monthUpi = Payment::active()
+            ->whereMonth('payment_date', now()->month)
+            ->whereYear('payment_date', now()->year)
+            ->where('payment_type', 2)
+            ->sum('received_amount');
+
+        $this->monthCashTransactions = Payment::active()
+            ->whereMonth('payment_date', now()->month)
+            ->whereYear('payment_date', now()->year)
+            ->where('payment_type', 1)
+            ->count();
+
+        $this->monthUpiTransactions = Payment::active()
+            ->whereMonth('payment_date', now()->month)
+            ->whereYear('payment_date', now()->year)
+            ->where('payment_type', 2)
+            ->count();
+
+        $this->monthlyPaidOrders = Order::active()
+            ->whereMonth('order_date', now()->month)
+            ->whereYear('order_date', now()->year)
+            ->where('payment_status', Order::PAYMENT_PAID)
+            ->count();
+
+        $this->monthlyPartialOrders = Order::active()
+            ->whereMonth('order_date', now()->month)
+            ->whereYear('order_date', now()->year)
+            ->where('payment_status', Order::PAYMENT_PARTIAL)
+            ->count();
+
+        $this->monthlyCreditOrders = Order::active()
+            ->whereMonth('order_date', now()->month)
+            ->whereYear('order_date', now()->year)
+            ->where('payment_status', Order::PAYMENT_CREDIT)
+            ->count();
+
+        $this->monthlyAverageOrderValue =
+            $this->monthlyOrders > 0
+                ? round(
+                    $this->monthlyRevenue /
+                    $this->monthlyOrders,
+                    2
+                )
+                : 0;
 
         $creditQuery = Order::active()
             ->where(

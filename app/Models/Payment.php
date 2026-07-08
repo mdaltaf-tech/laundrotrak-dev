@@ -21,6 +21,9 @@ class Payment extends Model
         'is_deleted'
     ];
 
+    const PAYMENT_CASH = 1;
+    const PAYMENT_UPI = 2;
+
     /* customer relation */
     public function customer()
     {

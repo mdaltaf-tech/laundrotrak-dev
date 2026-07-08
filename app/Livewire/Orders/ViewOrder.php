@@ -12,6 +12,7 @@ use App\Models\OrderAddonDetail;
 use App\Models\OrderDetail;
 use App\Models\Payment;
 use App\Models\Translation;
+use App\Models\OrderArticle;
 use Illuminate\Support\Facades\Auth;
 
 class ViewOrder extends Component
@@ -253,6 +254,22 @@ class ViewOrder extends Component
         }
 
         $this->order->status = $status;
+
+        if ($status == Order::STATUS_DELIVERED) {
+            $now = now();
+
+            if (!$this->order->delivered_at) {
+                $this->order->delivered_at = $now;
+            }
+
+            $this->order->articles()
+                ->whereNull('delivered_at')
+                ->where('status', '!=', OrderArticle::STATUS_DELIVERED)
+                ->update([
+                    'status' => OrderArticle::STATUS_DELIVERED,
+                    'delivered_at' => $now,
+                ]);
+        }
 
         $this->order->save();
 

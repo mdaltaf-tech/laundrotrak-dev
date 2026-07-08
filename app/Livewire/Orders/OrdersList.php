@@ -350,6 +350,54 @@ class OrdersList extends Component
             );
         }
 
+        elseif ($this->quick_filter == 'todays_orders') {
+
+            $orders->whereDate(
+                'order_date',
+                today()
+            );
+
+        }
+
+        elseif ($this->quick_filter == 'processing') {
+
+            $orders->where(
+                'status',
+                Order::STATUS_PROCESSING
+            );
+
+        }
+
+        elseif ($this->quick_filter == 'ready') {
+
+            $orders->where(
+                'status',
+                Order::STATUS_READY
+            );
+
+        }
+
+        elseif ($this->quick_filter == 'today_delivered') {
+
+            $orders
+                ->whereDate('delivered_at', today())
+                ->where('status', Order::STATUS_DELIVERED);
+
+        }
+
+        elseif ($this->quick_filter == 'today_delivered') {
+
+            $orders->whereDate(
+                    'delivered_at',
+                    today()
+                )
+                ->where(
+                    'status',
+                    Order::STATUS_DELIVERED
+                );
+
+        }
+
         return $orders
             ->latest('id')
             ->cursorPaginate(

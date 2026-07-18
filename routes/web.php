@@ -5,6 +5,7 @@ use App\Http\Middleware\Admin;
 use App\Http\Middleware\Store;
 use App\Livewire\Garments\GarmentTracking;
 use App\Http\Controllers\TagPrintController;
+use App\Http\Controllers\Prints\ClosingSlipController;
 
 Route::get('/license', \App\Livewire\Installer\LicenseExpired::class)->name('license');
 Route::get('/install', \App\Livewire\Installer\InstallApp::class)->name('install');
@@ -18,6 +19,10 @@ Route::group(['middleware' => [\App\Http\Middleware\InstalledMiddleware::class]]
         Route::get('/pos', \App\Livewire\Orders\PosScreen::class)->name('orders.pos');
         Route::get('/pos/edit/{id}', \App\Livewire\Orders\PosScreen::class)->name('orders.pos.edit');
         Route::get('/order-status-screen', \App\Livewire\Orders\OrderStatusScreen::class)->name('orders.status-screen');
+        Route::get(
+            'prints/closing-slip/{closure}',
+            ClosingSlipController::class
+        )->name('prints.closing-slip');
         Route::get(
             '/orders/{order}/print-all-tags',
             [TagPrintController::class, 'printAllTags']
@@ -87,6 +92,7 @@ Route::group(['middleware' => [\App\Http\Middleware\InstalledMiddleware::class]]
                 Route::get('tax/{from_date}/{to_date}/{category}', \App\Livewire\Reports\DownloadReport\TaxReport::class);
                 Route::get('order/{from_date}/{to_date}/{status}', \App\Livewire\Reports\DownloadReport\OrderReport::class);
             });
+            Route::get('/reports/business', \App\Livewire\Reports\BusinessReport::class)->name('reports.business');
         });
         /* expense */
         Route::group(['prefix' => 'expense/'], function () {

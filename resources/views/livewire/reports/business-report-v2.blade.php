@@ -26,7 +26,7 @@
 
     </div>
 
-    @include('livewire.reports.partials.daily-register-v2')
+    @include('livewire.reports.partials.daily-register-table')
 
     <div class="card radius-12 mt-4">
         <div class="card-body py-5 text-center text-muted">

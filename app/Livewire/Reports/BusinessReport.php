@@ -2,10 +2,15 @@
 
 namespace App\Livewire\Reports;
 
+use Livewire\Attributes\Computed;
 use App\Models\CashRegister;
 use App\Services\Reports\CashRegisterService;
+use App\Actions\Reports\GetBusinessReportSummaryAction;
+use App\DTO\BusinessReportSummary;
+use App\Models\BusinessDayClosure;
 use Carbon\Carbon;
 use Livewire\Component;
+use Livewire\Attributes\Title;
 
 class BusinessReport extends Component
 {
@@ -53,6 +58,10 @@ class BusinessReport extends Component
 
     public ?int $businessDayClosureId = null;
 
+    public bool $isReadOnly = false;
+
+    public ?BusinessDayClosure $businessDayClosure = null;
+
     /*
     |--------------------------------------------------------------------------
     | Lifecycle
@@ -62,7 +71,6 @@ class BusinessReport extends Component
     public function mount()
     {
         $this->month = now()->format('Y-m');
-
         $this->loadReport();
     }
 
@@ -100,36 +108,57 @@ class BusinessReport extends Component
 
     public function reconcile($date)
     {
-        $this->selectedDate = $date;
+        try {
+            $this->selectedDate = $date;
+            $this->closingCompleted = false;
+            $this->receiptNumber = null;
+            $this->cashRegisterId = null;
+            $this->businessDayClosureId = null;
 
-        $row = collect($this->rows)
-            ->firstWhere('business_date', $date);
+            $row = collect($this->rows)
+                ->firstWhere('business_date', $date);
 
-        if (!$row) {
-            return;
+            if (!$row) {
+                return;
+            }
+
+            $register = CashRegister::firstOrNew([
+                'business_date' => $date
+            ]);
+
+            $summary = app(\App\Domain\BusinessDay\BusinessDaySummaryService::class)
+                ->get($date);
+
+            $this->openingCash = $summary->openingCash;
+            $this->cashCollection = $summary->cashCollection;
+            $this->expenseAmount = $summary->expenseAmount;
+            $this->withdrawAmount = $summary->withdrawAmount;
+            $this->expectedClosing = $summary->expectedCash;
+            $this->closingCash = $summary->countedCash;
+            $this->difference = $summary->difference;
+
+            $register = CashRegister::whereDate('business_date', $date)->first();
+
+            $this->cashRegisterId = $register?->id;
+            $this->businessDayClosure = null;
+            $this->isReadOnly = false;
+
+            if ($register) {
+                $this->businessDayClosure = BusinessDayClosure::where(
+                    'cash_register_id',
+                    $register->id
+                )->first();
+
+                $this->isReadOnly = $this->businessDayClosure !== null;
+            }
+
+            $this->remarks = $summary->remarks;
+            $this->isClosed = $this->businessDayClosure !== null;
+            $this->showReconcileModal = true;
+
+        } catch (\Throwable $e) {
+            dd($e->getMessage(), $e->getFile(), $e->getLine());
         }
-
-        $register = CashRegister::firstOrNew([
-            'business_date' => $date
-        ]);
-
-        $summary = app(\App\Domain\BusinessDay\BusinessDaySummaryService::class)
-            ->get($date);
-
-        $this->openingCash = $summary->openingCash;
-        $this->cashCollection = $summary->cashCollection;
-        $this->expenseAmount = $summary->expenseAmount;
-        $this->withdrawAmount = $summary->withdrawAmount;
-        $this->expectedClosing = $summary->expectedCash;
-        $this->closingCash = $summary->countedCash;
-        $this->difference = $summary->difference;
-
-        $register = CashRegister::whereDate('business_date', $date)->first();
-
-        $this->remarks = $summary->remarks;
-        $this->isClosed = $register?->is_closed ?? false;
-
-        $this->showReconcileModal = true;
     }
 
     /*
@@ -153,6 +182,30 @@ class BusinessReport extends Component
 
     public function saveReconciliation()
     {
+        if ($this->isReadOnly) {
+            session()->flash(
+                'error',
+                'This business day has already been closed.'
+            );
+            return;
+        }
+
+        if (
+            BusinessDayClosure::where(
+                'cash_register_id',
+                $this->cashRegisterId
+            )->exists()
+        ) {
+            $this->isReadOnly = true;
+
+            session()->flash(
+                'error',
+                'This business day has already been closed.'
+            );
+
+            return;
+        }
+
         $this->validate([
             'withdrawAmount'   => 'required|numeric|min:0',
             'closingCash'      => 'required|numeric|min:0',
@@ -212,6 +265,12 @@ class BusinessReport extends Component
 
         $this->loadReport();
 
+        $this->businessDayClosure = $result->closure;
+
+        $this->isReadOnly = true;
+
+        $this->isClosed = true;
+
         session()->flash(
             'success',
             'Business day closed successfully.'
@@ -234,15 +293,25 @@ class BusinessReport extends Component
             'closingCash',
             'difference',
             'remarks',
-            'isClosed'
+            'differenceReason',
+            'isClosed',
+
+            // Success state
+            'closingCompleted',
+            'receiptNumber',
+            'cashRegisterId',
+            'businessDayClosureId',
+            'isReadOnly',
+            'businessDayClosure',
         ]);
 
         $this->showReconcileModal = false;
     }
 
+    #[Title('Business Report')]
     public function render()
     {
-        return view('livewire.reports.business-report-v2');
+        return view('livewire.reports.business-report');
     }
 
     public function updatedWithdrawAmount($value): void
@@ -272,5 +341,12 @@ class BusinessReport extends Component
         $this->difference =
             ($this->closingCash ?? 0)
             - $this->expectedClosing;
+    }
+
+    #[Computed]
+    public function summary(): BusinessReportSummary
+    {
+        return app(GetBusinessReportSummaryAction::class)
+            ->execute($this->month);
     }
 }

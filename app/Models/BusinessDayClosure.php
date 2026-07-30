@@ -17,17 +17,13 @@ class BusinessDayClosure extends Model
         'card_collection',
         'wallet_collection',
         'other_collection',
-
         'expense_amount',
         'withdraw_amount',
-
         'expected_cash',
         'counted_cash',
         'difference_amount',
-
         'difference_reason',
         'remarks',
-
         'closed_by',
         'closed_at',
     ];
@@ -35,7 +31,6 @@ class BusinessDayClosure extends Model
     protected $casts = [
         'business_date'      => 'date',
         'closed_at'          => 'datetime',
-
         'opening_cash'       => 'decimal:2',
         'cash_collection'    => 'decimal:2',
         'upi_collection'     => 'decimal:2',

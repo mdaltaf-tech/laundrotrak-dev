@@ -48,6 +48,12 @@ class BusinessReport extends Component
 
     public float $expenseAmount = 0;
 
+    public float $upiCollection = 0;
+
+    public ?string $closedBy = null;
+
+    public ?string $closedAt = null;
+
     public bool $closingCompleted = false;
 
     public ?string $differenceReason = null;
@@ -131,11 +137,23 @@ class BusinessReport extends Component
 
             $this->openingCash = $summary->openingCash;
             $this->cashCollection = $summary->cashCollection;
+            $this->upiCollection = $summary->upiCollection;
             $this->expenseAmount = $summary->expenseAmount;
             $this->withdrawAmount = $summary->withdrawAmount;
             $this->expectedClosing = $summary->expectedCash;
             $this->closingCash = $summary->countedCash;
             $this->difference = $summary->difference;
+
+
+            if ($this->businessDayClosure) {
+                $this->closedBy = $this->businessDayClosure->user?->name ?? '-';
+                $this->closedAt = Carbon::parse(
+                    $this->businessDayClosure->closed_at
+                )->format('d M Y, h:i A');
+            } else {
+                $this->closedBy = '-';
+                $this->closedAt = '-';
+            }
 
             $register = CashRegister::whereDate('business_date', $date)->first();
 
@@ -144,12 +162,22 @@ class BusinessReport extends Component
             $this->isReadOnly = false;
 
             if ($register) {
-                $this->businessDayClosure = BusinessDayClosure::where(
-                    'cash_register_id',
-                    $register->id
-                )->first();
+                $this->businessDayClosure = BusinessDayClosure::with('user')
+                    ->where('cash_register_id', $register->id)
+                    ->first();
 
                 $this->isReadOnly = $this->businessDayClosure !== null;
+
+                if ($this->businessDayClosure) {
+                    $this->closedBy = $this->businessDayClosure->user?->name ?? '-';
+                    $this->closedAt = optional($this->businessDayClosure->created_at)
+                        ? Carbon::parse($this->businessDayClosure->created_at)
+                            ->format('d M Y h:i A')
+                        : '-';
+                } else {
+                    $this->closedBy = '-';
+                    $this->closedAt = '-';
+                }
             }
 
             $this->remarks = $summary->remarks;
@@ -169,9 +197,7 @@ class BusinessReport extends Component
 
     public function updatedClosingCash($value): void
     {
-        $this->closingCash = max(0, (float) $value);
-
-        $this->recalculateTotals();
+        $this->calculateTotals();
     }
 
     /*
@@ -308,6 +334,34 @@ class BusinessReport extends Component
         $this->showReconcileModal = false;
     }
 
+    public function getDifferenceProperty()
+    {
+        return ($this->actualCashCounted ?? 0) - ($this->expectedClosing ?? 0);
+    }
+
+    public function getStatusTextProperty()
+    {
+        if ($this->difference == 0) return 'Balanced';
+        if ($this->difference > 0) return 'Extra Cash';
+        return 'Cash Short';
+    }
+
+    public function getStatusClassProperty()
+    {
+        if ($this->difference == 0) return 'success';
+        if ($this->difference > 0) return 'info';
+        return 'danger';
+    }
+
+    public function getStatusMessageProperty()
+    {
+        if ($this->difference == 0)
+            return 'Cash counted exactly matches the expected closing balance.';
+        if ($this->difference > 0)
+            return 'Physical cash is higher than the expected closing balance.';
+        return 'Physical cash is lower than the expected closing balance.';
+    }
+
     #[Title('Business Report')]
     public function render()
     {
@@ -316,9 +370,7 @@ class BusinessReport extends Component
 
     public function updatedWithdrawAmount($value): void
     {
-        $this->withdrawAmount = max(0, (float) $value);
-
-        $this->recalculateTotals();
+        $this->calculateTotals();
     }
 
     private function calculateExpectedClosing()
@@ -341,6 +393,18 @@ class BusinessReport extends Component
         $this->difference =
             ($this->closingCash ?? 0)
             - $this->expectedClosing;
+    }
+
+    private function calculateTotals()
+    {
+        $this->expectedClosing =
+            $this->openingCash
+            + $this->cashCollection
+            - $this->expenseAmount
+            - $this->withdrawAmount;
+
+        $this->difference =
+            ($this->closingCash ?? 0) - $this->expectedClosing;
     }
 
     #[Computed]

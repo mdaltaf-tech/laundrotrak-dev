@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\User;
 
 class BusinessDayClosure extends Model
 {
     protected $fillable = [
         'cash_register_id',
         'business_date',
-
         'opening_cash',
         'cash_collection',
         'upi_collection',
@@ -90,5 +90,10 @@ class BusinessDayClosure extends Model
         return $this->isShort()
             ? 'DRAWER_SHORT'
             : 'DRAWER_EXCESS';
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'closed_by');
     }
 }

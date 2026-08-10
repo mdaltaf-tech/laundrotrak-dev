@@ -30,11 +30,11 @@ class BusinessReport extends Component
 
     public ?string $selectedDate = null;
 
-    public float $expectedClosing = 0;
+    public float $expectedDrawerCash = 0;
 
-    public float $withdrawAmount = 0;
+    public float $cashRemoved = 0;
 
-    public ?float $closingCash = null;
+    public ?float $countedCash = null;
 
     public float $difference = 0;
 
@@ -139,10 +139,11 @@ class BusinessReport extends Component
             $this->cashCollection = $summary->cashCollection;
             $this->upiCollection = $summary->upiCollection;
             $this->expenseAmount = $summary->expenseAmount;
-            $this->withdrawAmount = $summary->withdrawAmount;
-            $this->expectedClosing = $summary->expectedCash;
-            $this->closingCash = $summary->countedCash;
-            $this->difference = $summary->difference;
+            $this->cashRemoved = $summary->withdrawAmount;
+            $this->expectedDrawerCash = $summary->expectedCash;
+            $this->countedCash = $summary->countedCash;
+
+            $this->calculateTotals();
 
 
             if ($this->businessDayClosure) {
@@ -195,7 +196,7 @@ class BusinessReport extends Component
     |--------------------------------------------------------------------------
     */
 
-    public function updatedClosingCash($value): void
+    public function updatedCountedCash($value): void
     {
         $this->calculateTotals();
     }
@@ -233,8 +234,8 @@ class BusinessReport extends Component
         }
 
         $this->validate([
-            'withdrawAmount'   => 'required|numeric|min:0',
-            'closingCash'      => 'required|numeric|min:0',
+            'cashRemoved'   => 'required|numeric|min:0',
+            'countedCash'      => 'required|numeric|min:0',
             'differenceReason' => $this->difference != 0 ? 'required' : 'nullable',
             'remarks'          => 'nullable|string|max:500',
         ]);
@@ -248,8 +249,8 @@ class BusinessReport extends Component
         |--------------------------------------------------------------------------
         */
 
-        $summary->withdrawAmount = $this->withdrawAmount;
-        $summary->countedCash = $this->closingCash;
+        $summary->withdrawAmount  = $this->cashRemoved;
+        $summary->countedCash = $this->countedCash;
         $summary->remarks = $this->remarks;
         $summary->differenceReason = $this->differenceReason;
 
@@ -314,9 +315,9 @@ class BusinessReport extends Component
         $this->reset([
             'showReconcileModal',
             'selectedDate',
-            'expectedClosing',
-            'withdrawAmount',
-            'closingCash',
+            'expectedDrawerCash',
+            'cashRemoved',
+            'countedCash',
             'difference',
             'remarks',
             'differenceReason',
@@ -332,11 +333,6 @@ class BusinessReport extends Component
         ]);
 
         $this->showReconcileModal = false;
-    }
-
-    public function getDifferenceProperty()
-    {
-        return ($this->actualCashCounted ?? 0) - ($this->expectedClosing ?? 0);
     }
 
     public function getStatusTextProperty()
@@ -356,10 +352,10 @@ class BusinessReport extends Component
     public function getStatusMessageProperty()
     {
         if ($this->difference == 0)
-            return 'Cash counted exactly matches the expected closing balance.';
+            return 'Cash counted exactly matches the expected drawer cash.';
         if ($this->difference > 0)
-            return 'Physical cash is higher than the expected closing balance.';
-        return 'Physical cash is lower than the expected closing balance.';
+            return 'Physical cash is higher than the expected drawer cash.';
+        return 'Physical cash is lower than the expected drawer cash.';
     }
 
     #[Title('Business Report')]
@@ -368,43 +364,22 @@ class BusinessReport extends Component
         return view('livewire.reports.business-report');
     }
 
-    public function updatedWithdrawAmount($value): void
+    public function updatedCashRemoved($value)
     {
         $this->calculateTotals();
     }
 
-    private function calculateExpectedClosing()
+    private function calculateTotals(): void
     {
-        $this->expectedClosing =
+        $this->expectedDrawerCash =
             $this->openingCash
             + $this->cashCollection
             - $this->expenseAmount
-            - $this->withdrawAmount;
-    }
-
-    private function recalculateTotals(): void
-    {
-        $this->expectedClosing =
-            $this->openingCash
-            + $this->cashCollection
-            - $this->expenseAmount
-            - $this->withdrawAmount;
+            - $this->cashRemoved;
 
         $this->difference =
-            ($this->closingCash ?? 0)
-            - $this->expectedClosing;
-    }
-
-    private function calculateTotals()
-    {
-        $this->expectedClosing =
-            $this->openingCash
-            + $this->cashCollection
-            - $this->expenseAmount
-            - $this->withdrawAmount;
-
-        $this->difference =
-            ($this->closingCash ?? 0) - $this->expectedClosing;
+            ($this->countedCash ?? 0)
+            - $this->expectedDrawerCash;
     }
 
     #[Computed]

@@ -19,7 +19,7 @@
 
                     </div>
 
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="btn-close" wire:click="closeModal">
                     </button>
 
                 </div>
@@ -73,10 +73,10 @@
                             <div class="col-lg-3 col-md-6">
                                 <div class="cr-kpi cr-kpi-primary">
                                     <div class="cr-kpi-label">
-                                        Expected Closing
+                                        Expected Cash in Drawer
                                     </div>
                                     <div class="cr-kpi-value cr-text-primary">
-                                        {{ getFormattedCurrency($expectedClosing) }}
+                                        {{ getFormattedCurrency($expectedDrawerCash) }}
                                     </div>
                                 </div>
                             </div>
@@ -94,49 +94,125 @@
                             <div class="cr-card">
 
                                 <div class="cr-section-title">
-                                    Closing Summary
+                                    {{ $isReadOnly ? 'Verification Summary' : 'Cash Verification' }}
                                 </div>
 
-                                <div class="row g-4">
+                                @if ($isReadOnly)
+                                    <div class="row g-3 mt-2">
 
-                                    <div class="col-md-6">
-                                        <div class="cr-field">
+                                        <div class="col-md-6">
 
-                                            <label class="cr-label">
-                                                Cash Withdrawn Before Closing
-                                            </label>
+                                            <div class="cr-summary-box">
 
-                                            <div class="input-group">
+                                                <div class="cr-summary-title">
+                                                    Expected Cash
+                                                </div>
 
-                                                <span class="input-group-text">₹</span>
+                                                <div class="cr-summary-value">
+                                                    {{ getFormattedCurrency($expectedDrawerCash) }}
+                                                </div>
 
-                                                <input type="number" class="form-control"
-                                                    wire:model.live.debounce.300ms="withdrawAmount">
-
-                                            </div>
-
-                                            <div class="cr-helper">
-                                                Cash removed from drawer before final cash counting.
                                             </div>
 
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="cr-field">
-                                            <label class="cr-label">
-                                                Actual Cash Counted
-                                            </label>
-                                            <div class="input-group">
-                                                <span class="input-group-text">₹</span>
-                                                <input type="number" class="form-control"
-                                                    wire:model.live.debounce.300ms="closingCash">
+
+                                        <div class="col-md-6">
+
+                                            <div class="cr-summary-box">
+
+                                                <div class="cr-summary-title">
+                                                    Counted Cash
+                                                </div>
+
+                                                <div class="cr-summary-value">
+                                                    {{ getFormattedCurrency($countedCash) }}
+                                                </div>
+
                                             </div>
-                                            <div class="cr-helper">
-                                                Total physical cash available in the drawer.
+
+                                        </div>
+
+                                        <div class="col-md-6">
+
+                                            <div class="cr-summary-box">
+
+                                                <div class="cr-summary-title">
+                                                    Cash Removed
+                                                </div>
+
+                                                <div class="cr-summary-value">
+                                                    {{ getFormattedCurrency($cashRemoved) }}
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="col-md-6">
+
+                                            <div class="cr-summary-box">
+
+                                                <div class="cr-summary-title">
+                                                    Verification Status
+                                                </div>
+
+                                                <div class="mt-2">
+
+                                                    <span class="cr-pill cr-pill-{{ $this->statusClass }}">
+                                                        {{ $this->statusText }}
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                @else
+                                    <div class="row g-4">
+
+                                        {{-- Cash Removed --}}
+                                        <div class="col-md-6">
+                                            <div class="cr-field">
+                                                <label class="cr-label">
+                                                    Cash Removed
+                                                </label>
+
+                                                <div class="input-group">
+                                                    <span class="input-group-text">₹</span>
+                                                    <input type="number" class="form-control"
+                                                        wire:model.live.debounce.300ms="cashRemoved">
+                                                </div>
+
+                                                <div class="cr-helper">
+                                                    Enter cash removed before counting (bank deposit, office expenses,
+                                                    owner withdrawal, etc.).
+                                                </div>
                                             </div>
                                         </div>
+
+                                        {{-- Cash Remaining --}}
+                                        <div class="col-md-6">
+                                            <div class="cr-field">
+                                                <label class="cr-label">
+                                                    Counted Drawer Cash
+                                                </label>
+
+                                                <div class="input-group">
+                                                    <span class="input-group-text">₹</span>
+                                                    <input type="number" class="form-control"
+                                                        wire:model.live.debounce.300ms="countedCash">
+                                                </div>
+
+                                                <div class="cr-helper">
+                                                    Count only the cash remaining in the drawer.
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     </div>
-                                </div>
+                                @endif
                             </div>
                         </div>
 
@@ -240,11 +316,11 @@
                                         <div class="cr-detail">
 
                                             <div class="cr-detail-label">
-                                                Cash Withdrawn
+                                                Cash Removed
                                             </div>
 
                                             <div class="cr-detail-value">
-                                                {{ getFormattedCurrency($withdrawAmount) }}
+                                                {{ getFormattedCurrency($cashRemoved) }}
                                             </div>
 
                                         </div>
@@ -285,8 +361,21 @@
                                 <div class="cr-section-title">
                                     Remarks
                                 </div>
-                                <textarea rows="4" class="form-control" wire:model.defer="remarks"
-                                    placeholder="Add any notes or remarks... (Optional notes about this reconciliation.)"></textarea>
+                                @if ($isReadOnly)
+                                    <div class="cr-remarks-view">
+                                        @if (!empty($remarks))
+                                            {{ $remarks }}
+                                        @else
+                                            <span class="cr-empty-text">
+                                                No remarks were added while closing the business day.
+                                            </span>
+                                        @endif
+                                    </div>
+                                @else
+                                    <textarea rows="4" class="form-control" wire:model.defer="remarks"
+                                        placeholder="Add any notes or remarks... (Optional notes about this reconciliation.)">
+                                    </textarea>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -956,6 +1045,46 @@
 
     .cr-detail-value .cr-pill {
         margin: 0;
+    }
+
+    .cr-summary-box {
+
+        height: 100%;
+
+        padding: 18px;
+
+        border: 1px solid #E5E7EB;
+
+        border-radius: 12px;
+
+        background: #F8FAFC;
+
+    }
+
+    .cr-summary-title {
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        text-transform: uppercase;
+
+        letter-spacing: .08em;
+
+        color: #64748B;
+
+        margin-bottom: 12px;
+
+    }
+
+    .cr-summary-value {
+
+        font-size: 26px;
+
+        font-weight: 700;
+
+        color: #111827;
+
     }
 
     /* ==========================================================

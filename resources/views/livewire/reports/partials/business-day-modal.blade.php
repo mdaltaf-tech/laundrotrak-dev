@@ -27,65 +27,89 @@
                 <div class="modal-body cr-body">
 
                     {{-- =========================
-                        BUSINESS SUMMARY
-                    ========================= --}}
+    BUSINESS SUMMARY
+========================= --}}
                     <section class="cr-section">
-                        <div class="row g-3">
-                            <div class="col-lg-12">
-                                <div class="cr-card">
-                                    <div class="cr-section-title">
-                                        Business Summary
-                                    </div>
-                                </div>
-                            </div>
+
+                        <div class="cr-section-title">
+                            Business Summary
                         </div>
-                        <div class="row g-3">
-                            <div class="col-lg-3 col-md-6">
+
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-3 mt-1">
+
+                            {{-- Opening Cash --}}
+                            <div class="col">
                                 <div class="cr-kpi cr-kpi-neutral">
                                     <div class="cr-kpi-label">
                                         Opening Cash
                                     </div>
+
                                     <div class="cr-kpi-value">
                                         {{ getFormattedCurrency($openingCash) }}
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-3 col-md-6">
+
+                            {{-- Cash Collection --}}
+                            <div class="col">
                                 <div class="cr-kpi cr-kpi-success">
                                     <div class="cr-kpi-label">
                                         Cash Collection
                                     </div>
+
                                     <div class="cr-kpi-value cr-text-success">
                                         {{ getFormattedCurrency($cashCollection) }}
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-3 col-md-6">
+
+                            {{-- UPI Collection --}}
+                            <div class="col">
+                                <div class="cr-kpi cr-kpi-success">
+                                    <div class="cr-kpi-label">
+                                        UPI Collection
+                                    </div>
+
+                                    <div class="cr-kpi-value cr-text-success">
+                                        {{ getFormattedCurrency($upiCollection) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Expenses --}}
+                            <div class="col">
                                 <div class="cr-kpi cr-kpi-danger">
                                     <div class="cr-kpi-label">
                                         Expenses
                                     </div>
+
                                     <div class="cr-kpi-value cr-text-danger">
                                         {{ getFormattedCurrency($expenseAmount) }}
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-3 col-md-6">
+
+                            {{-- Expected Drawer Cash --}}
+                            <div class="col">
                                 <div class="cr-kpi cr-kpi-primary">
                                     <div class="cr-kpi-label">
-                                        Expected Cash in Drawer
+                                        Expected Cash
                                     </div>
+
                                     <div class="cr-kpi-value cr-text-primary">
                                         {{ getFormattedCurrency($expectedDrawerCash) }}
                                     </div>
                                 </div>
                             </div>
+
                         </div>
+
                     </section>
 
+
                     {{-- =========================
-                        CASH VERIFICATION ROW
-                    ========================= --}}
+    CASH VERIFICATION
+========================= --}}
                     <div class="row g-4">
 
                         {{-- CASH VERIFICATION --}}
@@ -94,34 +118,19 @@
                             <div class="cr-card">
 
                                 <div class="cr-section-title">
-                                    {{ $isReadOnly ? 'Verification Summary' : 'Cash Verification' }}
+                                    Cash Verification
                                 </div>
 
                                 @if ($isReadOnly)
+                                    {{-- CLOSED / READ ONLY --}}
                                     <div class="row g-3 mt-2">
 
+                                        {{-- Cash Removed --}}
                                         <div class="col-md-6">
-
                                             <div class="cr-summary-box">
 
                                                 <div class="cr-summary-title">
-                                                    Expected Cash
-                                                </div>
-
-                                                <div class="cr-summary-value">
-                                                    {{ getFormattedCurrency($expectedDrawerCash) }}
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-                                        <div class="col-md-6">
-
-                                            <div class="cr-summary-box">
-
-                                                <div class="cr-summary-title">
-                                                    Counted Cash
+                                                    Cash Removed
                                                 </div>
 
                                                 <div class="cr-summary-value">
@@ -129,104 +138,111 @@
                                                 </div>
 
                                             </div>
-
                                         </div>
 
+                                        {{-- Counted Drawer Cash --}}
                                         <div class="col-md-6">
-
                                             <div class="cr-summary-box">
 
                                                 <div class="cr-summary-title">
-                                                    Cash Removed
+                                                    Counted Drawer Cash
                                                 </div>
 
                                                 <div class="cr-summary-value">
-                                                    {{ getFormattedCurrency($cashRemoved) }}
+                                                    {{ getFormattedCurrency($countedCash) }}
                                                 </div>
 
                                             </div>
-
-                                        </div>
-
-                                        <div class="col-md-6">
-
-                                            <div class="cr-summary-box">
-
-                                                <div class="cr-summary-title">
-                                                    Verification Status
-                                                </div>
-
-                                                <div class="mt-2">
-
-                                                    <span class="cr-pill cr-pill-{{ $this->statusClass }}">
-                                                        {{ $this->statusText }}
-                                                    </span>
-
-                                                </div>
-
-                                            </div>
-
                                         </div>
 
                                     </div>
                                 @else
+                                    {{-- OPEN / EDITABLE --}}
                                     <div class="row g-4">
 
                                         {{-- Cash Removed --}}
                                         <div class="col-md-6">
+
                                             <div class="cr-field">
+
                                                 <label class="cr-label">
                                                     Cash Removed
                                                 </label>
 
                                                 <div class="input-group">
-                                                    <span class="input-group-text">₹</span>
+
+                                                    <span class="input-group-text">
+                                                        ₹
+                                                    </span>
+
                                                     <input type="number" class="form-control"
-                                                        wire:model.live.debounce.300ms="cashRemoved">
+                                                        wire:model.blur="cashRemoved">
+
                                                 </div>
 
                                                 <div class="cr-helper">
-                                                    Enter cash removed before counting (bank deposit, office expenses,
-                                                    owner withdrawal, etc.).
+                                                    Enter cash removed before counting
+                                                    (bank deposit, office expenses, owner withdrawal, etc.).
                                                 </div>
+
                                             </div>
+
                                         </div>
 
-                                        {{-- Cash Remaining --}}
+
+                                        {{-- Counted Drawer Cash --}}
                                         <div class="col-md-6">
+
                                             <div class="cr-field">
+
                                                 <label class="cr-label">
                                                     Counted Drawer Cash
                                                 </label>
 
                                                 <div class="input-group">
-                                                    <span class="input-group-text">₹</span>
+
+                                                    <span class="input-group-text">
+                                                        ₹
+                                                    </span>
+
                                                     <input type="number" class="form-control"
-                                                        wire:model.live.debounce.300ms="countedCash">
+                                                        wire:model.blur="countedCash">
+
                                                 </div>
 
                                                 <div class="cr-helper">
-                                                    Count only the cash remaining in the drawer.
+                                                    Count only the physical cash remaining in the drawer.
                                                 </div>
+
                                             </div>
+
                                         </div>
 
                                     </div>
                                 @endif
+
                             </div>
+
                         </div>
+
 
                         {{-- DIFFERENCE --}}
                         <div class="col-lg-4">
+
                             <div class="cr-card">
+
                                 <div class="cr-section-title">
                                     Difference
                                 </div>
+
                                 <div class="cr-difference cr-text-{{ $this->statusClass }}">
                                     {{ getFormattedCurrency(abs($difference)) }}
                                 </div>
+
                                 <div class="mb-3">
+
                                     <span class="cr-pill cr-pill-{{ $this->statusClass }}">
+
                                         @switch($this->statusClass)
                                             @case('success')
                                                 ✓
@@ -243,105 +259,109 @@
                                             @default
                                                 ○
                                         @endswitch
+
                                         &nbsp;
+
                                         {{ $this->statusText }}
+
                                     </span>
+
                                 </div>
+
                                 <div class="cr-status-message">
                                     {{ $this->statusMessage }}
                                 </div>
+
                             </div>
+
                         </div>
+
                     </div>
 
-                    {{-- ========================================= --}}
-                    {{-- BOTTOM ROW --}}
-                    {{-- ========================================= --}}
 
+                    {{-- =========================
+    OPEN / CLOSED LOWER SECTION
+========================= --}}
                     <div class="row g-3 mt-1">
 
-                        {{-- Closing Information --}}
-                        <div class="col-lg-8">
+                        {{-- CLOSURE DETAILS — CLOSED ONLY --}}
+                        @if ($isReadOnly)
+                            <div class="col-lg-8">
 
-                            <div class="cr-card h-100">
+                                <div class="cr-card h-100">
 
-                                <div class="cr-section-title">
-                                    Closing Information
-                                </div>
-
-                                <div class="row">
-
-                                    <div class="col-md-6">
-
-                                        <div class="cr-detail">
-
-                                            <div class="cr-detail-label">
-                                                Closed By
-                                            </div>
-
-                                            <div class="cr-detail-value">
-                                                {{ $closedBy ?? '-' }}
-                                            </div>
-
-                                        </div>
-
-                                        <div class="cr-detail">
-
-                                            <div class="cr-detail-label">
-                                                Closed At
-                                            </div>
-
-                                            <div class="cr-detail-value">
-                                                {{ $closedAt ?? '-' }}
-                                            </div>
-
-                                        </div>
-
-                                        <div class="cr-detail">
-
-                                            <div class="cr-detail-label">
-                                                UPI Collection
-                                            </div>
-
-                                            <div class="cr-detail-value">
-                                                {{ getFormattedCurrency($upiCollection) }}
-                                            </div>
-
-                                        </div>
-
+                                    <div class="cr-section-title">
+                                        Closure Details
                                     </div>
 
-                                    <div class="col-md-6">
+                                    <div class="row">
 
-                                        <div class="cr-detail">
+                                        <div class="col-md-6">
+                                            <div class="cr-detail">
+                                                <div class="cr-detail-label">
+                                                    Closing Register
+                                                </div>
 
-                                            <div class="cr-detail-label">
-                                                Cash Removed
+                                                <div class="cr-detail-value">
+                                                    <span class="cr-register-number">
+                                                        {{ $receiptNumber ?? '-' }}
+                                                    </span>
+                                                </div>
                                             </div>
 
-                                            <div class="cr-detail-value">
-                                                {{ getFormattedCurrency($cashRemoved) }}
+                                            <div class="cr-detail">
+
+                                                <div class="cr-detail-label">
+                                                    Closed By
+                                                </div>
+
+                                                <div class="cr-detail-value">
+                                                    {{ $closedBy ?? '-' }}
+                                                </div>
+
+                                            </div>
+
+                                            <div class="cr-detail">
+
+                                                <div class="cr-detail-label">
+                                                    Closed At
+                                                </div>
+
+                                                <div class="cr-detail-value">
+                                                    {{ $closedAt ?? '-' }}
+                                                </div>
+
                                             </div>
 
                                         </div>
 
-                                        <div class="cr-detail">
+                                        <div class="col-md-6">
 
-                                            <div class="cr-detail-label">
-                                                Current Status
+                                            <div class="cr-detail">
+
+                                                <div class="cr-detail-label">
+                                                    Cash Removed
+                                                </div>
+
+                                                <div class="cr-detail-value">
+                                                    {{ getFormattedCurrency($countedCash) }}
+                                                </div>
+
                                             </div>
 
-                                            <div class="cr-detail-value">
+                                            <div class="cr-detail">
 
-                                                @if ($isReadOnly)
+                                                <div class="cr-detail-label">
+                                                    Status
+                                                </div>
+
+                                                <div class="cr-detail-value">
+
                                                     <span class="cr-pill cr-pill-success">
                                                         Closed
                                                     </span>
-                                                @else
-                                                    <span class="cr-pill cr-pill-warning">
-                                                        Open
-                                                    </span>
-                                                @endif
+
+                                                </div>
 
                                             </div>
 
@@ -352,17 +372,22 @@
                                 </div>
 
                             </div>
+                        @endif
 
-                        </div>
 
-                        {{-- Remarks --}}
-                        <div class="col-lg-4">
+                        {{-- REMARKS --}}
+                        <div class="{{ $isReadOnly ? 'col-lg-4' : 'col-lg-12' }}">
+
                             <div class="cr-card">
+
                                 <div class="cr-section-title">
                                     Remarks
                                 </div>
+
                                 @if ($isReadOnly)
+
                                     <div class="cr-remarks-view">
+
                                         @if (!empty($remarks))
                                             {{ $remarks }}
                                         @else
@@ -370,47 +395,56 @@
                                                 No remarks were added while closing the business day.
                                             </span>
                                         @endif
+
                                     </div>
                                 @else
                                     <textarea rows="4" class="form-control" wire:model.defer="remarks"
-                                        placeholder="Add any notes or remarks... (Optional notes about this reconciliation.)">
-                                    </textarea>
+                                        placeholder="Add any notes or remarks... (Optional notes about this reconciliation.)"></textarea>
+
                                 @endif
+
                             </div>
+
                         </div>
+
                     </div>
-                </div>
+                    {{-- ========================================= --}}
+                    {{-- FOOTER --}}
+                    {{-- ========================================= --}}
 
-                {{-- ========================================= --}}
-                {{-- FOOTER --}}
-                {{-- ========================================= --}}
+                    <div class="modal-footer cr-footer">
 
-                <div class="modal-footer cr-footer">
+                        @if ($isReadOnly)
+                            <div class="d-flex gap-2">
 
-                    @if ($isReadOnly)
-                        <button class="btn btn-outline-secondary cr-btn" wire:click="closeModal">
+                                <a href="{{ route('reports.business.closure.print', $businessDayClosureId) }}"
+                                    target="_blank" class="btn btn-primary cr-btn">
+                                    🖨 Print Closing Register
+                                </a>
+                                <button class="btn btn-outline-secondary cr-btn" wire:click="closeModal">
 
-                            Close
+                                    Close
 
-                        </button>
-                    @else
-                        <button class="btn btn-light border cr-btn" wire:click="closeModal">
+                                </button>
+                            </div>
+                        @else
+                            <button class="btn btn-light border cr-btn" wire:click="closeModal">
 
-                            Cancel
+                                Cancel
 
-                        </button>
+                            </button>
 
-                        <button class="btn btn-success cr-btn" wire:click="saveReconciliation">
+                            <button class="btn btn-success cr-btn" wire:click="saveReconciliation">
 
-                            Close Business Day
+                                Close Business Day
 
-                        </button>
-                    @endif
+                            </button>
+                        @endif
 
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 @endif
 
 <style>
@@ -672,7 +706,7 @@
 
     .cr-kpi-value {
 
-        font-size: 2.15rem;
+        font-size: 26px;
 
         font-weight: 700;
 
@@ -1013,6 +1047,19 @@
     /* ==========================================================
    CLOSING INFORMATION
 ========================================================== */
+    .cr-register-number {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 6px;
+        background: #EFF6FF;
+        color: #2563EB;
+        border: 1px solid #BFDBFE;
+        font-family: monospace;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: .04em;
+    }
 
     .cr-detail {
 

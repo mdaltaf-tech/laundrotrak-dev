@@ -17,13 +17,22 @@ return new class extends Migration
 
             /*
             |--------------------------------------------------------------------------
-            | References
+            | Register Reference
             |--------------------------------------------------------------------------
             */
 
             $table->foreignId('cash_register_id')
-                ->constrained()
+                ->constrained('cash_registers')
                 ->cascadeOnDelete();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Business Date
+            |--------------------------------------------------------------------------
+            |
+            | Only one closure is allowed for a business date.
+            |
+            */
 
             $table->date('business_date')->unique();
 
@@ -47,17 +56,27 @@ return new class extends Migration
 
             $table->decimal('expense_amount', 12, 2)->default(0);
 
+            /*
+            |--------------------------------------------------------------------------
+            | Cash Reconciliation
+            |--------------------------------------------------------------------------
+            */
+
+            // Actual cash removed from the till.
             $table->decimal('withdraw_amount', 12, 2)->default(0);
 
+            // Cash that should remain in the till.
             $table->decimal('expected_cash', 12, 2)->default(0);
 
+            // Physical cash counted at closing.
             $table->decimal('counted_cash', 12, 2)->default(0);
 
+            // counted_cash - expected_cash
             $table->decimal('difference_amount', 12, 2)->default(0);
 
             /*
             |--------------------------------------------------------------------------
-            | Reconciliation
+            | Reconciliation Notes
             |--------------------------------------------------------------------------
             */
 
@@ -67,7 +86,7 @@ return new class extends Migration
 
             /*
             |--------------------------------------------------------------------------
-            | Audit
+            | Closure Audit
             |--------------------------------------------------------------------------
             */
 
@@ -75,20 +94,26 @@ return new class extends Migration
                 ->constrained('users')
                 ->cascadeOnDelete();
 
+            /*
+            | IMPORTANT:
+            | closed_at records the actual moment of closure.
+            | It must not automatically change when the record is updated.
+            */
+
             $table->timestamp('closed_at');
 
             $table->timestamps();
 
             /*
             |--------------------------------------------------------------------------
-            | Indexes
+            | One-to-One Register Closure
             |--------------------------------------------------------------------------
+            |
+            | A cash register can only have one closure record.
+            |
             */
 
             $table->unique('cash_register_id');
-
-            $table->index('business_date');
-
         });
     }
 

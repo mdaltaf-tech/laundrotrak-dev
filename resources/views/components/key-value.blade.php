@@ -1,17 +1,19 @@
-@props(['label', 'border' => false, 'labelClass' => '', 'valueClass' => '', 'emphasis' => false])
+@props(['label', 'value' => null, 'border' => false, 'labelClass' => '', 'valueClass' => ''])
 
-<div {{ $attributes->class(['report-key-value', 'report-key-value-border' => $border]) }}>
+<div {{ $attributes->merge([
+    'class' => 'report-key-value' . ($border ? ' report-key-value-border' : ''),
+]) }}>
 
-    <div @class(['report-key', $labelClass])>
+    <div class="report-key {{ $labelClass }}">
         {{ $label }}
     </div>
 
-    <div @class([
-        'report-value',
-        'report-value-emphasis' => $emphasis,
-        $valueClass,
-    ])>
-        {{ $slot }}
+    <div class="report-value {{ $valueClass }}">
+        @if ($value !== null)
+            {{ $value }}
+        @else
+            {{ $slot }}
+        @endif
     </div>
 
 </div>

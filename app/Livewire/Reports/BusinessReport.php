@@ -3,14 +3,17 @@
 namespace App\Livewire\Reports;
 
 use Livewire\Attributes\Computed;
+use Livewire\Component;
+use Livewire\Attributes\Title;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\BusinessReportExport;
 use App\Models\CashRegister;
 use App\Services\Reports\CashRegisterService;
 use App\Actions\Reports\GetBusinessReportSummaryAction;
 use App\DTO\BusinessReportSummary;
 use App\Models\BusinessDayClosure;
 use Carbon\Carbon;
-use Livewire\Component;
-use Livewire\Attributes\Title;
+
 
 class BusinessReport extends Component
 {
@@ -113,82 +116,136 @@ class BusinessReport extends Component
     */
 
     public function reconcile($date)
-    {
-        try {
-            $this->selectedDate = $date;
-            $this->closingCompleted = false;
-            $this->receiptNumber = null;
-            $this->cashRegisterId = null;
-            $this->businessDayClosureId = null;
+{
+    try {
+        $this->selectedDate = $date;
 
-            $row = collect($this->rows)
-                ->firstWhere('business_date', $date);
+        // Reset modal state for the selected day
+        $this->closingCompleted = false;
+        $this->receiptNumber = null;
+        $this->cashRegisterId = null;
+        $this->businessDayClosureId = null;
+        $this->businessDayClosure = null;
+        $this->isReadOnly = false;
+        $this->closedBy = '-';
+        $this->closedAt = '-';
 
-            if (!$row) {
-                return;
-            }
+        $row = collect($this->rows)
+            ->firstWhere('business_date', $date);
 
-            $register = CashRegister::firstOrNew([
-                'business_date' => $date
-            ]);
+        if (!$row) {
+            return;
+        }
 
-            $summary = app(\App\Domain\BusinessDay\BusinessDaySummaryService::class)
-                ->get($date);
+        $summary = app(
+            \App\Domain\BusinessDay\BusinessDaySummaryService::class
+        )->get($date);
 
-            $this->openingCash = $summary->openingCash;
-            $this->cashCollection = $summary->cashCollection;
-            $this->upiCollection = $summary->upiCollection;
-            $this->expenseAmount = $summary->expenseAmount;
-            $this->cashRemoved = $summary->withdrawAmount;
-            $this->expectedDrawerCash = $summary->expectedCash;
-            $this->countedCash = $summary->countedCash;
+        /*
+        |--------------------------------------------------------------------------
+        | Load Summary
+        |--------------------------------------------------------------------------
+        */
 
-            $this->calculateTotals();
+        $this->openingCash = $summary->openingCash;
+        $this->cashCollection = $summary->cashCollection;
+        $this->upiCollection = $summary->upiCollection;
+        $this->expenseAmount = $summary->expenseAmount;
+        $this->cashRemoved = $summary->withdrawAmount;
+        $this->expectedDrawerCash = $summary->expectedCash;
+        $this->countedCash = $summary->countedCash;
 
+        $this->remarks = $summary->remarks;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Load Existing Register / Closure
+        |--------------------------------------------------------------------------
+        */
+
+        $register = CashRegister::whereDate(
+            'business_date',
+            $date
+        )->first();
+
+        if ($register) {
+
+            $this->cashRegisterId = $register->id;
+
+            // Existing closing register number
+            $this->receiptNumber = $register->receipt_no;
+
+            $this->businessDayClosure = BusinessDayClosure::with([
+                'closedBy',
+                'cashRegister',
+            ])
+                ->where('cash_register_id', $register->id)
+                ->first();
 
             if ($this->businessDayClosure) {
-                $this->closedBy = $this->businessDayClosure->user?->name ?? '-';
-                $this->closedAt = Carbon::parse(
+
+                $this->businessDayClosureId =
+                    $this->businessDayClosure->id;
+
+                $this->isReadOnly = true;
+                $this->isClosed = true;
+
+                $this->closedBy =
+                    $this->businessDayClosure->closedBy?->name ?? '-';
+
+                $this->closedAt =
                     $this->businessDayClosure->closed_at
-                )->format('d M Y, h:i A');
-            } else {
-                $this->closedBy = '-';
-                $this->closedAt = '-';
-            }
-
-            $register = CashRegister::whereDate('business_date', $date)->first();
-
-            $this->cashRegisterId = $register?->id;
-            $this->businessDayClosure = null;
-            $this->isReadOnly = false;
-
-            if ($register) {
-                $this->businessDayClosure = BusinessDayClosure::with('user')
-                    ->where('cash_register_id', $register->id)
-                    ->first();
-
-                $this->isReadOnly = $this->businessDayClosure !== null;
-
-                if ($this->businessDayClosure) {
-                    $this->closedBy = $this->businessDayClosure->user?->name ?? '-';
-                    $this->closedAt = optional($this->businessDayClosure->created_at)
-                        ? Carbon::parse($this->businessDayClosure->created_at)
-                            ->format('d M Y h:i A')
+                        ? Carbon::parse(
+                            $this->businessDayClosure->closed_at
+                        )->format('d M Y, h:i A')
                         : '-';
-                } else {
-                    $this->closedBy = '-';
-                    $this->closedAt = '-';
-                }
+
+                // Use the immutable closure snapshot
+                $this->cashRemoved =
+                    (float) $this->businessDayClosure->withdraw_amount;
+
+                $this->countedCash =
+                    (float) $this->businessDayClosure->counted_cash;
+
+                $this->difference =
+                    (float) $this->businessDayClosure->difference_amount;
+
+                $this->remarks =
+                    $this->businessDayClosure->remarks;
+
+            } else {
+
+                $this->isReadOnly = false;
+                $this->isClosed = false;
+
+                $this->calculateTotals();
             }
 
-            $this->remarks = $summary->remarks;
-            $this->isClosed = $this->businessDayClosure !== null;
-            $this->showReconcileModal = true;
+        } else {
 
-        } catch (\Throwable $e) {
-            dd($e->getMessage(), $e->getFile(), $e->getLine());
+            $this->isReadOnly = false;
+            $this->isClosed = false;
+
+            $this->calculateTotals();
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Open Modal
+        |--------------------------------------------------------------------------
+        */
+
+        $this->showReconcileModal = true;
+
+    } catch (\Throwable $e) {
+
+        dd(
+            $e->getMessage(),
+            $e->getFile(),
+            $e->getLine()
+        );
     }
+}
 
     /*
     |--------------------------------------------------------------------------
@@ -367,6 +424,19 @@ class BusinessReport extends Component
     public function updatedCashRemoved($value)
     {
         $this->calculateTotals();
+    }
+
+    public function export()
+    {
+        $filename = 'business-day-register-' . $this->month . '.xlsx';
+
+        return Excel::download(
+            new BusinessReportExport(
+                $this->rows,
+                $this->month
+            ),
+            $filename
+        );
     }
 
     private function calculateTotals(): void

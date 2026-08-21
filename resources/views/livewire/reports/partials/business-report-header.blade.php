@@ -5,7 +5,7 @@
         </label>
         <input type="month" class="form-control" wire:model.live="month">
     </div>
-    <button class="btn btn-success">
+    <button type="button" class="btn btn-success" wire:click="export">
         Export
     </button>
 </x-filter-bar>

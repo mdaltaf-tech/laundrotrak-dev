@@ -6,6 +6,7 @@ use App\Http\Middleware\Store;
 use App\Livewire\Garments\GarmentTracking;
 use App\Http\Controllers\TagPrintController;
 use App\Http\Controllers\Prints\ClosingSlipController;
+use App\Models\BusinessDayClosure;
 
 Route::get('/license', \App\Livewire\Installer\LicenseExpired::class)->name('license');
 Route::get('/install', \App\Livewire\Installer\InstallApp::class)->name('install');
@@ -93,6 +94,22 @@ Route::group(['middleware' => [\App\Http\Middleware\InstalledMiddleware::class]]
                 Route::get('order/{from_date}/{to_date}/{status}', \App\Livewire\Reports\DownloadReport\OrderReport::class);
             });
             Route::get('/reports/business', \App\Livewire\Reports\BusinessReport::class)->name('reports.business');
+            Route::get(
+                '/reports/business/closure/{closure}/print',
+                function (BusinessDayClosure $closure) {
+
+                    $closure->load([
+                        'cashRegister',
+                        'closedBy',
+                    ]);
+
+                    return view(
+                        'livewire.reports.business.closing-register',
+                        compact('closure')
+                    );
+
+                }
+            )->name('reports.business.closure.print');
         });
         /* expense */
         Route::group(['prefix' => 'expense/'], function () {

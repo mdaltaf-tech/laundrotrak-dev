@@ -56,15 +56,29 @@
 
                     {{-- CASH REGISTER --}}
                     <td>
+
                         <x-key-value label="Opening">
                             {{ getFormattedCurrency($row['opening_cash']) }}
                         </x-key-value>
+
+                        <x-key-value label="Expenses">
+                            <span class="text-danger">
+                                {{ getFormattedCurrency($row['expenses']) }}
+                            </span>
+                        </x-key-value>
+
+                        <x-key-value label="Cash Removed">
+                            {{ getFormattedCurrency($row['withdraw']) }}
+                        </x-key-value>
+
                         <x-key-value label="Expected">
                             {{ getFormattedCurrency($row['expected_closing']) }}
                         </x-key-value>
+
                         <x-key-value label="Closing">
-                            {{ is_null($row['closing_cash']) ? '—' : getFormattedCurrency($row['closing_cash']) }}
+                            {{ $row['closing_cash'] !== null ? getFormattedCurrency($row['closing_cash']) : '—' }}
                         </x-key-value>
+
                     </td>
 
                     {{-- STATUS --}}

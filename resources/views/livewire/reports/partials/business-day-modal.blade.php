@@ -134,7 +134,7 @@
                                                 </div>
 
                                                 <div class="cr-summary-value">
-                                                    {{ getFormattedCurrency($countedCash) }}
+                                                    {{ getFormattedCurrency($cashRemoved) }}
                                                 </div>
 
                                             </div>
@@ -344,7 +344,7 @@
                                                 </div>
 
                                                 <div class="cr-detail-value">
-                                                    {{ getFormattedCurrency($countedCash) }}
+                                                    {{ getFormattedCurrency($cashRemoved) }}
                                                 </div>
 
                                             </div>
